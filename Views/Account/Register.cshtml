@@ -1,0 +1,15 @@
+@model StudyShare.Models.RegisterViewModel
+
+<form asp-action="Register" method="post">
+
+    <input asp-for="FullName" class="form-control" placeholder="Tên" />
+
+    <input asp-for="Email" class="form-control" placeholder="Email" />
+
+    <input asp-for="Password" type="password" class="form-control" />
+
+    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+
+    <button>Đăng ký</button>
+
+</form>

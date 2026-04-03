@@ -1,0 +1,22 @@
+@model List<StudyShare.Models.Document>
+
+<h2>📄 Quản lý Document</h2>
+
+@foreach (var d in Model)
+{
+    <div class="card mb-2">
+        <div class="card-body">
+
+            <p>@d.Title</p>
+
+            <a href="@d.FilePath" target="_blank">Xem</a>
+
+            <a asp-area="Admin" asp-controller="Document" asp-action="Delete" asp-route-id="@d.Id"
+               class="btn btn-danger"
+               onclick="return confirm('Xoá file?')">
+                Xoá
+            </a>
+
+        </div>
+    </div>
+}

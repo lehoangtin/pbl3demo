@@ -1,0 +1,45 @@
+@model StudyShare.Models.Question
+
+<h2>Câu hỏi</h2>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>@Model.Content</h5>
+        <p>
+            👤 Hỏi bởi:
+            <a asp-area="User" asp-controller="User" asp-action="Profile" asp-route-id="@Model.UserId">
+                <strong>@Model.User?.FullName</strong>
+            </a>
+        </p>
+        <small>@Model.CreatedAt</small>
+    </div>
+</div>
+
+<hr />
+
+<h4>Câu trả lời</h4>
+@if (Model.Answers != null && Model.Answers.Any())
+{
+    @foreach (var a in Model.Answers)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <p>@a.Content</p>
+                <small>
+                    👤 Trả lời bởi:
+                    <a asp-area="User" asp-controller="User" asp-action="Profile" asp-route-id="@a.UserId">
+                        <strong>@a.User?.FullName</strong>
+                    </a>
+                </small>
+            </div>
+        </div>
+    }
+}
+
+<hr />
+
+<h4>Trả lời</h4>
+<form asp-area="User" asp-controller="Question" asp-action="Answer" method="post">
+    <input type="hidden" name="questionId" value="@Model.Id" />
+    <textarea name="content" class="form-control" placeholder="Nhập câu trả lời..."></textarea>
+    <button class="btn btn-primary mt-2">Gửi</button>
+</form>

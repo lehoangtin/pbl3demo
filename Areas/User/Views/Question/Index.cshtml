@@ -1,0 +1,27 @@
+@model List<StudyShare.Models.Question>
+
+<h2>Hỏi đáp</h2>
+
+<a asp-area="User" asp-action="Create" class="btn btn-primary mb-3">Đặt câu hỏi</a>
+
+@foreach (var q in Model)
+{
+    <div class="card mb-3 shadow">
+        <div class="card-body">
+            <h5>@q.Content</h5>
+
+            <p>
+                Hỏi bởi:
+                <a asp-area="User" asp-controller="User" asp-action="Profile" asp-route-id="@q.UserId">
+                    <strong>@q.User?.FullName</strong>
+                </a>
+            </p>
+
+            <p>💬 @q.Answers.Count câu trả lời</p>
+
+            <a asp-area="User" asp-action="Details" asp-route-id="@q.Id" class="btn btn-info">
+                Xem chi tiết
+            </a>
+        </div>
+    </div>
+}

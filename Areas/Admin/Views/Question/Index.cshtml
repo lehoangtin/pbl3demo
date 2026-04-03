@@ -1,0 +1,20 @@
+@model List<StudyShare.Models.Question>
+
+<h2>❓ Quản lý Question</h2>
+
+@foreach (var q in Model)
+{
+    <div class="card mb-2">
+        <div class="card-body">
+
+            <p>@q.Content</p>
+
+            <a asp-area="Admin" asp-controller="Question" asp-action="Delete" asp-route-id="@q.Id"
+               class="btn btn-danger"
+               onclick="return confirm('Xoá câu hỏi?')">
+                Xoá
+            </a>
+
+        </div>
+    </div>
+}

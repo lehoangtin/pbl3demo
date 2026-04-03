@@ -1,0 +1,42 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<StudyShare.Models.AppUser> SignInManager
+
+<ul class="navbar-nav">
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <li>
+        👋 @User.Identity.Name
+    </li>
+
+    <li>
+        <a asp-area="User" asp-controller="Profile" asp-action="Index">
+            Profile
+        </a>
+    </li>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <li>
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index">
+                🔥 Admin
+            </a>
+        </li>
+    }
+
+    <li>
+        <a asp-controller="Account" asp-action="Logout">Logout</a>
+    </li>
+}
+else
+{
+    <li>
+        <a asp-controller="Account" asp-action="Login">Login</a>
+    </li>
+
+    <li>
+        <a asp-controller="Account" asp-action="Register">Register</a>
+    </li>
+}
+
+</ul>

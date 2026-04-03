@@ -1,0 +1,26 @@
+@model List<StudyShare.Models.AppUser>
+
+<h2>👤 Quản lý User</h2>
+
+<table class="table">
+    <tr>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Action</th>
+    </tr>
+
+@foreach (var u in Model)
+{
+    <tr>
+        <td>@u.Email</td>
+        <td>@u.FullName</td>
+        <td>
+            <a asp-area="Admin" asp-controller="User" asp-action="Delete" asp-route-id="@u.Id"
+               class="btn btn-danger"
+               onclick="return confirm('Xoá user?')">
+                Xoá
+            </a>
+        </td>
+    </tr>
+}
+</table>

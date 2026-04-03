@@ -1,0 +1,76 @@
+@model StudyShare.Models.AppUser
+
+<h2>👤 Profile</h2>
+
+<div class="card p-3 mb-4">
+    <div class="d-flex align-items-center">
+
+        <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default-avatar.png" : Model.Avatar)"
+             width="100" height="100"
+             class="rounded-circle me-3" />
+
+        <div>
+            <h4>@Model.FullName</h4>
+            <p>@Model.Email</p>
+            <small>Joined: @Model.CreatedAt.ToShortDateString()</small>
+        </div>
+
+    </div>
+</div>
+
+<hr />
+
+<h3>📄 Câu hỏi</h3>
+
+@if (Model.Questions != null && Model.Questions.Any())
+{
+    foreach (var q in Model.Questions)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <a asp-area="User" asp-controller="Question" asp-action="Details" asp-route-id="@q.Id">
+                    @q.Content
+                </a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Chưa có câu hỏi</p>
+}
+
+<hr />
+
+<h3>💬 Câu trả lời</h3>
+
+@if (Model.Answers != null && Model.Answers.Any())
+{
+    foreach (var a in Model.Answers)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <p>@a.Content</p>
+
+                <a asp-area="User" asp-controller="Question" asp-action="Details" asp-route-id="@a.QuestionId">
+                    Xem câu hỏi
+                </a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Chưa có câu trả lời</p>
+}
+
+<br />
+
+<a asp-area="User" asp-controller="User" asp-action="Edit" class="btn btn-warning">   
+     ✏️ Chỉnh sửa
+</a>
+
+
+<a asp-area="User" asp-controller="User" asp-action="ChangePassword" class="btn btn-danger">
+        🔐 Đổi mật khẩu
+</a>

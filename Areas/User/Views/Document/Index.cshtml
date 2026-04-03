@@ -1,0 +1,33 @@
+@model List<StudyShare.Models.Document>
+
+<h2>Tài liệu</h2>
+
+<a asp-area="User" asp-action="Create" class="btn btn-primary mb-3">Upload</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>File</th>
+            <th>Size</th>
+            <th>Download</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td>@d.Title</td>
+                <td>@d.FileName</td>
+                <td>@(d.FileSize / 1024) KB</td>
+                <td>@d.DownloadCount</td>
+
+                <td>
+                    <a asp-area="User" asp-action="Details" asp-route-id="@d.Id" class="btn btn-info">View</a>
+                    <a asp-area="User" asp-action="Download" asp-route-id="@d.Id" class="btn btn-success">Download</a>
+                    <a asp-area="User" asp-action="Delete" asp-route-id="@d.Id" class="btn btn-danger">Delete</a>
+            </tr>
+        }
+    </tbody>
+</table>

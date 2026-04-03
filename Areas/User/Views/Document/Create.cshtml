@@ -1,0 +1,33 @@
+@model StudyShare.Models.Document
+
+<h2>Upload tài liệu</h2>
+
+<form asp-area="User" asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label>Title</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Chọn file</label>
+        <input type="file" name="files" multiple class="form-control" />
+    </div>
+
+    <button class="btn btn-success">Upload</button>
+
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="text-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+    </div>
+}
