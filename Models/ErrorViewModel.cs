@@ -1,4 +1,4 @@
-namespace StudyShare.Models; // Sửa từ PBL3demo.Models thành StudyShare.Models
+namespace StudyShare.Models;
 public class ErrorViewModel
 {
     public string? RequestId { get; set; }

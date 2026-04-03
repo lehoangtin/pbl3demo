@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using StudyShare.Models;
 using StudyShare.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudyShare.Controllers
 {
@@ -23,12 +24,12 @@ namespace StudyShare.Controllers
         }
 
         // ================= REGISTER =================
-
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
-
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -69,12 +70,12 @@ namespace StudyShare.Controllers
         }
 
         // ================= LOGIN =================
-
+[AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
-
+[AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
