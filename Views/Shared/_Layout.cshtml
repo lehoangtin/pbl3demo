@@ -15,9 +15,9 @@
 
         <div>
             <a class="btn btn-outline-light" asp-controller="Document" asp-action="Create">Upload</a>
-            <a class="btn btn-outline-light" asp-controller="Question" asp-action="Index">Q&A</a>
-            <a class="btn btn-outline-light" asp-area="Identity" asp-page="/Account/Login">Login</a>
-            <a class="btn btn-outline-light" asp-controller="Question" asp-action="Index">Q&A</a>
+            <a class="btn btn-outline-light" asp-area="User" asp-controller="Question" asp-action="Index">Q&A</a>
+            <a class="btn btn-outline-light" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+            <a class="btn btn-outline-light" asp-area="User" asp-controller="Document" asp-action="Create">Upload</a>
         </div>
     </div>
 </nav>

@@ -170,6 +170,7 @@
 /Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.MvcApplicationPartsAssemblyInfo.cache
 /Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.RazorAssemblyInfo.cache
 /Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.RazorAssemblyInfo.cs
+/Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.sourcelink.json
 /Users/mac/PBL3demo/obj/Debug/net10.0/rjimswa.dswa.cache.json
 /Users/mac/PBL3demo/obj/Debug/net10.0/rjsmrazor.dswa.cache.json
 /Users/mac/PBL3demo/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json
