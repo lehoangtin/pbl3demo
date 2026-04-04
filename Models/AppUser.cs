@@ -14,5 +14,6 @@ namespace StudyShare.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public List<Question> Questions { get; set; }
         public List<Answer> Answers { get; set; }
+        public bool IsBanned { get; set; } = false;
     }
 }

@@ -34,5 +34,31 @@ namespace StudyShare.Areas.Admin.Controllers
 
             return RedirectToAction("Index");
         }
+
+        // 2. Action Khóa User
+        [HttpPost]
+        public async Task<IActionResult> BanUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                user.IsBanned = true;
+                await _userManager.UpdateAsync(user);
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 3. Action Mở khóa User
+        [HttpPost]
+        public async Task<IActionResult> UnbanUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                user.IsBanned = false;
+                await _userManager.UpdateAsync(user);
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

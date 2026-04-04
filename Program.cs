@@ -63,9 +63,9 @@ using (var scope = app.Services.CreateScope())
             UserName = adminEmail,
             Email = adminEmail,
             FullName = "Admin",
-            // Đảm bảo các thuộc tính Required trong AppUser.cs đều có giá trị
             Avatar = "/images/default-avatar.png", 
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.Now,
+            EmailConfirmed = true // Thêm dòng này vào
         };
 
         // Identity mặc định yêu cầu mật khẩu phức tạp (VD: Admin@123)

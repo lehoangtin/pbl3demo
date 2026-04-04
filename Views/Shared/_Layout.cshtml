@@ -13,12 +13,32 @@
     <div class="container">
         <a class="navbar-brand" asp-controller="Document" asp-action="Index">StudyShare</a>
 
-        <div>
-            <a class="btn btn-outline-light" asp-controller="Document" asp-action="Create">Upload</a>
-            <a class="btn btn-outline-light" asp-area="User" asp-controller="Question" asp-action="Index">Q&A</a>
-            <a class="btn btn-outline-light" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-            <a class="btn btn-outline-light" asp-area="User" asp-controller="Document" asp-action="Create">Upload</a>
-        </div>
+        <div class="navbar-nav ms-auto">
+    @if (User.Identity.IsAuthenticated)
+    {
+        @if (User.IsInRole("Admin"))
+        {
+            <a class="btn btn-outline-light me-2" asp-area="Admin" asp-controller="Document" asp-action="Index">Quản lý Tài liệu</a>
+            <a class="btn btn-outline-light me-2" asp-area="Admin" asp-controller="Question" asp-action="Index">Quản lý Q&A</a>
+            <a class="btn btn-outline-light me-2" asp-area="Admin" asp-controller="User" asp-action="Index">Quản lý User</a>
+            
+        }
+        else
+        {
+            <a class="btn btn-outline-light me-2" asp-area="User" asp-controller="Document" asp-action="Create">Upload</a>
+            <a class="btn btn-outline-light me-2" asp-area="User" asp-controller="Question" asp-action="Index">Q&A</a>
+            <a class="btn btn-outline-light me-2" asp-area="User" asp-controller="User" asp-action="Profile">Hồ sơ</a>
+        }
+        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    }
+    else
+    {
+        <a class="btn btn-outline-light me-2" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+        <a class="btn btn-light" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+    }
+</div>
     </div>
 </nav>
 

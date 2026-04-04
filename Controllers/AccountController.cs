@@ -69,26 +69,30 @@ namespace StudyShare.Controllers
             return Content("❌ Xác nhận thất bại!");
         }
 
-        // ================= LOGIN =================
-[AllowAnonymous]
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
-[AllowAnonymous]
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+        if (!ModelState.IsValid) return View(model);
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null) 
+        {
+            ModelState.AddModelError("", "Sai email hoặc password");
+            return View(model);
+        }
 
-            if (user == null)
-            {
-                ModelState.AddModelError("", "Sai email hoặc password");
-                return View(model);
-            }
+    // 🔥 KIỂM TRA XEM CÓ BỊ BAN KHÔNG
+        if (user.IsBanned)
+        {
+        ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa bởi Admin.");
+        return View(model);
+        }
 
             // 🔥 check confirm email
             if (!await _userManager.IsEmailConfirmedAsync(user))
@@ -105,7 +109,14 @@ namespace StudyShare.Controllers
             );
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Home");
+            {
+            // Kiểm tra nếu là Admin thì về trang Admin, ngược lại về trang chủ
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return RedirectToAction("Index", "Home", new { area = "Admin" });
+            }
+            return RedirectToAction("Index", "Home");
+}
 
             ModelState.AddModelError("", "Sai email hoặc password");
             return View(model);
@@ -152,7 +163,7 @@ namespace StudyShare.Controllers
 
             await _signInManager.RefreshSignInAsync(user);
 
-            return RedirectToAction("Profile", "User", new { id = user.Id });
+            return RedirectToAction("Profile", "User", new { area = "User", id = user.Id });
         }
         public IActionResult ForgotPassword()
         {

@@ -20,7 +20,12 @@ namespace StudyShare.Areas.User.Controllers
             _userManager = userManager;
         }
 
-
+        public IActionResult Index()
+        {
+            // Thay vì return View(); (hệ thống sẽ tìm Index.cshtml)
+            // Hãy trỏ trực tiếp đến file Profile.cshtml
+            return View("Profile"); 
+        }
         // 👤 Profile
         public IActionResult Profile(string id)
         {
