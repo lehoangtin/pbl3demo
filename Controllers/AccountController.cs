@@ -108,16 +108,17 @@ namespace StudyShare.Controllers
                 false
             );
 
+           // File: Controllers/AccountController.cs
             if (result.Succeeded)
             {
-            // Kiểm tra nếu là Admin thì về trang Admin, ngược lại về trang chủ
-            if (await _userManager.IsInRoleAsync(user, "Admin"))
-            {
-                return RedirectToAction("Index", "Home", new { area = "Admin" });
+                // Kiểm tra quyền để chuyển hướng đúng Area
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Admin" });
+                }
+                return RedirectToAction("Index", "Home"); // Trang chủ chung
             }
-            return RedirectToAction("Index", "Home");
-}
-
+            
             ModelState.AddModelError("", "Sai email hoặc password");
             return View(model);
         }

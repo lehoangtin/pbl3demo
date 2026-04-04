@@ -23,5 +23,6 @@ namespace StudyShare.Models
         public int DownloadCount { get; set; } = 0;
 
         public DateTime UploadDate { get; set; } = DateTime.Now;
+        public bool IsApproved { get; set; } = false; // Tài liệu mới tải lên sẽ chờ duyệt
     }
 }

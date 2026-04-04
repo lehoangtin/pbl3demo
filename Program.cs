@@ -65,7 +65,7 @@ using (var scope = app.Services.CreateScope())
             FullName = "Admin",
             Avatar = "/images/default-avatar.png", 
             CreatedAt = DateTime.Now,
-            EmailConfirmed = true // Thêm dòng này vào
+            EmailConfirmed = true // 🔥 BẮT BUỘC PHẢI CÓ DÒNG NÀY
         };
 
         // Identity mặc định yêu cầu mật khẩu phức tạp (VD: Admin@123)

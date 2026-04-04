@@ -21,11 +21,10 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         public IActionResult Index()
-        {
-            // Thay vì return View(); (hệ thống sẽ tìm Index.cshtml)
-            // Hãy trỏ trực tiếp đến file Profile.cshtml
-            return View("Profile"); 
-        }
+{
+    var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+    return RedirectToAction("Profile", "User", new { area = "User", id = userId });
+}
         // 👤 Profile
         public IActionResult Profile(string id)
         {

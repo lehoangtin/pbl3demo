@@ -11,10 +11,7 @@ namespace StudyShare.Areas.User.Controllers
         // Sử dụng lại logic của UserController để lấy dữ liệu hoặc chuyển hướng
         public IActionResult Index()
         {
-            // Lấy ID người dùng hiện tại đang đăng nhập
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            // Chuyển hướng sang Action Profile của UserController để xử lý dữ liệu
+            var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
             return RedirectToAction("Profile", "User", new { area = "User", id = userId });
         }
     }
