@@ -1,21 +1,29 @@
 @model IEnumerable<StudyShare.Models.SavedDocument>
-<div class="col-md-9">
-    <h4 class="fw-bold mb-4 text-danger"><i class="bi bi-bookmark-heart-fill"></i> Thư viện yêu thích</h4>
-    @if (!Model.Any()) {
-        <div class="alert alert-light border">Bạn chưa lưu tài liệu nào. <a href="/">Khám phá ngay!</a></div>
-    } else {
-        <div class="row row-cols-1 row-cols-md-2 g-3">
-            @foreach(var item in Model) {
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+@{ ViewData["Title"] = "Tài liệu đã lưu"; }
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            @* @await Html.PartialAsync("_UserSidebarPartial", userObject) *@
+        </div>
+        <div class="col-md-9">
+            <h4 class="fw-bold mb-4">Tài liệu bạn đã lưu</h4>
+            <div class="row g-4">
+                @foreach (var item in Model) {
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-1"><a href="/Document/Details/@item.DocumentId" class="text-decoration-none">@item.Document.Title</a></h6>
-                            <small class="text-muted">Bởi: @(item.Document.User?.FullName ?? "Hệ thống")</small>
-                            <div class="mt-2"><span class="badge bg-light text-dark">@item.SavedDate.ToString("dd/MM/yyyy")</span></div>
+                            <h5 class="card-title fw-bold">@item.Document?.Title</h5>
+                            <p class="text-muted small mb-3">Người đăng: @item.Document?.User?.FullName</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Lưu ngày: @item.SavedDate.ToString("dd/MM/yyyy")</span>
+                                <a href="/User/Document/Details/@item.DocumentId" class="btn btn-sm btn-primary rounded-pill px-3">Xem ngay</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            }
+                }
+            </div>
         </div>
-    }
+    </div>
 </div>

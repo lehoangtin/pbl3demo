@@ -43,5 +43,6 @@ namespace StudyShare.Models
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }  
         public DbSet<SavedDocument> SavedDocuments { get; set; }
+        public DbSet<Category> Categories { get; set; }
     }
 }

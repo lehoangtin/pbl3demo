@@ -17,14 +17,13 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         // 1. Danh sách tất cả câu hỏi
-        public async Task<IActionResult> Index()
-        {
-            var questions = await _context.Questions
-                .Include(q => q.User) // Lấy thông tin người đặt câu hỏi
-                .OrderByDescending(q => q.CreatedAt)
-                .ToListAsync();
-            return View(questions);
-        }
+       public async Task<IActionResult> Index()
+{
+    var questions = await _context.Questions
+        .Include(q => q.User) // Phải có dòng này để load thông tin người đăng câu hỏi
+        .ToListAsync();
+    return View(questions);
+}
 
         // 2. Xem chi tiết câu hỏi và các câu trả lời đi kèm
         public async Task<IActionResult> Details(int id)

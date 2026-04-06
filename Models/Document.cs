@@ -25,11 +25,18 @@ namespace StudyShare.Models
 
         public DateTime UploadDate { get; set; } = DateTime.Now;
 // 🔥 THÊM CÁC DÒNG NÀY ĐỂ FIX LỖI
+public int Views { get; set; } = 0;
         public bool IsApproved { get; set; } = false; 
 
         public string UserId { get; set; } // ID người đăng
         
         [ForeignKey("UserId")]
         public virtual AppUser User { get; set; } // Thuộc tính dẫn hướng
+        [Required]
+    [Display(Name = "Danh mục")]
+    public int CategoryId { get; set; }
+
+    [ForeignKey("CategoryId")]
+    public virtual Category? Category { get; set; }
     }
 }

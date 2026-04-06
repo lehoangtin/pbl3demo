@@ -12,10 +12,16 @@
         <label>Description</label>
         <textarea asp-for="Description" class="form-control"></textarea>
     </div>
-
+<div class="mb-3">
+    <label class="form-label fw-bold">Chọn danh mục tài liệu</label>
+    <select asp-for="CategoryId" class="form-select rounded-3" asp-items="ViewBag.CategoryId">
+        <option value="">-- Vui lòng chọn danh mục --</option>
+    </select>
+    <span asp-validation-for="CategoryId" class="text-danger"></span>
+</div>
     <div class="mb-3">
         <label>Chọn file</label>
-        <input type="file" name="files" multiple class="form-control" />
+        <input type="file" name="file" class="form-control" />
     </div>
 
     <button class="btn btn-success">Upload</button>

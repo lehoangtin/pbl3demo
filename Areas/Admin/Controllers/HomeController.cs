@@ -1,29 +1,39 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
+using Microsoft.AspNetCore.Authorization;
+
 namespace StudyShare.Areas.Admin.Controllers
 {
-[Area("Admin")]
-[Authorize(Roles = "Admin")]
-public class HomeController : Controller
-{
-    private readonly AppDbContext _context;
-    public HomeController(AppDbContext context) => _context = context;
-
-    public async Task<IActionResult> Index()
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+    public class HomeController : Controller
     {
-        // 🔥 QUAN TRỌNG: Tính toán các con số thống kê
-        ViewBag.UserCount = await _context.Users.CountAsync();
-        ViewBag.DocCount = await _context.Documents.CountAsync();
-        ViewBag.PendingDocs = await _context.Documents.CountAsync(d => !d.IsApproved);
-        ViewBag.QuestionCount = await _context.Questions.CountAsync();
+        private readonly AppDbContext _context;
 
-        // Nếu View của bạn dùng @Model.Count(), bạn phải truyền một danh sách vào đây
-        // Ví dụ: var docs = await _context.Documents.ToListAsync();
-        // return View(docs); 
+        public HomeController(AppDbContext context)
+        {
+            _context = context;
+        }
 
-        return View(); // Nếu dùng ViewBag thì trả về View không kèm Model
+        public async Task<IActionResult> Index()
+        {
+            // 1. Lấy các con số thống kê cho ViewBag
+            ViewBag.UserCount = await _context.Users.CountAsync();
+            ViewBag.DocCount = await _context.Documents.CountAsync();
+            ViewBag.QuestionCount = await _context.Questions.CountAsync();
+            
+            // 2. Lấy danh sách tài liệu chờ duyệt (Pending)
+            var pendingDocs = await _context.Documents
+                .Include(d => d.User)
+                .Where(d => d.IsApproved == false)
+                .OrderByDescending(d => d.UploadDate)
+                .ToListAsync();
+
+            ViewBag.PendingDocsCount = pendingDocs.Count;
+
+            // 🔥 QUAN TRỌNG NHẤT: Phải truyền 'pendingDocs' vào đây để Model không bị NULL
+            return View(pendingDocs); 
+        }
     }
-}
 }

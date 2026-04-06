@@ -1,10 +1,38 @@
 @model StudyShare.Models.Question
+@{ ViewData["Title"] = "Đặt câu hỏi mới"; }
 
-<h2>Đặt câu hỏi</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h3 class="fw-bold mb-4 text-primary"><i class="bi bi-pencil-square me-2"></i> Đặt câu hỏi cho cộng đồng</h3>
+                
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Nội dung câu hỏi của bạn</label>
+                        <textarea asp-for="Content" class="form-control rounded-3" rows="5" 
+                                  placeholder="Ví dụ: Làm sao để cài đặt SQL Server trên MacOS?"></textarea>
+                        <span asp-validation-for="Content" class="text-danger small"></span>
+                    </div>
 
-<form asp-area="User" asp-action="Create" method="post">
-    <div class="mb-3">
-        <textarea asp-for="Content" class="form-control" placeholder="Nhập câu hỏi..."></textarea>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-send me-1"></i> Đăng câu hỏi
+                        </button>
+                        <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">Hủy bỏ</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="mt-4 p-3 bg-light rounded-3 small text-muted border-start border-4 border-warning">
+                <strong>Lưu ý:</strong> Hãy đặt câu hỏi văn minh, rõ ràng để nhận được câu trả lời tốt nhất từ cộng đồng StudyShare.
+            </div>
+        </div>
     </div>
-    <button class="btn btn-success">Gửi</button>
-</form>
+</div>
+
+@section Scripts {
+    @{await Html.PartialAsync("_ValidationScriptsPartial");}
+}

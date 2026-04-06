@@ -1,27 +1,55 @@
 @model IEnumerable<StudyShare.Models.Document>
-<div class="container-fluid">
-    <h3 class="fw-bold mb-4">Tổng quan hệ thống</h3>
-    <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="card p-3 bg-primary text-white text-center shadow-sm"><h6>User</h6><h2>@ViewBag.UserCount</h2></div></div>
-        <div class="col-md-3"><div class="card p-3 bg-success text-white text-center shadow-sm"><h6>Tài liệu</h6><h2>@ViewBag.DocCount</h2></div></div>
-        <div class="col-md-3"><div class="card p-3 bg-warning text-dark text-center shadow-sm"><h6>Chờ duyệt</h6><h2>@ViewBag.PendingDocs</h2></div></div>
-        <div class="col-md-3"><div class="card p-3 bg-info text-white text-center shadow-sm"><h6>Câu hỏi</h6><h2>@ViewBag.QuestionCount</h2></div></div>
-    </div>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Admin Dashboard";
+}
 
-    <div class="card shadow-sm p-4">
+<div class="container-fluid">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 bg-primary text-white shadow-sm">
+                <h6>Người dùng</h6>
+                <h2>@ViewBag.UserCount</h2>
+            </div>
+        </div>
+        </div>
+
+    <div class="card shadow-sm border-0 rounded-4 p-4">
         <h5 class="fw-bold mb-3">Tài liệu mới chờ duyệt</h5>
-        <table class="table table-hover">
-            <thead><tr><th>Tên tài liệu</th><th>Người đăng</th><th>Ngày</th><th>Thao tác</th></tr></thead>
-            <tbody>
-                @foreach(var item in Model){
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
                     <tr>
-                        <td>@item.Title</td>
-                        <td>@item.User?.FullName</td>
-                        <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
-                        <td><a asp-controller="Document" asp-action="Index" class="btn btn-sm btn-outline-primary">Xử lý</a></td>
+                        <th>Tên tài liệu</th>
+                        <th>Người đăng</th>
+                        <th>Ngày</th>
+                        <th>Thao tác</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @* Kiểm tra Model để tránh lỗi sập trang *@
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Title</td>
+                                <td>@item.User?.FullName</td>
+                                <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <a asp-controller="Document" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Duyệt ngay</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Không có tài liệu nào đang chờ duyệt.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
