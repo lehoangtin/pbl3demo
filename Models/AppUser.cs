@@ -9,7 +9,7 @@ namespace StudyShare.Models
 
         public string FullName { get; set; }
 
-        public string Avatar { get; set; }
+        public string? Avatar { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public List<Question> Questions { get; set; }

@@ -1,28 +1,36 @@
-<div class="row">
-    <div class="col-md-3">
-        <div class="list-group shadow-sm border-0 mb-4">
-            <a asp-action="Profile" class="list-group-item list-group-item-action active bg-primary border-0">
-                <i class="bi bi-person-fill"></i> Hồ sơ cá nhân
-            </a>
-            <a asp-action="MyDocuments" class="list-group-item list-group-item-action">
-                <i class="bi bi-file-earmark-arrow-up"></i> Tài liệu đã đăng
-            </a>
-            <a asp-action="SavedDocuments" class="list-group-item list-group-item-action">
-                <i class="bi bi-bookmark-star"></i> Tài liệu đã lưu
-            </a>
-            <a asp-action="MyQuestions" class="list-group-item list-group-item-action">
-                <i class="bi bi-chat-left-dots"></i> Câu hỏi của bạn
-            </a>
-        </div>
-        
-        <div class="card border-0 shadow-sm p-3 text-center">
-            <h6>Hỗ trợ sinh viên</h6>
-            <p class="small text-muted">Nếu có lỗi khi tải file, hãy liên hệ Admin.</p>
-            <button class="btn btn-sm btn-outline-dark">Liên hệ hỗ trợ</button>
-        </div>
-    </div>
+@model StudyShare.Models.AppUser
+@{ ViewData["Title"] = "Trang cá nhân"; }
 
-    <div class="col-md-9">
-        @* Nội dung chi tiết của từng Action sẽ đổ vào đây *@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            @await Html.PartialAsync("_UserSidebarPartial", Model)
+        </div>
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-gradient bg-primary text-white mb-4">
+                <h3 class="fw-bold">Chào bạn, @Model.FullName! 👋</h3>
+                <p class="mb-0 opacity-75">Chúc bạn một ngày học tập thật hiệu quả.</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4">
+                        <h2 class="fw-bold text-primary">@Model.Documents?.Count</h2>
+                        <small class="text-muted text-uppercase fw-bold">Tài liệu đã đăng</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4">
+                        <h2 class="fw-bold text-danger">@(ViewBag.SavedCount ?? 0)</h2>
+                        <small class="text-muted text-uppercase fw-bold">Tài liệu đã lưu</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4">
+                        <h2 class="fw-bold text-success">@Model.Questions?.Count</h2>
+                        <small class="text-muted text-uppercase fw-bold">Câu hỏi thảo luận</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

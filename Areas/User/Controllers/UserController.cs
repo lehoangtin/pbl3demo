@@ -28,20 +28,23 @@ namespace StudyShare.Areas.User.Controllers
     }
 
     // 👤 Hiển thị Profile kèm Tài liệu, Câu hỏi, Câu trả lời
-    public async Task<IActionResult> Profile(string id)
-    {
-        if (string.IsNullOrEmpty(id)) return NotFound();
+ public async Task<IActionResult> Profile()
+{
+    var userId = _userManager.GetUserId(User);
+    var user = await _context.Users
+        .Include(u => u.Documents)
+        .Include(u => u.Questions)
+        .FirstOrDefaultAsync(u => u.Id == userId);
 
-        var user = await _context.Users
-            .Include(u => u.Questions)
-            .Include(u => u.Answers)
-            .Include(u => u.Documents) // 🔥 Bổ sung để hiển thị tài liệu đã đăng
-            .FirstOrDefaultAsync(u => u.Id == id);
+    if (user == null) return NotFound();
 
-        if (user == null) return NotFound();
+    // Thống kê nhanh cho Dashboard
+    ViewBag.TotalDocs = user.Documents.Count;
+    ViewBag.TotalQuestions = user.Questions.Count;
+    ViewBag.TotalSaved = await _context.SavedDocuments.CountAsync(s => s.UserId == userId);
 
-        return View(user);
-    }
+    return View(user);
+}
         [Authorize]
         public IActionResult Edit()
         {
@@ -175,6 +178,17 @@ public async Task<IActionResult> SaveDocument(int docId)
         await _context.SaveChangesAsync();
     }
     return RedirectToAction("Details", "Document", new { id = docId });
+}
+public async Task<IActionResult> SavedDocuments()
+{
+    var userId = _userManager.GetUserId(User);
+    var savedDocs = await _context.SavedDocuments
+        .Where(s => s.UserId == userId)
+        .Include(s => s.Document)
+        .ThenInclude(d => d.User) // Để hiện tên người đăng gốc
+        .OrderByDescending(s => s.SavedDate)
+        .ToListAsync();
+    return View(savedDocs);
 }
     }
 }

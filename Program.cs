@@ -22,7 +22,18 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<EmailSender>();
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await DataSeeder.SeedRolesAndUsersAsync(services);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Lỗi Seeding: " + ex.Message);
+    }
+}
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -39,52 +50,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 // app.MapRazorPages();
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-
-    // 1. Khởi tạo Roles
-    string[] roles = { "Admin", "User" };
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
-    }
-
-    // 2. Khởi tạo Admin User
-    var adminEmail = "admin@gmail.com";
-    var admin = await userManager.FindByEmailAsync(adminEmail);
-
-    if (admin == null)
-    {
-        var newAdmin = new AppUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FullName = "Admin",
-            Avatar = "/images/default-avatar.png", 
-            CreatedAt = DateTime.Now,
-            EmailConfirmed = true // 🔥 BẮT BUỘC PHẢI CÓ DÒNG NÀY
-        };
-
-        // Identity mặc định yêu cầu mật khẩu phức tạp (VD: Admin@123)
-        var result = await userManager.CreateAsync(newAdmin, "Admin@123");
-
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdmin, "Admin");
-        }
-        else
-        {
-            // In lỗi ra Console để bạn biết tại sao tạo User thất bại
-            foreach (var error in result.Errors)
-            {
-                Console.WriteLine($"Error: {error.Description}");
-            }
-        }
-    }
-}
 app.Run();
 

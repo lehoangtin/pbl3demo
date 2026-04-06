@@ -98,8 +98,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL015RG9jdW1lbnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/mac/PBL3demo/Areas/User/Views/User/MyQuestion.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL015UXVlc3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/mac/PBL3demo/Areas/User/Views/User/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL1Byb2ZpbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mac/PBL3demo/Areas/User/Views/User/SavedDocuments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL1NhdmVkRG9jdW1lbnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mac/PBL3demo/Areas/User/Views/_ViewImports.cshtml]

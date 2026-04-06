@@ -1,0 +1,21 @@
+@model IEnumerable<StudyShare.Models.SavedDocument>
+<div class="col-md-9">
+    <h4 class="fw-bold mb-4 text-danger"><i class="bi bi-bookmark-heart-fill"></i> Thư viện yêu thích</h4>
+    @if (!Model.Any()) {
+        <div class="alert alert-light border">Bạn chưa lưu tài liệu nào. <a href="/">Khám phá ngay!</a></div>
+    } else {
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            @foreach(var item in Model) {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-1"><a href="/Document/Details/@item.DocumentId" class="text-decoration-none">@item.Document.Title</a></h6>
+                            <small class="text-muted">Bởi: @(item.Document.User?.FullName ?? "Hệ thống")</small>
+                            <div class="mt-2"><span class="badge bg-light text-dark">@item.SavedDate.ToString("dd/MM/yyyy")</span></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

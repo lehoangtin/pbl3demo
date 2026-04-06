@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using StudyShare.Models;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore; // 🔥 PHẢI DÙNG DÒNG NÀY
 using System.Security.Claims;
 namespace StudyShare.Areas.User.Controllers
 {

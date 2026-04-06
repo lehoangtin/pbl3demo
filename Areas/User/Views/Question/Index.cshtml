@@ -1,27 +1,33 @@
-@model List<StudyShare.Models.Question>
+@model IEnumerable<StudyShare.Models.Question>
+@{ ViewData["Title"] = "Cộng đồng Thảo luận"; }
 
-<h2>Hỏi đáp</h2>
-
-<a asp-area="User" asp-action="Create" class="btn btn-primary mb-3">Đặt câu hỏi</a>
-
-@foreach (var q in Model)
-{
-    <div class="card mb-3 shadow">
-        <div class="card-body">
-            <h5>@q.Content</h5>
-
-            <p>
-                Hỏi bởi:
-                <a asp-area="User" asp-controller="User" asp-action="Profile" asp-route-id="@q.UserId">
-                    <strong>@q.User?.FullName</strong>
-                </a>
-            </p>
-
-            <p>💬 @q.Answers.Count câu trả lời</p>
-
-            <a asp-area="User" asp-action="Details" asp-route-id="@q.Id" class="btn btn-info">
-                Xem chi tiết
-            </a>
-        </div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-chat-dots text-primary"></i> Thảo luận sinh viên</h2>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">+ Đặt câu hỏi</a>
     </div>
-}
+
+    <div class="row">
+        @foreach (var item in Model) {
+            <div class="col-12 mb-3">
+                <div class="card border-0 shadow-sm rounded-4 hover-lift">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <img src="@(item.User?.Avatar ?? "/images/default-avatar.png")" class="rounded-circle me-3" width="45" height="45">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 fw-bold">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">@item.Content</a>
+                                </h5>
+                                <div class="text-muted small">
+                                    <span>Bởi <strong>@item.User?.FullName</strong></span> • 
+                                    <span>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span> •
+                                    <span class="badge bg-light text-primary border">@item.Answers?.Count() câu trả lời</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

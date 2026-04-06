@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
@@ -7,75 +8,75 @@ using System.Security.Claims;
 namespace StudyShare.Areas.User.Controllers
 {
     [Area("User")]
+    [Authorize]
     public class QuestionController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public QuestionController(AppDbContext context)
+        public QuestionController(AppDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
-        
-        // 📄 Danh sách câu hỏi
-        public IActionResult Index()
-        {
-            var questions = _context.Questions
-                .Include(q => q.User)        // 🔥 thêm dòng này
-                .Include(q => q.Answers)     // 🔥 thêm dòng này
-                .ToList();
 
+        // 📋 Danh sách tất cả câu hỏi thảo luận
+        [AllowAnonymous]
+        public async Task<IActionResult> Index()
+        {
+            var questions = await _context.Questions
+                .Include(q => q.User)
+                .Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
             return View(questions);
         }
 
-        // ❓ Trang tạo câu hỏi
-        [Authorize]
-        public IActionResult Create()
+        // 🔍 Chi tiết câu hỏi và danh sách câu trả lời
+        [AllowAnonymous]
+        public async Task<IActionResult> Details(int id)
         {
-            return View();
+            var question = await _context.Questions
+                .Include(q => q.User)
+                .Include(q => q.Answers).ThenInclude(a => a.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (question == null) return NotFound();
+            return View(question);
         }
+
+        // ➕ Đăng câu hỏi mới (View)
+        public IActionResult Create() => View();
+
+        // ➕ Đăng câu hỏi mới (Xử lý)
         [HttpPost]
-        public async Task<IActionResult> Create(Question q)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Question question)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            q.UserId = userId;
-
-            _context.Questions.Add(q);
+            question.UserId = _userManager.GetUserId(User);
+            question.CreatedAt = DateTime.Now;
+            
+            _context.Add(question);
             await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index");
-        }
-        [HttpPost]
-
-        // 📄 Chi tiết câu hỏi
-        public IActionResult Details(int id)
-        {
-            var q = _context.Questions
-                .Include(q => q.User)                    // user hỏi
-                .Include(q => q.Answers)
-                    .ThenInclude(a => a.User)           // 🔥 user trả lời
-                .FirstOrDefault(q => q.Id == id);
-
-            if (q == null) return NotFound();
-
-            return View(q);
+            return RedirectToAction(nameof(Index));
         }
 
-        // 💬 Trả lời
+        // 💬 Gửi câu trả lời
         [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> Answer(int questionId, string content)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostAnswer(int questionId, string content)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(content)) return RedirectToAction("Details", new { id = questionId });
 
-            var ans = new Answer
+            var answer = new Answer
             {
-                QuestionId = questionId,
                 Content = content,
-                UserId = userId
+                QuestionId = questionId,
+                UserId = _userManager.GetUserId(User),
+                CreatedAt = DateTime.Now
             };
 
-            _context.Answers.Add(ans);
+            _context.Answers.Add(answer);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", new { id = questionId });
