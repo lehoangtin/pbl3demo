@@ -1,20 +1,21 @@
-@model List<StudyShare.Models.Question>
-
-<h2>❓ Quản lý Question</h2>
-
-@foreach (var q in Model)
-{
-    <div class="card mb-2">
-        <div class="card-body">
-
-            <p>@q.Content</p>
-
-            <a asp-area="Admin" asp-controller="Question" asp-action="Delete" asp-route-id="@q.Id"
-               class="btn btn-danger"
-               onclick="return confirm('Xoá câu hỏi?')">
-                Xoá
-            </a>
-
-        </div>
-    </div>
-}
+@model IEnumerable<StudyShare.Models.Question>
+<div class="card shadow-sm p-4">
+    <h3 class="fw-bold mb-4">Quản lý Q&A</h3>
+    <table class="table">
+        <thead><tr><th>Nội dung câu hỏi</th><th>Người hỏi</th><th>Số câu trả lời</th><th>Thao tác</th></tr></thead>
+        <tbody>
+            @foreach(var q in Model){
+                <tr>
+                    <td>@q.Content</td>
+                    <td>@q.User?.FullName</td>
+                    <td><span class="badge bg-secondary">@q.Answers?.Count</span></td>
+                    <td>
+                        <form asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" onsubmit="return confirm('Xóa câu hỏi này sẽ xóa tất cả câu trả lời liên quan?')">
+                            <button class="btn btn-sm btn-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

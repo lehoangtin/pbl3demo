@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")] // Chỉ Admin mới được vào
     public class DocumentController : Controller
     {
         private readonly AppDbContext _context;
@@ -17,28 +18,50 @@ namespace StudyShare.Areas.Admin.Controllers
             _env = env;
         }
 
-        public IActionResult Index()
+        // 📋 Danh sách toàn bộ tài liệu (có tìm kiếm)
+        public async Task<IActionResult> Index(string search)
         {
-            var docs = _context.Documents.ToList();
-            return View(docs);
-        }
+            var query = _context.Documents.Include(d => d.User).AsQueryable();
 
-        public IActionResult Delete(int id)
-        {
-            var doc = _context.Documents.Find(id);
-
-            if (doc != null)
+            if (!string.IsNullOrEmpty(search))
             {
-                var path = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
-
-                if (System.IO.File.Exists(path))
-                    System.IO.File.Delete(path);
-
-                _context.Documents.Remove(doc);
-                _context.SaveChanges();
+                query = query.Where(d => d.Title.Contains(search));
             }
 
-            return RedirectToAction("Index");
+            return View(await query.OrderByDescending(d => d.UploadDate).ToListAsync());
+        }
+
+        // ✅ Phê duyệt tài liệu
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var doc = await _context.Documents.FindAsync(id);
+            if (doc == null) return NotFound();
+
+            doc.IsApproved = true;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 🗑️ Xóa tài liệu (Xóa cả file vật lý)
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var doc = await _context.Documents.FindAsync(id);
+            if (doc == null) return NotFound();
+
+            // 1. Xóa file trong thư mục wwwroot
+            var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            // 2. Xóa trong Database
+            _context.Documents.Remove(doc);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 
 namespace StudyShare.Areas.Admin.Controllers
@@ -15,23 +16,53 @@ namespace StudyShare.Areas.Admin.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        // 1. Danh sách tất cả câu hỏi
+        public async Task<IActionResult> Index()
         {
-            var questions = _context.Questions.ToList();
+            var questions = await _context.Questions
+                .Include(q => q.User) // Lấy thông tin người đặt câu hỏi
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
             return View(questions);
         }
 
-        public IActionResult Delete(int id)
+        // 2. Xem chi tiết câu hỏi và các câu trả lời đi kèm
+        public async Task<IActionResult> Details(int id)
         {
-            var q = _context.Questions.Find(id);
+            var question = await _context.Questions
+                .Include(q => q.User)
+                .Include(q => q.Answers).ThenInclude(a => a.User) // Lấy câu trả lời và người trả lời
+                .FirstOrDefaultAsync(q => q.Id == id);
 
-            if (q != null)
+            if (question == null) return NotFound();
+
+            return View(question);
+        }
+
+        // 3. Xóa câu hỏi (Xóa luôn các câu trả lời liên quan do Cascade Delete)
+        [HttpPost]
+        public async Task<IActionResult> DeleteQuestion(int id)
+        {
+            var question = await _context.Questions.FindAsync(id);
+            if (question != null)
             {
-                _context.Questions.Remove(q);
-                _context.SaveChanges();
+                _context.Questions.Remove(question);
+                await _context.SaveChangesAsync();
             }
+            return RedirectToAction(nameof(Index));
+        }
 
-            return RedirectToAction("Index");
+        // 4. Xóa một câu trả lời cụ thể
+        [HttpPost]
+        public async Task<IActionResult> DeleteAnswer(int id, int questionId)
+        {
+            var answer = await _context.Answers.FindAsync(id);
+            if (answer != null)
+            {
+                _context.Answers.Remove(answer);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Details), new { id = questionId });
         }
     }
 }

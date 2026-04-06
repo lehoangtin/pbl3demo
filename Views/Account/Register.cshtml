@@ -1,15 +1,29 @@
 @model StudyShare.Models.RegisterViewModel
+@{ ViewData["Title"] = "Tham gia StudyShare"; }
 
-<form asp-action="Register" method="post">
-
-    <input asp-for="FullName" class="form-control" placeholder="Tên" />
-
-    <input asp-for="Email" class="form-control" placeholder="Email" />
-
-    <input asp-for="Password" type="password" class="form-control" />
-
-    <input asp-for="ConfirmPassword" type="password" class="form-control" />
-
-    <button>Đăng ký</button>
-
-</form>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4 fw-bold">Tạo tài khoản</h2>
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="All" class="text-danger small"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Họ và tên</label>
+                        <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu</label>
+                        <input asp-for="Password" class="form-control" type="password" />
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Đăng ký ngay</button>
+                </form>
+                <p class="text-center mt-3">Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -22,32 +22,41 @@ namespace StudyShare.Controllers
             _signInManager = signInManager;
             _emailSender = emailSender;
         }
-
-        // ================= REGISTER =================
         [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
+        // ================= REGISTER =================
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
-            var user = new AppUser
-            {
-                Email = model.Email,
-                UserName = model.Email,
-                FullName = model.FullName
+            var user = new AppUser { 
+                Email = model.Email, 
+                UserName = model.Email, 
+                FullName = model.FullName,
+                EmailConfirmed = false // Bắt buộc confirm email mới được login
             };
 
-            await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            // mặc định user là "User"
-            await _userManager.AddToRoleAsync(user, "User");
-            return RedirectToAction("Login");
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "User");
+                
+                // 🔥 GỬI EMAIL XÁC NHẬN (Bạn đã có EmailSender rồi)
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+                await _emailSender.SendEmailAsync(user.Email, "Xác nhận tài khoản StudyShare", $"Vui lòng click vào link để kích hoạt: <a href='{confirmationLink}'>Kích hoạt ngay</a>");
+
+                return RedirectToAction("Login"); // Hoặc trang thông báo Check Email
+            }
+
+            foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
+            return View(model);
         }
         // ================= CONFIRM EMAIL =================
 
@@ -81,54 +90,58 @@ namespace StudyShare.Controllers
         if (!ModelState.IsValid) return View(model);
 
         var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null) 
+        
+        if (user != null)
         {
-            ModelState.AddModelError("", "Sai email hoặc password");
-            return View(model);
-        }
-
-    // 🔥 KIỂM TRA XEM CÓ BỊ BAN KHÔNG
-        if (user.IsBanned)
-        {
-        ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa bởi Admin.");
-        return View(model);
-        }
-
-            // 🔥 check confirm email
-            if (!await _userManager.IsEmailConfirmedAsync(user))
+            // 1. Kiểm tra nếu tài khoản bị khóa (IsBanned)
+            // Thuộc tính này cần được thêm vào AppUser.cs
+            if (user.IsBanned)
             {
-                ModelState.AddModelError("", "Bạn cần xác nhận email trước!");
+                ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa bởi quản trị viên.");
                 return View(model);
             }
 
+            // 2. Kiểm tra xác nhận Email
+            // Admin khởi tạo trong Program.cs cũng cần EmailConfirmed = true
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError("", "Bạn cần xác nhận email trước khi đăng nhập!");
+                return View(model);
+            }
+
+            // 3. Thực hiện đăng nhập
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 model.Password,
-                false,
-                false
+                isPersistent: false,
+                lockoutOnFailure: false
             );
 
-           // File: Controllers/AccountController.cs
             if (result.Succeeded)
             {
-                // Kiểm tra quyền để chuyển hướng đúng Area
-                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                if (isAdmin)
                 {
+                    // 🔥 Chuyển thẳng vào Dashboard của Admin
                     return RedirectToAction("Index", "Home", new { area = "Admin" });
                 }
-                return RedirectToAction("Index", "Home"); // Trang chủ chung
+                return RedirectToAction("Index", "Home");
             }
-            
-            ModelState.AddModelError("", "Sai email hoặc password");
-            return View(model);
         }
+
+        // Trường hợp user không tồn tại hoặc sai mật khẩu
+        ModelState.AddModelError("", "Email hoặc mật khẩu không chính xác.");
+        return View(model);
+    }
 
         // ================= LOGOUT =================
 
+        [HttpPost]
+        [ValidateAntiForgeryToken] // 🔥 Bảo mật bắt buộc cho POST
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "Home", new { area = "" }); // Thoát ra trang chủ
         }
 
         // ================= CHANGE PASSWORD =================

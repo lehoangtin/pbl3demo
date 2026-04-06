@@ -38,5 +38,13 @@ else
         <a asp-controller="Account" asp-action="Register">Register</a>
     </li>
 }
-
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item">
+        @* 🔥 Phải dùng FORM và METHOD="POST" *@
+        <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="nav-link btn btn-link text-white border-0">Logout</button>
+        </form>
+    </li>
+}
 </ul>

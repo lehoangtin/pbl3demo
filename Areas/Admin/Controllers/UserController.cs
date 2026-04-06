@@ -36,28 +36,19 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         // 2. Action Khóa User
+        // Tệp: Areas/Admin/Controllers/UserController.cs
         [HttpPost]
-        public async Task<IActionResult> BanUser(string id)
+        public async Task<IActionResult> ToggleLock(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
-            {
-                user.IsBanned = true;
-                await _userManager.UpdateAsync(user);
-            }
-            return RedirectToAction(nameof(Index));
-        }
+            if (user == null) return NotFound();
 
-        // 3. Action Mở khóa User
-        [HttpPost]
-        public async Task<IActionResult> UnbanUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
-            {
-                user.IsBanned = false;
-                await _userManager.UpdateAsync(user);
-            }
+            // Nếu đang bị khóa thì mở, nếu đang mở thì khóa 100 năm
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
+                await _userManager.SetLockoutEndDateAsync(user, null);
+            else
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddYears(100));
+
             return RedirectToAction(nameof(Index));
         }
     }

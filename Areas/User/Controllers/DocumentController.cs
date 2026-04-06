@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using StudyShare.Models;
+using System.Data.Entity;
 using System.Security.Claims;
 namespace StudyShare.Areas.User.Controllers
 {
@@ -92,21 +93,6 @@ namespace StudyShare.Areas.User.Controllers
             return RedirectToAction("Index");
         }
 
-        // DOWNLOAD
-        public IActionResult Download(int id)
-        {
-            var doc = _context.Documents.Find(id);
-
-            if (doc == null) return NotFound();
-
-            var path = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
-
-            doc.DownloadCount++;
-            _context.SaveChanges();
-
-            return PhysicalFile(path, "application/octet-stream", doc.FileName);
-        }
-
         // DELETE
         public IActionResult Delete(int id)
         {
@@ -128,12 +114,30 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         // DETAILS + PREVIEW
-        public IActionResult Details(int id)
-        {
-            var doc = _context.Documents.Find(id);
-            if (doc == null) return NotFound();
+        public async Task<IActionResult> Details(int id)
+{
+    var doc = await _context.Documents
+        .Include(d => d.User)
+        .FirstOrDefaultAsync(m => m.Id == id);
 
-            return View(doc);
-        }
+    if (doc == null) return NotFound();
+
+    return View(doc);
+}
+
+// Action xử lý tải file và tăng count
+public async Task<IActionResult> Download(int id)
+{
+    var doc = await _context.Documents.FindAsync(id);
+    if (doc == null) return NotFound();
+
+    doc.DownloadCount++; // Tăng lượt tải
+    _context.Update(doc);
+    await _context.SaveChangesAsync();
+
+    var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+    return PhysicalFile(filePath, "application/octet-stream", doc.FileName);
+}
+
     }
 }

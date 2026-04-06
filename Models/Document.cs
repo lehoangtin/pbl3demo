@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudyShare.Models
 {
@@ -23,6 +24,12 @@ namespace StudyShare.Models
         public int DownloadCount { get; set; } = 0;
 
         public DateTime UploadDate { get; set; } = DateTime.Now;
-        public bool IsApproved { get; set; } = false; // Tài liệu mới tải lên sẽ chờ duyệt
+// 🔥 THÊM CÁC DÒNG NÀY ĐỂ FIX LỖI
+        public bool IsApproved { get; set; } = false; 
+
+        public string UserId { get; set; } // ID người đăng
+        
+        [ForeignKey("UserId")]
+        public virtual AppUser User { get; set; } // Thuộc tính dẫn hướng
     }
 }

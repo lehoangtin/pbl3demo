@@ -14,29 +14,34 @@ namespace StudyShare.Areas.User.Controllers
         private readonly UserManager<AppUser> _userManager;
 
         public UserController(AppDbContext context, IWebHostEnvironment env, UserManager<AppUser> userManager)
-        {
-            _context = context;
-            _env = env;
-            _userManager = userManager;
-        }
+    {
+        _context = context;
+        _env = env;
+        _userManager = userManager;
+    }
 
-        public IActionResult Index()
-{
-    var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-    return RedirectToAction("Profile", "User", new { area = "User", id = userId });
-}
-        // 👤 Profile
-        public IActionResult Profile(string id)
-        {
-            var user = _context.Users
-                .Include(u => u.Questions)
-                .Include(u => u.Answers)
-                .FirstOrDefault(u => u.Id == id);
+    // Trang tổng quan của User
+    public IActionResult Index()
+    {
+        var userId = _userManager.GetUserId(User);
+        return RedirectToAction("Profile", new { id = userId });
+    }
 
-            if (user == null) return NotFound();
+    // 👤 Hiển thị Profile kèm Tài liệu, Câu hỏi, Câu trả lời
+    public async Task<IActionResult> Profile(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return NotFound();
 
-            return View(user);
-        }
+        var user = await _context.Users
+            .Include(u => u.Questions)
+            .Include(u => u.Answers)
+            .Include(u => u.Documents) // 🔥 Bổ sung để hiển thị tài liệu đã đăng
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user == null) return NotFound();
+
+        return View(user);
+    }
         [Authorize]
         public IActionResult Edit()
         {
@@ -113,5 +118,63 @@ namespace StudyShare.Areas.User.Controllers
 
             return RedirectToAction("Profile", new { id = user.Id });
         }
+        // Thêm vào UserController.cs
+
+// --- QUẢN LÝ TÀI LIỆU CỦA TÔI ---
+        public async Task<IActionResult> MyDocuments()
+        {
+            var userId = _userManager.GetUserId(User);
+            var docs = await _context.Documents
+                .Where(d => d.UserId == userId)
+                .OrderByDescending(d => d.UploadDate)
+                .ToListAsync();
+            return View(docs);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteDocument(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+            
+            if (doc != null)
+            {
+                // Xóa file vật lý trong thư mục wwwroot
+                var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+
+                _context.Documents.Remove(doc);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(MyDocuments));
+        }
+
+// --- QUẢN LÝ CÂU HỎI CỦA TÔI ---
+        public async Task<IActionResult> MyQuestions()
+        {
+            var userId = _userManager.GetUserId(User);
+            var questions = await _context.Questions
+                .Where(q => q.UserId == userId)
+                .Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+            return View(questions);
+        }
+        [HttpPost]
+public async Task<IActionResult> SaveDocument(int docId)
+{
+    var userId = _userManager.GetUserId(User);
+    
+    // Kiểm tra xem đã lưu chưa
+    var existing = await _context.SavedDocuments
+        .AnyAsync(s => s.UserId == userId && s.DocumentId == docId);
+
+    if (!existing)
+    {
+        _context.SavedDocuments.Add(new SavedDocument { UserId = userId, DocumentId = docId });
+        await _context.SaveChangesAsync();
+    }
+    return RedirectToAction("Details", "Document", new { id = docId });
+}
     }
 }

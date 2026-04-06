@@ -1,0 +1,47 @@
+@model IEnumerable<StudyShare.Models.Document>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>📚 Tài liệu của tôi</h4>
+        <a asp-controller="Document" asp-action="Create" class="btn btn-success"> + Tải lên mới</a>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle bg-white mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Tài liệu</th>
+                    <th>Ngày đăng</th>
+                    <th>Trạng thái</th>
+                    <th>Lượt tải</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in Model) {
+                <tr>
+                    <td>
+                        <div class="fw-bold text-primary">@doc.Title</div>
+                        <small class="text-muted">@doc.FileType.ToUpper() • @(doc.FileSize / 1024) KB</small>
+                    </td>
+                    <td>@doc.UploadDate.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @if(doc.IsApproved) { 
+                            <span class="badge bg-success-subtle text-success border border-success">Đã duyệt</span> 
+                        } else { 
+                            <span class="badge bg-warning-subtle text-warning border border-warning">Đang chờ duyệt</span> 
+                        }
+                    </td>
+                    <td><i class="bi bi-download"></i> @doc.DownloadCount</td>
+                    <td class="text-end">
+                        <a href="@doc.FilePath" class="btn btn-sm btn-outline-secondary" target="_blank">Xem</a>
+                        <form asp-action="DeleteDocument" asp-route-id="@doc.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa tài liệu này?')">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,21 +1,27 @@
-<h2>🔥 Admin Dashboard</h2>
+@model IEnumerable<StudyShare.Models.Document>
+<div class="container-fluid">
+    <h3 class="fw-bold mb-4">Tổng quan hệ thống</h3>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card p-3 bg-primary text-white text-center shadow-sm"><h6>User</h6><h2>@ViewBag.UserCount</h2></div></div>
+        <div class="col-md-3"><div class="card p-3 bg-success text-white text-center shadow-sm"><h6>Tài liệu</h6><h2>@ViewBag.DocCount</h2></div></div>
+        <div class="col-md-3"><div class="card p-3 bg-warning text-dark text-center shadow-sm"><h6>Chờ duyệt</h6><h2>@ViewBag.PendingDocs</h2></div></div>
+        <div class="col-md-3"><div class="card p-3 bg-info text-white text-center shadow-sm"><h6>Câu hỏi</h6><h2>@ViewBag.QuestionCount</h2></div></div>
+    </div>
 
-<ul>
-    <li>
-        <a asp-area="Admin" asp-controller="User" asp-action="Index">
-            👤 Quản lý User
-        </a>
-    </li>
-
-    <li>
-        <a asp-area="Admin" asp-controller="Question" asp-action="Index">
-            ❓ Quản lý Question
-        </a>
-    </li>
-
-    <li>
-        <a asp-area="Admin" asp-controller="Document" asp-action="Index">
-            📄 Quản lý Document
-        </a>
-    </li>
-</ul>
+    <div class="card shadow-sm p-4">
+        <h5 class="fw-bold mb-3">Tài liệu mới chờ duyệt</h5>
+        <table class="table table-hover">
+            <thead><tr><th>Tên tài liệu</th><th>Người đăng</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+            <tbody>
+                @foreach(var item in Model){
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@item.User?.FullName</td>
+                        <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
+                        <td><a asp-controller="Document" asp-action="Index" class="btn btn-sm btn-outline-primary">Xử lý</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

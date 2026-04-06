@@ -1,22 +1,31 @@
-@model List<StudyShare.Models.Document>
-
-<h2>📄 Quản lý Document</h2>
-
-@foreach (var d in Model)
-{
-    <div class="card mb-2">
-        <div class="card-body">
-
-            <p>@d.Title</p>
-
-            <a href="@d.FilePath" target="_blank">Xem</a>
-
-            <a asp-area="Admin" asp-controller="Document" asp-action="Delete" asp-route-id="@d.Id"
-               class="btn btn-danger"
-               onclick="return confirm('Xoá file?')">
-                Xoá
-            </a>
-
-        </div>
-    </div>
-}
+@model IEnumerable<StudyShare.Models.Document>
+<div class="card shadow-sm p-4">
+    <h3 class="fw-bold mb-4 text-primary">Quản lý kho tài liệu</h3>
+    <table class="table align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Thông tin</th><th>Người đăng</th><th>Trạng thái</th><th class="text-end">Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model){
+                <tr>
+                    <td><strong>@item.Title</strong><br><small class="text-muted">@item.FileType</small></td>
+                    <td>@item.User?.FullName</td>
+                    <td>
+                        @if(item.IsApproved){ <span class="badge bg-success">Đã duyệt</span> }
+                        else { <span class="badge bg-warning text-dark">Chờ duyệt</span> }
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            @if(!item.IsApproved){
+                                <form asp-action="Approve" asp-route-id="@item.Id" method="post"><button class="btn btn-sm btn-success me-1">Duyệt</button></form>
+                            }
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Xóa tài liệu này?')"><button class="btn btn-sm btn-danger">Xóa</button></form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

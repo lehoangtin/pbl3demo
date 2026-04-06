@@ -6,7 +6,7 @@ using StudyShare.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 // DB
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>  
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
@@ -19,6 +19,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();    
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<EmailSender>();
 var app = builder.Build();
 

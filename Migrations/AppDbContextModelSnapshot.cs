@@ -310,7 +310,13 @@ namespace PBL3demo.Migrations
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Documents");
                 });
@@ -344,6 +350,33 @@ namespace PBL3demo.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Questions");
+                });
+
+            modelBuilder.Entity("StudyShare.Models.SavedDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SavedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SavedDocuments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -420,6 +453,17 @@ namespace PBL3demo.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StudyShare.Models.Document", b =>
+                {
+                    b.HasOne("StudyShare.Models.AppUser", "User")
+                        .WithMany("Documents")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StudyShare.Models.Question", b =>
                 {
                     b.HasOne("StudyShare.Models.AppUser", null)
@@ -435,9 +479,30 @@ namespace PBL3demo.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StudyShare.Models.SavedDocument", b =>
+                {
+                    b.HasOne("StudyShare.Models.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("StudyShare.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StudyShare.Models.AppUser", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("Documents");
 
                     b.Navigation("Questions");
                 });

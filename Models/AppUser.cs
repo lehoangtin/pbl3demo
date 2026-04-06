@@ -15,5 +15,6 @@ namespace StudyShare.Models
         public List<Question> Questions { get; set; }
         public List<Answer> Answers { get; set; }
         public bool IsBanned { get; set; } = false;
+        public virtual List<Document> Documents { get; set; } = new List<Document>();
     }
 }

@@ -1,29 +1,27 @@
 @model StudyShare.Models.AppUser
-
-<h2>✏️ Chỉnh sửa Profile</h2>
-
-<form asp-area="User" asp-controller="User" asp-action="Edit" method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label>Full Name</label>
-        <input asp-for="FullName" class="form-control" />
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 border p-4 shadow-sm rounded-4 bg-white">
+            <h3 class="mb-4">Chỉnh sửa thông tin</h3>
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Họ và tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" readonly />
+                    <small class="text-muted">Email không thể thay đổi để đảm bảo định danh.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ảnh đại diện mới</label>
+                    <input type="file" name="avatarFile" class="form-control" accept="image/*" />
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">Lưu thay đổi</button>
+                    <a asp-action="Index" class="btn btn-link">Hủy bỏ</a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label>Email</label>
-        <input asp-for="Email" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label>Avatar</label>
-        <input type="file" name="avatarFile" class="form-control" />
-    </div>
-
-    <!-- preview avatar -->
-    <div class="mb-3">
-        <img src="@(Model.Avatar ?? "/images/default-avatar.png")"
-             width="120" style="border-radius:50%;" />
-    </div>
-
-    <button class="btn btn-success">Lưu</button>
-
-</form>
+</div>
