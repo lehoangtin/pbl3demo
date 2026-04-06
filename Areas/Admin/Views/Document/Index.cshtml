@@ -1,4 +1,5 @@
 @model IEnumerable<StudyShare.Models.Document>
+
 <div class="card shadow-sm p-4">
     <h3 class="fw-bold mb-4 text-primary">Quản lý kho tài liệu</h3>
     <table class="table align-middle">
@@ -8,20 +9,27 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var item in Model){
+            @foreach(var item in Model) {
                 <tr>
                     <td><strong>@item.Title</strong><br><small class="text-muted">@item.FileType</small></td>
                     <td>@item.User?.FullName</td>
                     <td>
-                        @if(item.IsApproved){ <span class="badge bg-success">Đã duyệt</span> }
+                        @if(item.IsApproved) { <span class="badge bg-success">Đã duyệt</span> }
                         else { <span class="badge bg-warning text-dark">Chờ duyệt</span> }
                     </td>
                     <td class="text-end">
                         <div class="btn-group">
-                            @if(!item.IsApproved){
-                                <form asp-action="Approve" asp-route-id="@item.Id" method="post"><button class="btn btn-sm btn-success me-1">Duyệt</button></form>
+                            @if(!item.IsApproved) {
+                                @* 🔥 Form Phê duyệt phải chỉ định rõ Controller và Area *@
+                                <form asp-area="Admin" asp-controller="Document" asp-action="Approve" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-success me-1">Duyệt ngay</button>
+                                </form>
                             }
-                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Xóa tài liệu này?')"><button class="btn btn-sm btn-danger">Xóa</button></form>
+                            <form asp-area="Admin" asp-controller="Document" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Xóa tài liệu này?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                            </form>
                         </div>
                     </td>
                 </tr>

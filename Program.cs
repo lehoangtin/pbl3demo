@@ -41,11 +41,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Thêm đoạn này TRƯỚC default route
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
-// default
+// Đây là đoạn mặc định đã có của bạn
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

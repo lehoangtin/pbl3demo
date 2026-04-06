@@ -1,21 +1,21 @@
-@model IEnumerable<StudyShare.Models.Question>
-<div class="card shadow-sm p-4">
-    <h3 class="fw-bold mb-4">Quản lý Q&A</h3>
-    <table class="table">
-        <thead><tr><th>Nội dung câu hỏi</th><th>Người hỏi</th><th>Số câu trả lời</th><th>Thao tác</th></tr></thead>
-        <tbody>
-            @foreach(var q in Model){
-                <tr>
-                    <td>@q.Content</td>
-                    <td>@q.User?.FullName</td>
-                    <td><span class="badge bg-secondary">@q.Answers?.Count</span></td>
-                    <td>
-                        <form asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" onsubmit="return confirm('Xóa câu hỏi này sẽ xóa tất cả câu trả lời liên quan?')">
-                            <button class="btn btn-sm btn-danger">Xóa</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+<tbody>
+    @foreach(var q in Model){
+        <tr>
+            <td>@q.Content</td>
+            <td>@q.User?.FullName</td>
+            <td><span class="badge bg-secondary">@q.Answers?.Count</span></td>
+            <td>
+                <div class="d-flex">
+                    @* 🔥 Thêm nút Chi tiết ở đây *@
+                    <a asp-area="Admin" asp-controller="Question" asp-action="Details" asp-route-id="@q.Id" class="btn btn-sm btn-info me-2">
+                        <i class="bi bi-eye"></i> Chi tiết
+                    </a>
+
+                    <form asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" onsubmit="return confirm('Xóa câu hỏi này sẽ xóa tất cả câu trả lời liên quan?')">
+                        <button class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    }
+</tbody>

@@ -45,6 +45,7 @@
                                onclick="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn người dùng này?')">
                                 <i class="bi bi-trash"></i>
                             </a>
+                            <a asp-area="Admin" asp-controller="User" asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info">Chi tiết</a>
                         </td>
                     </tr>
                     }

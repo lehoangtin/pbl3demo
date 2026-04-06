@@ -32,15 +32,19 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         // ✅ Phê duyệt tài liệu
-        [HttpPost]
+        [HttpPost] // 🔥 Bắt buộc phải là HttpPost
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
             var doc = await _context.Documents.FindAsync(id);
             if (doc == null) return NotFound();
 
             doc.IsApproved = true;
+            _context.Update(doc);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            TempData["Success"] = "Tài liệu đã được phê duyệt!";
+            return RedirectToAction(nameof(Index)); // Quay lại trang danh sách
         }
 
         // 🗑️ Xóa tài liệu (Xóa cả file vật lý)

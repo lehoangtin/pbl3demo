@@ -1,0 +1,62 @@
+@model StudyShare.Models.AppUser
+@{
+    ViewData["Title"] = "Hồ sơ người dùng - " + Model.FullName;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 mb-4">
+                <img src="@(Model.Avatar ?? "/images/default-avatar.png")" 
+                     class="rounded-circle img-thumbnail mx-auto mb-3" 
+                     style="width: 150px; height: 150px; object-fit: cover;">
+                <h4 class="fw-bold">@Model.FullName</h4>
+                <p class="text-muted">@Model.Email</p>
+                
+                @if (Model.LockoutEnd > DateTime.Now)
+                {
+                    <span class="badge bg-danger rounded-pill px-3 py-2">Đang bị khóa</span>
+                }
+                else
+                {
+                    <span class="badge bg-success rounded-pill px-3 py-2">Hoạt động</span>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4">Thông tin hoạt động</h5>
+                <div class="row text-center mb-4">
+                    <div class="col-4 border-end">
+                        <h3 class="text-primary fw-bold">@ViewBag.DocumentCount</h3>
+                        <small class="text-muted">Tài liệu đã đăng</small>
+                    </div>
+                    <div class="col-4 border-end">
+                        <h3 class="text-success fw-bold">@ViewBag.QuestionCount</h3>
+                        <small class="text-muted">Câu hỏi đã đặt</small>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="text-info fw-bold">@ViewBag.AnswerCount</h3>
+                        <small class="text-muted">Lượt trả lời</small>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">Hành động quản trị</h5>
+                <div class="d-flex gap-2">
+                    <form asp-action="ToggleLock" asp-route-id="@Model.Id" method="post">
+                        @if (Model.LockoutEnd > DateTime.Now)
+                        {
+                            <button type="submit" class="btn btn-outline-success">Mở khóa tài khoản</button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Khóa người dùng này?')">Khóa tài khoản</button>
+                        }
+                    </form>
+                    <a asp-action="Index" class="btn btn-light">Quay lại danh sách</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

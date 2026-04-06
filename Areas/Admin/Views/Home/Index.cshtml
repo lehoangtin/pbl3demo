@@ -1,6 +1,5 @@
 @model IEnumerable<StudyShare.Models.Document>
 @{
-    Layout = "_AdminLayout";
     ViewData["Title"] = "Admin Dashboard";
 }
 
@@ -37,7 +36,10 @@
                                 <td>@item.User?.FullName</td>
                                 <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
                                 <td>
-                                    <a asp-controller="Document" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Duyệt ngay</a>
+                                    <form asp-area="Admin" asp-controller="Document" asp-action="Approve" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Duyệt ngay</button>
+                                    </form>
                                 </td>
                             </tr>
                         }

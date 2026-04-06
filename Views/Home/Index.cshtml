@@ -1,8 +1,63 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<StudyShare.Models.Document>
+@{
+    ViewData["Title"] = "Thư viện chung";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Thư viện tài liệu học tập</h1>
+        <p class="lead">Nơi chia sẻ và tìm kiếm tài liệu hữu ích cho sinh viên</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <form asp-action="Index" method="get" class="d-flex shadow-sm">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control me-2" placeholder="Nhập tên tài liệu bạn cần tìm..." />
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-search"></i> Tìm kiếm
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+                        <div class="bg-light text-center py-4">
+                            <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 3rem;"></i>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark">@item.Title</h5>
+                            <p class="card-text text-muted small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @item.Description
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge bg-info text-dark">@item.Category?.Name</span>
+                                <small class="text-muted"><i class="bi bi-person"></i> @(item.User?.FullName ?? "Ẩn danh")</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <a asp-action="ViewDocument" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-warning d-inline-block">
+                    <i class="bi bi-info-circle me-2"></i> Hiện chưa có tài liệu nào phù hợp với tìm kiếm của bạn.
+                </div>
+            </div>
+        }
+    </div>
 </div>

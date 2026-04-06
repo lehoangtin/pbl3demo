@@ -26,7 +26,9 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
-
+<li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Thư viện chung</a>
+        </li>
                         @if (SignInManager.IsSignedIn(User))
                         {
                             @if (User.IsInRole("Admin"))

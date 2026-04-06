@@ -1,0 +1,64 @@
+@model StudyShare.Models.Document
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Thư viện</a></li>
+            <li class="breadcrumb-item active">@Model.Category?.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h3 class="fw-bold text-primary">@Model.Title</h3>
+                    <hr />
+                    <p><strong>Mô tả:</strong> @Model.Description</p>
+                    <p><strong>Người đăng:</strong> @(Model.User?.FullName ?? "Thành viên StudyShare")</p>
+                    <p><strong>Ngày đăng:</strong> @Model.UploadDate.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Lượt xem:</strong> <span class="badge bg-secondary">@Model.Views</span></p>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="@Model.FilePath" download="@Model.FileName" class="btn btn-success">
+                            <i class="bi bi-download me-2"></i> Tải xuống tài liệu
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại thư viện</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0" style="height: 800px;">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-eye me-2"></i> Xem trước tài liệu</span>
+                    <small>@Model.FileName</small>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.FileType.Contains("pdf"))
+                    {
+                        <iframe src="@Model.FilePath#toolbar=0" width="100%" height="100%" style="border: none;"></iframe>
+                    }
+                    else if (Model.FileType.Contains("image"))
+                    {
+                        <div class="text-center p-3 h-100 d-flex align-items-center">
+                            <img src="@Model.FilePath" class="img-fluid rounded mx-auto d-block" alt="Preview" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-file-earmark-zip text-warning" style="font-size: 5rem;"></i>
+                            <h4 class="mt-3">Định dạng file này không hỗ trợ xem trực tuyến</h4>
+                            <p class="text-muted">Vui lòng nhấn nút "Tải xuống" ở bên trái để xem nội dung.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
