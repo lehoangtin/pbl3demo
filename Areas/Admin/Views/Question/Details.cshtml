@@ -14,7 +14,16 @@
 
     <h4>💬 Các câu trả lời (@(Model.Answers?.Count ?? 0))</h4>
     <hr />
-
+<form asp-area="User" asp-controller="Question" asp-action="Report" method="post" class="d-inline">
+    <input type="hidden" name="questionId" value="@Model.Id" />
+    <select name="reason" class="form-select form-select-sm d-inline-block w-auto" required>
+        <option value="">-- Lý do báo cáo --</option>
+        <option value="Spam">Nội dung rác (Spam)</option>
+        <option value="Toxic">Ngôn từ độc hại</option>
+        <option value="WrongContent">Sai nội dung học tập</option>
+    </select>
+    <button type="submit" class="btn btn-sm btn-outline-danger">Báo cáo</button>
+</form>
     @if (Model.Answers != null && Model.Answers.Any())
     {
         @* 🔥 Sử dụng kiểm tra null trước khi sắp xếp *@

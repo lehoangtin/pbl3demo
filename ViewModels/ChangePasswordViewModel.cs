@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudyShare.Models
+namespace StudyShare.ViewModels
 {
     public class ChangePasswordViewModel
     {

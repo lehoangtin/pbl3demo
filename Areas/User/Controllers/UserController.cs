@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using System.Security.Claims; 
+using StudyShare.ViewModels;
 namespace StudyShare.Areas.User.Controllers
 {
     [Area("User")]

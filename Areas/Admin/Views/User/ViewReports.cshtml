@@ -1,0 +1,31 @@
+@model IEnumerable<StudyShare.Models.Report>
+@{
+    ViewData["Title"] = "Chi tiết báo cáo vi phạm";
+}
+
+<div class="container mt-4">
+    <h3>Báo cáo vi phạm đối với: <span class="text-danger">@ViewBag.TargetUser</span></h3>
+    <hr />
+
+    <div class="list-group">
+        @foreach (var r in Model) {
+            <div class="list-group-item mb-3 shadow-sm border-start border-danger border-4">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1 text-primary">Lý do: @r.Reason</h5>
+                    <small class="text-muted">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                </div>
+                <p class="mb-1">
+                    <strong>Nội dung bị báo cáo:</strong> 
+                    @if (r.QuestionId != null) {
+                        <span>Câu hỏi: <em>"@r.Question?.Content"</em></span>
+                    } else {
+                        <span>Câu trả lời: <em>"@r.Answer?.Content"</em></span>
+                    }
+                </p>
+                <small class="text-muted">Người báo cáo: @r.Reporter?.FullName (@r.Reporter?.Email)</small>
+            </div>
+        }
+    </div>
+    
+    <a asp-action="ReportedUsers" class="btn btn-secondary">Quay lại danh sách vi phạm</a>
+</div>

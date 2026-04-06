@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudyShare.Models;
 
@@ -11,9 +12,11 @@ using StudyShare.Models;
 namespace PBL3demo.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406165839_UpdateReport")]
+    partial class UpdateReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,23 +403,25 @@ namespace PBL3demo.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ReporterId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("ReporterUserId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TargetId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TargetUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnswerId");
+                    b.HasIndex("ReporterId");
 
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("ReporterUserId");
-
-                    b.HasIndex("TargetUserId");
+                    b.HasIndex("TargetId");
 
                     b.ToTable("Reports");
                 });
@@ -558,31 +563,13 @@ namespace PBL3demo.Migrations
 
             modelBuilder.Entity("StudyShare.Models.Report", b =>
                 {
-                    b.HasOne("StudyShare.Models.Answer", "Answer")
-                        .WithMany()
-                        .HasForeignKey("AnswerId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("StudyShare.Models.Question", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("StudyShare.Models.AppUser", "Reporter")
                         .WithMany()
-                        .HasForeignKey("ReporterUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("ReporterId");
 
                     b.HasOne("StudyShare.Models.AppUser", "Target")
                         .WithMany()
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Answer");
-
-                    b.Navigation("Question");
+                        .HasForeignKey("TargetId");
 
                     b.Navigation("Reporter");
 

@@ -1,15 +1,26 @@
 @model IEnumerable<StudyShare.Models.Question>
+@{ ViewData["Title"] = "Cộng đồng thảo luận"; }
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold">Cộng đồng Thảo luận</h2>
-<a asp-area="User" asp-controller="Question" asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
-    <i class="bi bi-plus-lg"></i> Đặt câu hỏi
-</a>    </div>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-lg"></i> Đặt câu hỏi
+        </a>
+    </div>
+
     @foreach (var q in Model) {
         <div class="card border-0 shadow-sm rounded-4 mb-3">
             <div class="card-body">
-                <h5 class="fw-bold"><a asp-action="Details" asp-route-id="@q.Id" class="text-decoration-none text-dark">@q.Content</a></h5>
-                <p class="text-muted small">Bởi @q.User?.FullName vào @q.CreatedAt.ToString("dd/MM/yyyy") | @q.Answers.Count bình luận</p>
+                <h5 class="fw-bold">
+                    <a asp-action="Details" asp-route-id="@q.Id" class="text-decoration-none text-dark">
+                        @q.Content
+                    </a>
+                </h5>
+                <p class="text-muted small">
+                    Bởi @(q.User?.FullName ?? "Ẩn danh") vào @q.CreatedAt.ToString("dd/MM/yyyy") | 
+                    @q.Answers.Count bình luận
+                </p>
             </div>
         </div>
     }

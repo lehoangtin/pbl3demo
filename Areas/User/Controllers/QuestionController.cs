@@ -20,7 +20,6 @@ namespace StudyShare.Areas.User.Controllers
             _userManager = userManager;
         }
 
-        // 1. Trang danh sách câu hỏi (Ai cũng xem được)
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
@@ -32,20 +31,15 @@ namespace StudyShare.Areas.User.Controllers
             return View(questions);
         }
 
-        // 2. Giao diện đặt câu hỏi
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // 3. Xử lý đặt câu hỏi (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Question question)
         {
-            // 🔥 Loại bỏ kiểm tra UserId/User để tránh lỗi ModelState.IsValid = false
             ModelState.Remove("UserId");
             ModelState.Remove("User");
+            ModelState.Remove("Answers");
 
             if (ModelState.IsValid)
             {
@@ -57,27 +51,23 @@ namespace StudyShare.Areas.User.Controllers
 
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
-                
                 return RedirectToAction(nameof(Index));
             }
             return View(question);
         }
 
-        // 4. Xem chi tiết câu hỏi và trả lời
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var question = await _context.Questions
                 .Include(q => q.User) 
                 .Include(q => q.Answers).ThenInclude(a => a.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id); // Đã sửa: dùng .Id
 
             if (question == null) return NotFound();
-            
             return View(question);
         }
 
-        // 5. Gửi câu trả lời mới
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostAnswer(int questionId, string content)
@@ -91,7 +81,7 @@ namespace StudyShare.Areas.User.Controllers
             var answer = new Answer
             {
                 Content = content,
-                QuestionId = questionId,
+                QuestionId = questionId, // Model Answer thường dùng QuestionId làm FK
                 UserId = userId,
                 CreatedAt = DateTime.Now
             };
@@ -100,5 +90,50 @@ namespace StudyShare.Areas.User.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", new { id = questionId });
         }
+        [HttpPost]
+[Authorize]
+[ValidateAntiForgeryToken]
+[HttpPost]
+[Authorize]
+public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)
+{
+    var reporterId = _userManager.GetUserId(User);
+    string targetUserId = "";
+
+    if (answerId.HasValue) // Ưu tiên kiểm tra báo cáo câu trả lời trước
+    {
+        var answer = await _context.Answers.FindAsync(answerId);
+        if (answer != null) targetUserId = answer.UserId;
+    }
+    else if (questionId.HasValue)
+    {
+        var question = await _context.Questions.FindAsync(questionId);
+        if (question != null) targetUserId = question.UserId;
+    }
+
+    if (string.IsNullOrEmpty(targetUserId) || reporterId == targetUserId)
+    {
+        TempData["Error"] = "Thao tác không hợp lệ.";
+        return RedirectToAction("Index");
+    }
+
+    var report = new Report
+    {
+        ReporterUserId = reporterId,
+        TargetUserId = targetUserId,
+        QuestionId = questionId,
+        AnswerId = answerId,
+        Reason = reason
+    };
+
+    _context.Reports.Add(report);
+    await _context.SaveChangesAsync();
+
+    TempData["Message"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
+    
+    // Quay lại trang chi tiết câu hỏi
+    int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId)).QuestionId;
+    return RedirectToAction("Details", new { id = redirectId });
+}
     }
 }

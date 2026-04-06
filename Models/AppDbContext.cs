@@ -38,11 +38,37 @@ namespace StudyShare.Models
                     .OnDelete(DeleteBehavior.NoAction); // ❌ Ngắt luôn ở đây
             });
  // Ngắt luôn ở đây cho chắc chắn
+ builder.Entity<Report>(entity =>
+    {
+        // Khi xóa người báo cáo (Reporter), không xóa Report tự động
+        entity.HasOne(r => r.Reporter)
+            .WithMany()
+            .HasForeignKey(r => r.ReporterUserId)
+            .OnDelete(DeleteBehavior.NoAction); 
+
+        // Khi xóa người bị báo cáo (Target), không xóa Report tự động
+        entity.HasOne(r => r.Target)
+            .WithMany()
+            .HasForeignKey(r => r.TargetUserId)
+            .OnDelete(DeleteBehavior.NoAction);
+            
+        // Tương tự cho Question và Answer nếu cần thiết
+        entity.HasOne(r => r.Question)
+            .WithMany()
+            .HasForeignKey(r => r.QuestionId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        entity.HasOne(r => r.Answer)
+            .WithMany()
+            .HasForeignKey(r => r.AnswerId)
+            .OnDelete(DeleteBehavior.NoAction);
+    });
         }
         public DbSet<Document> Documents { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }  
         public DbSet<SavedDocument> SavedDocuments { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Report> Reports { get; set; }
     }
 }

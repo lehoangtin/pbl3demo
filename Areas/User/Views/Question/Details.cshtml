@@ -1,63 +1,63 @@
 @model StudyShare.Models.Question
-@{
-    ViewData["Title"] = "Chi tiết câu hỏi";
-}
-
 <div class="container mt-4">
-    <div class="mb-3">
-        <a asp-action="Index" class="btn btn-link text-decoration-none p-0">
-            <i class="bi bi-arrow-left"></i> Quay lại danh sách thảo luận
-        </a>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h2 class="fw-bold">@Model.Content</h2> <p class="text-muted">Đăng bởi: @Model.User?.FullName</p>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-        <div class="d-flex align-items-center mb-3">
-            <img src="@(Model.User?.Avatar ?? "/images/default-avatar.png")" class="rounded-circle me-3" width="45" height="45">
-            <div>
-                <h6 class="fw-bold mb-0">@Model.User?.FullName</h6>
-                <small class="text-muted">Đã đăng vào: @Model.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
-            </div>
-        </div>
-        <h4 class="fw-bold text-dark">@Model.Content</h4>
-    </div>
-
-    <h5 class="fw-bold mb-3"><i class="bi bi-chat-dots me-2"></i>Câu trả lời (@Model.Answers.Count)</h5>
-    
-    @if (Model.Answers.Any()) {
-        @foreach (var a in Model.Answers.OrderBy(x => x.CreatedAt)) {
-            <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-light border-start border-primary border-4">
-                <div class="d-flex">
-                    <img src="@(a.User?.Avatar ?? "/images/default-avatar.png")" class="rounded-circle me-3" width="35" height="35">
-                    <div>
-                        <div class="fw-bold text-primary">@a.User?.FullName</div>
-                        <div class="my-1">@a.Content</div>
-                        <small class="text-muted">@a.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                    </div>
-                </div>
-            </div>
-        }
-    } else {
-        <div class="alert alert-light border shadow-sm rounded-4">
-            Chưa có câu trả lời nào cho vấn đề này.
-        </div>
-    }
-
-    @if (User.Identity.IsAuthenticated) {
-        <div class="card border-0 shadow-sm rounded-4 p-3 mt-4">
-            <h6 class="fw-bold mb-3">Gửi câu trả lời của bạn</h6>
-            <form asp-area="User" asp-controller="Question" asp-action="PostAnswer" method="post">
-                <input type="hidden" name="questionId" value="@Model.Id" />
-                <textarea name="content" required class="form-control rounded-4 mb-3" rows="3" placeholder="Chia sẻ kiến thức của bạn tại đây..."></textarea>
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2">
-                        <i class="bi bi-send-fill me-2"></i>Gửi câu trả lời
-                    </button>
+    <h4>Thảo luận (@Model.Answers.Count)</h4>
+@foreach (var answer in Model.Answers) {
+    <div class="mb-3 p-3 bg-light rounded shadow-sm">
+        <div class="d-flex justify-content-between">
+            <strong>@answer.User.FullName</strong>
+            
+            <form asp-action="Report" method="post" class="d-inline">
+                <input type="hidden" name="answerId" value="@answer.Id" />
+                <div class="input-group input-group-sm">
+                    <select name="reason" class="form-select form-select-sm border-0 bg-transparent text-danger small" style="width: 100px;">
+                        <option value="Spam">Spam</option>
+                        <option value="Toxic">Toxic</option>
+                        <option value="Wrong">Sai kiến thức</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm text-danger"><i class="bi bi-flag"></i></button>
                 </div>
             </form>
         </div>
-    } else {
-        <div class="alert alert-warning rounded-4 mt-4">
-            Vui lòng <a asp-area="" asp-controller="Account" asp-action="Login">đăng nhập</a> để tham gia thảo luận.
-        </div>
-    }
+        <p class="mb-0">@answer.Content</p>
+    </div>
+}
+
+    <form asp-action="PostAnswer" method="post" class="mt-4">
+        <input type="hidden" name="questionId" value="@Model.Id" /> <textarea name="content" class="form-control mb-2" placeholder="Trả lời câu hỏi này..."></textarea>
+        <button type="submit" class="btn btn-primary">Gửi câu trả lời</button>
+    </form>
+    <button class="btn btn-sm btn-link text-danger" data-bs-toggle="modal" data-bs-target="#reportQuestionModal">
+    <i class="bi bi-flag"></i> Báo cáo vi phạm
+</button>
+
+<div class="modal fade" id="reportQuestionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="Report" method="post">
+            <input type="hidden" name="questionId" value="@Model.Id" />
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Báo cáo vi phạm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Lý do báo cáo:</label>
+                    <select name="reason" class="form-select" required>
+                        <option value="Spam">Nội dung rác (Spam)</option>
+                        <option value="Toxic">Ngôn từ không phù hợp</option>
+                        <option value="WrongContent">Nội dung sai kiến thức</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Gửi báo cáo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 </div>
