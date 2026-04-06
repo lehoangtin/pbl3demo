@@ -17,19 +17,24 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
-    // 1. Cấu hình đăng nhập & Xác thực Email
-    options.SignIn.RequireConfirmedAccount = true; 
-    options.SignIn.RequireConfirmedEmail = true;
-    
-    // 2. Cấu hình mật khẩu (Thiết lập đơn giản để bạn dễ test)
-    options.Password.RequireDigit = false;
+    options.SignIn.RequireConfirmedEmail = true; 
     options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+.AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30); // Ghi nhớ đăng nhập 30 ngày
+});
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<EmailSender>();
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
