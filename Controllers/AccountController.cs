@@ -37,8 +37,8 @@ namespace StudyShare.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var user = new AppUser { 
-                Email = model.Email, 
-                UserName = model.Email, 
+                Email = model.Email.Trim(), 
+                UserName = model.Email.Trim(), 
                 FullName = model.FullName,
                 EmailConfirmed = false 
             };
@@ -59,8 +59,7 @@ namespace StudyShare.Controllers
                     await _emailSender.SendEmailAsync(user.Email, "Xác nhận tài khoản StudyShare", 
                         $"Chào {user.FullName}, vui lòng click vào link để kích hoạt tài khoản: <a href='{confirmationLink}'>Kích hoạt ngay</a>");
                 } catch {
-                    // Thông báo để người dùng biết có thể tự gửi lại mail
-                    ModelState.AddModelError("", "Tài khoản đã tạo nhưng hệ thống mail đang nghẽn. Bạn có thể đăng nhập để thử Gửi lại Email xác nhận.");
+                    ModelState.AddModelError("", "Tài khoản đã tạo nhưng hệ thống mail đang nghẽn. Bạn có thể đăng nhập để thử 'Gửi lại Email xác nhận'.");
                     return View(model);
                 }
 
@@ -82,8 +81,8 @@ namespace StudyShare.Controllers
             if (user == null) return View("ConfirmFail");
 
             try {
-                token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
-                var result = await _userManager.ConfirmEmailAsync(user, token);
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+                var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
                 
                 if (result.Succeeded) {
                     TempData["SuccessMessage"] = "Xác nhận Email thành công. Bạn có thể đăng nhập.";
@@ -94,52 +93,6 @@ namespace StudyShare.Controllers
             return View("ConfirmFail");
         }
 
-        // ================= GỬI LẠI EMAIL XÁC NHẬN =================
-        [AllowAnonymous]
-        public IActionResult ResendEmailConfirmation() => View();
-
-        [AllowAnonymous]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResendEmailConfirmation(ResendEmailConfirmationViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                // Bảo mật: Không nói rõ là email có tồn tại hay không
-                TempData["SuccessMessage"] = "Nếu email hợp lệ, link xác nhận đã được gửi lại.";
-                return RedirectToAction("Login");
-            }
-
-            if (await _userManager.IsEmailConfirmedAsync(user))
-            {
-                ModelState.AddModelError("", "Tài khoản này đã được xác nhận trước đó. Vui lòng đăng nhập.");
-                return View(model);
-            }
-
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            
-            var confirmationLink = Url.Action("ConfirmEmail", "Account", 
-                new { userId = user.Id, token = token }, Request.Scheme);
-            
-            try 
-            {
-                await _emailSender.SendEmailAsync(user.Email, "Xác nhận lại tài khoản StudyShare", 
-                    $"Chào {user.FullName}, vui lòng click vào link để kích hoạt tài khoản: <a href='{confirmationLink}'>Kích hoạt ngay</a>");
-                
-                TempData["SuccessMessage"] = "Email xác nhận đã được gửi lại thành công. Vui lòng kiểm tra hộp thư của bạn.";
-                return RedirectToAction("Login");
-            } 
-            catch 
-            {
-                ModelState.AddModelError("", "Hệ thống mail đang gặp sự cố. Vui lòng thử lại sau.");
-                return View(model);
-            }
-        }
-
         // ================= ĐĂNG NHẬP =================
         [AllowAnonymous]
         public IActionResult Login() => View();
@@ -147,41 +100,121 @@ namespace StudyShare.Controllers
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+public async Task<IActionResult> Login(LoginViewModel model)
+{
+    if (!ModelState.IsValid) return View(model);
+
+    // FIX: Thêm .Trim() để loại bỏ khoảng trắng thừa
+    var user = await _userManager.FindByEmailAsync(model.Email.Trim());
+    
+    if (user != null)
+    {
+        if (user.IsBanned)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null)
-            {
-                if (user.IsBanned)
-                {
-                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa do vi phạm chính sách.");
-                    return View(model);
-                }
-
-                if (!await _userManager.IsEmailConfirmedAsync(user))
-                {
-                    // Hướng dẫn người dùng nếu chưa xác nhận
-                    ModelState.AddModelError("", "Bạn cần xác nhận Email trước khi đăng nhập. Sử dụng link 'Gửi lại Email xác nhận' bên dưới nếu không tìm thấy thư.");
-                    return View(model);
-                }
-
-                var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
-                if (result.Succeeded)
-                {
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
-                        return RedirectToAction("Index", "Home", new { area = "Admin" });
-                    
-                    return RedirectToAction("Index", "Home");
-                }
-            }
-
-            ModelState.AddModelError("", "Email hoặc mật khẩu không chính xác.");
+            ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa.");
             return View(model);
         }
 
-        // ================= ĐĂNG XUẤT =================
+        // QUAN TRỌNG: Kiểm tra EmailConfirmed
+        if (!await _userManager.IsEmailConfirmedAsync(user))
+        {
+            ModelState.AddModelError("", "Bạn cần xác nhận Email trước khi đăng nhập.");
+            return View(model);
+        }
+
+        // Truyền chính đối tượng user vào để Identity xử lý tốt nhất
+        var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
+
+        if (result.Succeeded)
+        {
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                return RedirectToAction("Index", "Home", new { area = "Admin" });
+            
+            return RedirectToAction("Index", "Home");
+        }
+    }
+
+    // Nếu chạy đến đây là thất bại
+    ModelState.AddModelError("", "Email hoặc mật khẩu không chính xác.");
+    return View(model);
+}
+        // ================= QUÊN MẬT KHẨU =================
+        [AllowAnonymous]
+        public IActionResult ForgotPassword() => View();
+[AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            var user = await _userManager.FindByEmailAsync(model.Email.Trim());
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user))) return View("ForgotPasswordConfirmation");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            
+            // FIX 3: Dùng WebEncoders để Token không bị lỗi ký tự đặc biệt khi gửi mail
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { token = token, email = user.Email }, Request.Scheme);
+            await _emailSender.SendEmailAsync(model.Email, "Đặt lại mật khẩu", $"Click vào đây: <a href='{callbackUrl}'>Đặt lại mật khẩu</a>");
+            return View("ForgotPasswordConfirmation");
+        }
+        // ================= ĐẶT LẠI MẬT KHẨU =================
+[AllowAnonymous]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            if (token == null || email == null) return BadRequest("Liên kết hỏng");
+            return View(new ResetPasswordViewModel { Token = token, Email = email });
+        }
+
+// 2. ĐẶT LẠI MẬT KHẨU (Lúc xử lý lưu)
+[AllowAnonymous]
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+{
+if (!ModelState.IsValid) return View(model);
+
+    // Kiểm tra model.Email có null không trước khi dùng (Fix CS8604)
+    if (string.IsNullOrEmpty(model.Email))
+    {
+        ModelState.AddModelError("", "Email không được để trống.");
+        return View(model);
+    }
+
+    var user = await _userManager.FindByEmailAsync(model.Email.Trim());
+    
+    if (user == null)
+    {
+        // KHÔNG RedirectToAction ở đây! Phải báo lỗi để người dùng biết
+        ModelState.AddModelError("", "Không tìm thấy người dùng ứng với Email này.");
+        return View(model);
+    }
+    // Giải mã token (đảm bảo khớp với lúc bạn gửi mail)
+    try {
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction(nameof(ResetPasswordConfirmation));
+        }
+
+        // Hiển thị lỗi từ Identity (VD: Mật khẩu quá yếu)
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError("", error.Description);
+        }
+    }
+    catch {
+        ModelState.AddModelError("", "Mã xác thực không hợp lệ.");
+    }
+    
+    return View(model);
+}
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation() => View();
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -190,84 +223,7 @@ namespace StudyShare.Controllers
             return RedirectToAction("Index", "Home", new { area = "" });
         }
 
-        // ================= QUÊN MẬT KHẨU =================
         [AllowAnonymous]
-        public IActionResult ForgotPassword() => View();
-
-        [AllowAnonymous]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-            {
-                return View("ForgotPasswordConfirmation");
-            }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-            var callbackUrl = Url.Action("ResetPassword", "Account", 
-                new { token, email = user.Email }, Request.Scheme);
-
-            await _emailSender.SendEmailAsync(model.Email, "Đặt lại mật khẩu StudyShare",
-                $"Vui lòng click vào đây để đặt lại mật khẩu: <a href='{callbackUrl}'>Đặt lại mật khẩu</a>");
-
-            return View("ForgotPasswordConfirmation");
-        }
-
-        // ================= ĐẶT LẠI MẬT KHẨU =================
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string token, string email)
-        {
-            if (token == null || email == null) return BadRequest("Liên kết không hợp lệ");
-            return View(new ResetPasswordViewModel { Token = token, Email = email });
-        }
-
- [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-{
-    if (!ModelState.IsValid) return View(model);
-
-    var user = await _userManager.FindByEmailAsync(model.Email);
-    if (user == null) return RedirectToAction(nameof(ResetPasswordConfirmation));
-
-    try 
-    {
-        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
-        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
-
-        if (result.Succeeded)
-        {
-            // Reset thành công mới cho đi tiếp
-            return RedirectToAction(nameof(ResetPasswordConfirmation));
-        }
-
-        // 🔥 Nếu thất bại (do mật khẩu yếu), nạp lỗi vào ModelState để View hiển thị
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError(string.Empty, error.Description);
-        }
-    }
-    catch 
-    {
-        ModelState.AddModelError("", "Mã xác thực không hợp lệ hoặc đã hết hạn.");
-    }
-    
-    return View(model);
-}
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation() => View();
-
-        // ================= TỪ CHỐI TRUY CẬP =================
-        [AllowAnonymous]
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
+        public IActionResult AccessDenied() => View();
     }
 }
