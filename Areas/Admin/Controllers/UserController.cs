@@ -121,5 +121,51 @@ public async Task<IActionResult> ViewReports(string id)
     ViewBag.TargetUser = targetUser.FullName;
     return View(reports);
 }
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(string id)
+{
+    if (string.IsNullOrEmpty(id)) return NotFound();
+
+    var user = await _userManager.FindByIdAsync(id);
+    if (user == null) return NotFound();
+
+    // 1. Xoá tất cả báo cáo liên quan (cả người báo cáo và người bị báo cáo)
+    var relatedReports = _context.Reports.Where(r => r.ReporterUserId == id || r.TargetUserId == id);
+    _context.Reports.RemoveRange(relatedReports);
+
+    // 2. Xoá các tài liệu đã lưu
+    var savedDocs = _context.SavedDocuments.Where(sd => sd.UserId == id);
+    _context.SavedDocuments.RemoveRange(savedDocs);
+
+    // 3. Xoá các câu trả lời
+    var userAnswers = _context.Answers.Where(a => a.UserId == id);
+    _context.Answers.RemoveRange(userAnswers);
+
+    // 4. Xoá các câu hỏi
+    var userQuestions = _context.Questions.Where(q => q.UserId == id);
+    _context.Questions.RemoveRange(userQuestions);
+
+    // 5. Xoá các tài liệu đã tải lên
+    var userDocs = _context.Documents.Where(d => d.UserId == id);
+    _context.Documents.RemoveRange(userDocs);
+
+    // Lưu các thay đổi ở bảng phụ trước
+    await _context.SaveChangesAsync();
+
+    // 6. Cuối cùng mới xoá User
+    var result = await _userManager.DeleteAsync(user);
+
+    if (result.Succeeded)
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
+    foreach (var error in result.Errors)
+    {
+        ModelState.AddModelError("", error.Description);
+    }
+    return View("Details", user);
+}
     }
 }
