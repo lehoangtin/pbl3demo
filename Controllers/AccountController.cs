@@ -186,41 +186,41 @@ public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
 {
-if (!ModelState.IsValid) return View(model);
-
-    // Kiểm tra model.Email có null không trước khi dùng (Fix CS8604)
-    if (string.IsNullOrEmpty(model.Email))
-    {
-        ModelState.AddModelError("", "Email không được để trống.");
-        return View(model);
-    }
+    if (!ModelState.IsValid) return View(model);
 
     var user = await _userManager.FindByEmailAsync(model.Email.Trim());
-    
     if (user == null)
     {
-        // KHÔNG RedirectToAction ở đây! Phải báo lỗi để người dùng biết
-        ModelState.AddModelError("", "Không tìm thấy người dùng ứng với Email này.");
+        // Để bảo mật, thường người ta vẫn báo thành công, 
+        // nhưng khi debug bạn nên biết chính xác:
+        ModelState.AddModelError("", "Email không tồn tại trong hệ thống.");
         return View(model);
     }
-    // Giải mã token (đảm bảo khớp với lúc bạn gửi mail)
-    try {
+
+    try 
+    {
+        // 1. Giải mã Token
         var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+        
+        // 2. Thực hiện đổi mật khẩu
         var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
 
         if (result.Succeeded)
         {
+            // CẬP NHẬT QUAN TRỌNG: Đảm bảo SecurityStamp được làm mới để tránh xung đột session cũ
+            await _userManager.UpdateSecurityStampAsync(user);
             return RedirectToAction(nameof(ResetPasswordConfirmation));
         }
 
-        // Hiển thị lỗi từ Identity (VD: Mật khẩu quá yếu)
+        // 3. Nếu thất bại, liệt kê chi tiết lỗi (VD: Mật khẩu không đủ độ mạnh)
         foreach (var error in result.Errors)
         {
             ModelState.AddModelError("", error.Description);
         }
     }
-    catch {
-        ModelState.AddModelError("", "Mã xác thực không hợp lệ.");
+    catch (Exception ex)
+    {
+        ModelState.AddModelError("", "Lỗi xử lý mã xác thực: " + ex.Message);
     }
     
     return View(model);
