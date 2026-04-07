@@ -16,13 +16,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 // Identity
+// Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedEmail = true; 
-    options.Password.RequiredLength = 6;
-    options.Password.RequireDigit = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
+    
+    // 🔥 Cấu hình mật khẩu mạnh (Dành cho Production)
+    options.Password.RequiredLength = 8;              // Tối thiểu 8 ký tự
+    options.Password.RequireDigit = true;             // Yêu cầu có số (0-9)
+    options.Password.RequireNonAlphanumeric = true;   // Yêu cầu ký tự đặc biệt (@, #, $, %...)
+    options.Password.RequireUppercase = true;         // Yêu cầu ít nhất 1 chữ hoa (A-Z)
+    options.Password.RequireLowercase = true;         // Yêu cầu ít nhất 1 chữ thường (a-z)
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();

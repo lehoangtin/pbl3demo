@@ -59,8 +59,8 @@ namespace StudyShare.Controllers
                     await _emailSender.SendEmailAsync(user.Email, "Xác nhận tài khoản StudyShare", 
                         $"Chào {user.FullName}, vui lòng click vào link để kích hoạt tài khoản: <a href='{confirmationLink}'>Kích hoạt ngay</a>");
                 } catch {
-                    // Nếu lỗi gửi mail, vẫn tạo user nhưng thông báo lỗi hệ thống mail
-                    ModelState.AddModelError("", "Tài khoản đã tạo nhưng lỗi gửi mail xác nhận. Vui lòng liên hệ Admin.");
+                    // Thông báo để người dùng biết có thể tự gửi lại mail
+                    ModelState.AddModelError("", "Tài khoản đã tạo nhưng hệ thống mail đang nghẽn. Bạn có thể đăng nhập để thử Gửi lại Email xác nhận.");
                     return View(model);
                 }
 
@@ -94,6 +94,52 @@ namespace StudyShare.Controllers
             return View("ConfirmFail");
         }
 
+        // ================= GỬI LẠI EMAIL XÁC NHẬN =================
+        [AllowAnonymous]
+        public IActionResult ResendEmailConfirmation() => View();
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResendEmailConfirmation(ResendEmailConfirmationViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Bảo mật: Không nói rõ là email có tồn tại hay không
+                TempData["SuccessMessage"] = "Nếu email hợp lệ, link xác nhận đã được gửi lại.";
+                return RedirectToAction("Login");
+            }
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError("", "Tài khoản này đã được xác nhận trước đó. Vui lòng đăng nhập.");
+                return View(model);
+            }
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            
+            var confirmationLink = Url.Action("ConfirmEmail", "Account", 
+                new { userId = user.Id, token = token }, Request.Scheme);
+            
+            try 
+            {
+                await _emailSender.SendEmailAsync(user.Email, "Xác nhận lại tài khoản StudyShare", 
+                    $"Chào {user.FullName}, vui lòng click vào link để kích hoạt tài khoản: <a href='{confirmationLink}'>Kích hoạt ngay</a>");
+                
+                TempData["SuccessMessage"] = "Email xác nhận đã được gửi lại thành công. Vui lòng kiểm tra hộp thư của bạn.";
+                return RedirectToAction("Login");
+            } 
+            catch 
+            {
+                ModelState.AddModelError("", "Hệ thống mail đang gặp sự cố. Vui lòng thử lại sau.");
+                return View(model);
+            }
+        }
+
         // ================= ĐĂNG NHẬP =================
         [AllowAnonymous]
         public IActionResult Login() => View();
@@ -108,17 +154,16 @@ namespace StudyShare.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
             {
-                // Kiểm tra tài khoản bị khóa
                 if (user.IsBanned)
                 {
                     ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa do vi phạm chính sách.");
                     return View(model);
                 }
 
-                // Kiểm tra xác nhận Email
                 if (!await _userManager.IsEmailConfirmedAsync(user))
                 {
-                    ModelState.AddModelError("", "Bạn cần xác nhận Email trước khi đăng nhập.");
+                    // Hướng dẫn người dùng nếu chưa xác nhận
+                    ModelState.AddModelError("", "Bạn cần xác nhận Email trước khi đăng nhập. Sử dụng link 'Gửi lại Email xác nhận' bên dưới nếu không tìm thấy thư.");
                     return View(model);
                 }
 
@@ -159,7 +204,6 @@ namespace StudyShare.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
-                // Không báo user không tồn tại để bảo mật, chỉ báo kiểm tra mail
                 return View("ForgotPasswordConfirmation");
             }
 
@@ -183,33 +227,39 @@ namespace StudyShare.Controllers
             return View(new ResetPasswordViewModel { Token = token, Email = email });
         }
 
-        [AllowAnonymous]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+ [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+{
+    if (!ModelState.IsValid) return View(model);
+
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null) return RedirectToAction(nameof(ResetPasswordConfirmation));
+
+    try 
+    {
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+        if (result.Succeeded)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null) return RedirectToAction(nameof(ResetPasswordConfirmation));
-
-            try 
-            {
-                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
-                var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
-
-                if (result.Succeeded) return RedirectToAction(nameof(ResetPasswordConfirmation));
-
-                foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
-            }
-            catch 
-            {
-                ModelState.AddModelError("", "Mã xác thực không hợp lệ hoặc đã hết hạn.");
-            }
-            
-            return View(model);
+            // Reset thành công mới cho đi tiếp
+            return RedirectToAction(nameof(ResetPasswordConfirmation));
         }
 
+        // 🔥 Nếu thất bại (do mật khẩu yếu), nạp lỗi vào ModelState để View hiển thị
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+    }
+    catch 
+    {
+        ModelState.AddModelError("", "Mã xác thực không hợp lệ hoặc đã hết hạn.");
+    }
+    
+    return View(model);
+}
         [AllowAnonymous]
         public IActionResult ResetPasswordConfirmation() => View();
 

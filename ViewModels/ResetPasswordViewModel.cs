@@ -10,12 +10,11 @@ namespace StudyShare.ViewModels
 
         [Required]
         public string Token { get; set; } = default!; // Đổi từ Code thành Token
-
-        [Required]
-        [StringLength(100, MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        public string NewPassword { get; set; } = default!; // Đổi từ Password thành NewPassword
-
+[Required(ErrorMessage = "Vui lòng nhập mật khẩu mới")]
+// 🔥 Tăng từ 6 lên 8 để khớp với cấu hình bảo mật mới
+[StringLength(100, MinimumLength = 8, ErrorMessage = "Mật khẩu phải dài từ {2} đến {1} ký tự.")]
+[DataType(DataType.Password)]
+public string NewPassword { get; set; } = default!;
         [DataType(DataType.Password)]
         [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
         public string ConfirmPassword { get; set; } = default!;
