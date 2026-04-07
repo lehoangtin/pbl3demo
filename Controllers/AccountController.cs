@@ -142,23 +142,36 @@ public async Task<IActionResult> Login(LoginViewModel model)
         [AllowAnonymous]
         public IActionResult ForgotPassword() => View();
 [AllowAnonymous]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-            var user = await _userManager.FindByEmailAsync(model.Email.Trim());
-            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user))) return View("ForgotPasswordConfirmation");
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+{
+    if (!ModelState.IsValid) return View(model);
+    
+    var user = await _userManager.FindByEmailAsync(model.Email.Trim());
+    // Tránh lộ lọt thông tin email
+    if (user == null || !(await _userManager.IsEmailConfirmedAsync(user))) 
+        return View("ForgotPasswordConfirmation");
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            
-            // FIX 3: Dùng WebEncoders để Token không bị lỗi ký tự đặc biệt khi gửi mail
-            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+    token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            var callbackUrl = Url.Action("ResetPassword", "Account", new { token = token, email = user.Email }, Request.Scheme);
-            await _emailSender.SendEmailAsync(model.Email, "Đặt lại mật khẩu", $"Click vào đây: <a href='{callbackUrl}'>Đặt lại mật khẩu</a>");
-            return View("ForgotPasswordConfirmation");
-        }
+    var callbackUrl = Url.Action("ResetPassword", "Account", new { token = token, email = user.Email }, Request.Scheme);
+    
+    try 
+    {
+        await _emailSender.SendEmailAsync(model.Email, "Đặt lại mật khẩu - StudyShare", 
+            $"Bạn đã yêu cầu đặt lại mật khẩu. Click vào link sau: <a href='{callbackUrl}'>Đặt lại mật khẩu</a>");
+    }
+    catch
+    {
+        // Log lỗi tại đây nếu cần
+        ModelState.AddModelError("", "Hệ thống gửi mail đang gặp sự cố. Vui lòng thử lại sau ít phút.");
+        return View(model);
+    }
+
+    return View("ForgotPasswordConfirmation");
+}
         // ================= ĐẶT LẠI MẬT KHẨU =================
 [AllowAnonymous]
         public IActionResult ResetPassword(string token, string email)
