@@ -26,17 +26,17 @@ namespace StudyShare.Models
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.NoAction); // 🔥 FIX
             builder.Entity<SavedDocument>(entity =>
-            {
-                entity.HasOne(d => d.Document)
-                    .WithMany()
-                    .HasForeignKey(d => d.DocumentId)
-                    .OnDelete(DeleteBehavior.NoAction); // ❌ Ngắt xóa liên đới ở đây
+{
+    entity.HasOne(d => d.Document)
+        .WithMany()
+        .HasForeignKey(d => d.DocumentId)
+        .OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(d => d.User)
-                    .WithMany()
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.NoAction); // ❌ Ngắt luôn ở đây
-            });
+    entity.HasOne(d => d.User)
+        .WithMany(u => u.SavedDocuments) // 🔥 CẬP NHẬT: Thêm u.SavedDocuments vào đây
+        .HasForeignKey(d => d.UserId)
+        .OnDelete(DeleteBehavior.NoAction);
+});
  // Ngắt luôn ở đây cho chắc chắn
  builder.Entity<Report>(entity =>
     {

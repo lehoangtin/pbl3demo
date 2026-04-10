@@ -30,25 +30,24 @@ namespace StudyShare.Areas.User.Controllers
 
     // 👤 Hiển thị Profile kèm Tài liệu, Câu hỏi, Câu trả lời
 // Areas/User/Controllers/UserController.cs
+// Areas/User/Controllers/UserController.cs
 [Authorize]
 public async Task<IActionResult> Profile()
 {
     var userId = _userManager.GetUserId(User);
     
-    // 🔥 SỬA TẠI ĐÂY: Phải Include SavedDocuments thì Count mới có dữ liệu
     var user = await _context.Users
         .Include(u => u.Documents)
         .Include(u => u.Questions)
-        .Include(u => u.SavedDocuments) // Nạp danh sách tài liệu đã lưu
+        .Include(u => u.SavedDocuments)
+        .AsNoTracking() // Đảm bảo lấy dữ liệu trực tiếp từ DB
         .FirstOrDefaultAsync(u => u.Id == userId);
 
     if (user == null) return NotFound();
 
-    // Truyền dữ liệu ra View qua ViewBag
+    // Debug: Bạn có thể đặt breakpoint tại đây để xem user.SavedDocuments.Count có > 0 không
     ViewBag.TotalDocs = user.Documents?.Count ?? 0;
     ViewBag.TotalQuestions = user.Questions?.Count ?? 0;
-    
-    // 🔥 Đảm bảo tên biến là TotalSaved
     ViewBag.TotalSaved = user.SavedDocuments?.Count ?? 0; 
 
     return View(user);
@@ -174,22 +173,50 @@ public async Task<IActionResult> Profile()
         [HttpPost]
 // Trong UserController.cs
 [HttpPost]
-[Authorize] // Phải đăng nhập mới lưu được
+[Authorize]
 public async Task<IActionResult> SaveDocument(int docId)
 {
     var userId = _userManager.GetUserId(User);
+    
+    // Kiểm tra xem tài liệu này đã được người dùng lưu trước đó chưa
     var existing = await _context.SavedDocuments
         .AnyAsync(s => s.UserId == userId && s.DocumentId == docId);
 
     if (!existing)
     {
-        _context.SavedDocuments.Add(new SavedDocument { UserId = userId, DocumentId = docId });
+        // Nếu chưa, thêm một bản ghi mới vào bảng SavedDocuments
+        _context.SavedDocuments.Add(new SavedDocument { 
+            UserId = userId, 
+            DocumentId = docId,
+            SavedDate = DateTime.Now 
+        });
         await _context.SaveChangesAsync();
-        TempData["Success"] = "Đã lưu tài liệu!";
+        TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
+    }
+    else 
+    {
+        TempData["Info"] = "Tài liệu này đã có trong danh sách lưu.";
     }
     
-    // ĐỔI DÒNG NÀY: Quay lại HomeController, action ViewDocument ở ngoài trang chủ
+    // Quay lại trang chi tiết tài liệu (HomeController)
     return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+}
+[HttpPost]
+[Authorize]
+public async Task<IActionResult> UnsaveDocument(int docId)
+{
+    var userId = _userManager.GetUserId(User);
+    var savedDoc = await _context.SavedDocuments
+        .FirstOrDefaultAsync(s => s.UserId == userId && s.DocumentId == docId);
+
+    if (savedDoc != null)
+    {
+        _context.SavedDocuments.Remove(savedDoc);
+        await _context.SaveChangesAsync();
+        TempData["Success"] = " Đã bỏ lưu tài liệu.";
+    }
+
+    return RedirectToAction(nameof(SavedDocuments));
 }
 public async Task<IActionResult> SavedDocuments()
 {

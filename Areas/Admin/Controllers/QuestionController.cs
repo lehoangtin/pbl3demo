@@ -11,7 +11,7 @@ namespace StudyShare.Areas.Admin.Controllers
     public class QuestionController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<AppUser> _userManager; // 🔥 Thêm khai báo này
+        private readonly UserManager<AppUser> _userManager; // Thêm khai báo này
 
         public QuestionController(AppDbContext context, UserManager<AppUser> userManager)
         {

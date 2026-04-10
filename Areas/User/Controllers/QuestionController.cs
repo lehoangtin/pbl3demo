@@ -90,7 +90,7 @@ namespace StudyShare.Areas.User.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", new { id = questionId });
         }
-        [HttpPost]
+[HttpPost]
 [Authorize]
 [ValidateAntiForgeryToken]
 [HttpPost]
