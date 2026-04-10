@@ -29,20 +29,27 @@ namespace StudyShare.Areas.User.Controllers
     }
 
     // 👤 Hiển thị Profile kèm Tài liệu, Câu hỏi, Câu trả lời
- public async Task<IActionResult> Profile()
+// Areas/User/Controllers/UserController.cs
+[Authorize]
+public async Task<IActionResult> Profile()
 {
     var userId = _userManager.GetUserId(User);
+    
+    // 🔥 SỬA TẠI ĐÂY: Phải Include SavedDocuments thì Count mới có dữ liệu
     var user = await _context.Users
         .Include(u => u.Documents)
         .Include(u => u.Questions)
+        .Include(u => u.SavedDocuments) // Nạp danh sách tài liệu đã lưu
         .FirstOrDefaultAsync(u => u.Id == userId);
 
     if (user == null) return NotFound();
 
-    // Thống kê nhanh cho Dashboard
-    ViewBag.TotalDocs = user.Documents.Count;
-    ViewBag.TotalQuestions = user.Questions.Count;
-    ViewBag.TotalSaved = await _context.SavedDocuments.CountAsync(s => s.UserId == userId);
+    // Truyền dữ liệu ra View qua ViewBag
+    ViewBag.TotalDocs = user.Documents?.Count ?? 0;
+    ViewBag.TotalQuestions = user.Questions?.Count ?? 0;
+    
+    // 🔥 Đảm bảo tên biến là TotalSaved
+    ViewBag.TotalSaved = user.SavedDocuments?.Count ?? 0; 
 
     return View(user);
 }
@@ -165,11 +172,12 @@ namespace StudyShare.Areas.User.Controllers
             return View(questions);
         }
         [HttpPost]
+// Trong UserController.cs
+[HttpPost]
+[Authorize] // Phải đăng nhập mới lưu được
 public async Task<IActionResult> SaveDocument(int docId)
 {
     var userId = _userManager.GetUserId(User);
-    
-    // Kiểm tra xem đã lưu chưa
     var existing = await _context.SavedDocuments
         .AnyAsync(s => s.UserId == userId && s.DocumentId == docId);
 
@@ -177,8 +185,11 @@ public async Task<IActionResult> SaveDocument(int docId)
     {
         _context.SavedDocuments.Add(new SavedDocument { UserId = userId, DocumentId = docId });
         await _context.SaveChangesAsync();
+        TempData["Success"] = "Đã lưu tài liệu!";
     }
-    return RedirectToAction("Details", "Document", new { id = docId });
+    
+    // ĐỔI DÒNG NÀY: Quay lại HomeController, action ViewDocument ở ngoài trang chủ
+    return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
 }
 public async Task<IActionResult> SavedDocuments()
 {

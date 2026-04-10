@@ -16,7 +16,7 @@ namespace StudyShare.Models
 
             builder.Entity<Question>()
                 .HasOne(q => q.User)
-                .WithMany()
+                .WithMany(u => u.Questions)
                 .HasForeignKey(q => q.UserId)
                 .OnDelete(DeleteBehavior.NoAction); // 🔥 FIX
 

@@ -2,7 +2,13 @@
 @{
     ViewData["Title"] = Model.Title;
 }
-
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -26,6 +32,12 @@
                         <a href="@Model.FilePath" download="@Model.FileName" class="btn btn-success">
                             <i class="bi bi-download me-2"></i> Tải xuống tài liệu
                         </a>
+                        <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
+        <input type="hidden" name="docId" value="@Model.Id" />
+        <button type="submit" class="btn btn-outline-primary w-100">
+            <i class="bi bi-bookmark-plus me-2"></i> Lưu tài liệu
+        </button>
+    </form>
                         <a asp-action="Index" class="btn btn-outline-secondary">Quay lại thư viện</a>
                     </div>
                 </div>

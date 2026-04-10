@@ -82,7 +82,7 @@ namespace StudyShare.Areas.User.Controllers
             ModelState.Remove("FileName");
             ModelState.Remove("FileType");
             ModelState.Remove("User"); // Xóa bỏ kiểm tra Navigation Property nếu có
-
+            ModelState.Remove("Category"); // 🔥 CẦN THÊM DÒNG NÀY
             if (ModelState.IsValid)
             {
                 try 
@@ -103,10 +103,12 @@ namespace StudyShare.Areas.User.Controllers
                     doc.FilePath = "/uploads/" + uniqueFileName;
                     doc.FileName = file.FileName;
                     doc.FileType = file.ContentType;
+                    doc.FileSize = file.Length; // 🔥 THÊM DÒNG NÀY để lưu dung lượng file
                     doc.UploadDate = DateTime.Now;
                     doc.IsApproved = false; // Chờ Admin duyệt
                     doc.Views = 0;
                     doc.DownloadCount = 0;
+                    
 
                     _context.Add(doc);
                     await _context.SaveChangesAsync();
