@@ -8,16 +8,20 @@ namespace StudyShare.Models
     {
         [Key]
         public int Id { get; set; }
+
+        // --- Foreign Keys ---
         public string ReporterUserId { get; set; }
         public string TargetUserId { get; set; }
         
+        public int? DocumentId { get; set; } // 🔥 Bổ sung trường này
         public int? QuestionId { get; set; }
         public int? AnswerId { get; set; }
         
+        [Required]
         public string Reason { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // --- Navigation Properties (BẮT BUỘC PHẢI CÓ ĐỂ HẾT LỖI) ---
+        // --- Navigation Properties ---
         
         [ForeignKey("ReporterUserId")]
         public virtual AppUser Reporter { get; set; }
@@ -25,10 +29,13 @@ namespace StudyShare.Models
         [ForeignKey("TargetUserId")]
         public virtual AppUser Target { get; set; }
 
+        [ForeignKey("DocumentId")]
+        public virtual Document Document { get; set; } // 🔥 Thêm dòng này để hết lỗi CS1061
+
         [ForeignKey("QuestionId")]
-        public virtual Question Question { get; set; } // Lỗi do thiếu dòng này
+        public virtual Question Question { get; set; } 
 
         [ForeignKey("AnswerId")]
-        public virtual Answer Answer { get; set; }     // Lỗi do thiếu dòng này
+        public virtual Answer Answer { get; set; }     
     }
 }

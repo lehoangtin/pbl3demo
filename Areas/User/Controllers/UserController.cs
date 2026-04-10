@@ -140,25 +140,66 @@ public async Task<IActionResult> Profile()
                 .ToListAsync();
             return View(docs);
         }
+// --- XOÁ TÀI LIỆU CỦA TÔI ---
+[HttpPost]
+[Authorize]
+public async Task<IActionResult> DeleteDocument(int id)
+{
+    var userId = _userManager.GetUserId(User);
+    var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+    
+    if (doc != null)
+    {
+        // 1. Xóa các báo cáo liên quan đến tài liệu này
+        var relatedReports = _context.Reports.Where(r => r.DocumentId == id);
+        _context.Reports.RemoveRange(relatedReports);
 
-        [HttpPost]
-        public async Task<IActionResult> DeleteDocument(int id)
-        {
-            var userId = _userManager.GetUserId(User);
-            var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
-            
-            if (doc != null)
-            {
-                // Xóa file vật lý trong thư mục wwwroot
-                var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
-                if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+        // 2. Xóa các lượt lưu (SavedDocument) của người dùng khác (Dù có Cascade vẫn nên xóa để an toàn)
+        var savedEntries = _context.SavedDocuments.Where(s => s.DocumentId == id);
+        _context.SavedDocuments.RemoveRange(savedEntries);
 
-                _context.Documents.Remove(doc);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(MyDocuments));
-        }
+        // 3. Xóa file vật lý trên server
+        var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+        if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
 
+        // 4. Xóa bản ghi tài liệu
+        _context.Documents.Remove(doc);
+        
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
+    }
+    return RedirectToAction(nameof(MyDocuments));
+}
+// --- XOÁ CÂU HỎI CỦA TÔI ---
+[HttpPost]
+[Authorize]
+public async Task<IActionResult> DeleteQuestion(int id)
+{
+    var userId = _userManager.GetUserId(User);
+    
+    // Tìm câu hỏi đảm bảo đúng chủ sở hữu
+    var question = await _context.Questions
+        .FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
+
+    if (question != null)
+    {
+        // 1. Xóa các báo cáo (Report) liên quan đến câu hỏi này (Vì DB đang để NoAction)
+        var relatedReports = _context.Reports.Where(r => r.QuestionId == id);
+        _context.Reports.RemoveRange(relatedReports);
+
+        // 2. Xóa các báo cáo liên quan đến tất cả câu trả lời của câu hỏi này
+        var answerIds = _context.Answers.Where(a => a.QuestionId == id).Select(a => a.Id);
+        var relatedAnswerReports = _context.Reports.Where(r => r.AnswerId != null && answerIds.Contains(r.AnswerId.Value));
+        _context.Reports.RemoveRange(relatedAnswerReports);
+
+        // 3. Xóa câu hỏi chính (Các Answer sẽ tự mất nhờ Cascade đã thiết lập)
+        _context.Questions.Remove(question);
+        
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
+    }
+    return RedirectToAction(nameof(MyQuestions));
+}
 // --- QUẢN LÝ CÂU HỎI CỦA TÔI ---
         public async Task<IActionResult> MyQuestions()
         {
@@ -170,8 +211,7 @@ public async Task<IActionResult> Profile()
                 .ToListAsync();
             return View(questions);
         }
-        [HttpPost]
-// Trong UserController.cs
+        // Trong UserController.cs
 [HttpPost]
 [Authorize]
 public async Task<IActionResult> SaveDocument(int docId)
@@ -229,6 +269,43 @@ public async Task<IActionResult> SavedDocuments()
         .ToListAsync();
     return View(savedDocs);
 }
+// --- XOÁ CÂU HỎI CỦA TÔI -
+// --- XOÁ CÂU TRẢ LỜI CỦA TÔI ---
+[HttpPost]
+[Authorize]
+[ValidateAntiForgeryToken] // Thêm để chống tấn công CSRF
+public async Task<IActionResult> DeleteAnswer(int id)
+{
+    var userId = _userManager.GetUserId(User);
 
+    // 1. Tìm câu trả lời và kiểm tra quyền sở hữu ngay trong truy vấn
+    var answer = await _context.Answers
+        .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+    if (answer == null)
+    {
+        // Nếu không tìm thấy hoặc không phải chủ sở hữu, thông báo lỗi
+        TempData["Error"] = "Bạn không có quyền xoá câu trả lời này hoặc nội dung không tồn tại.";
+    }
+    else 
+    {
+        // 2. Xử lý xoá các báo cáo (Report) liên quan đến câu trả lời này
+        // (Do AppDbContext đang để NoAction nên phải xoá thủ công để tránh lỗi SQL)
+        var relatedReports = _context.Reports.Where(r => r.AnswerId == id);
+        _context.Reports.RemoveRange(relatedReports);
+
+        _context.Answers.Remove(answer);
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Đã xoá câu trả lời.";
+    }
+
+    // 3. Xử lý quay lại trang cũ an toàn
+    string returnUrl = Request.Headers["Referer"].ToString();
+    if (string.IsNullOrEmpty(returnUrl))
+    {
+        return RedirectToAction("Index", "Home"); // Quay về trang chủ nếu không có Referer
+    }
+    return Redirect(returnUrl);
+}
     }
 }

@@ -1,7 +1,9 @@
 @model StudyShare.Models.Document
+@using System.Security.Claims @* Thêm dòng này để lấy ID người dùng *@
 @{
     ViewData["Title"] = Model.Title;
 }
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -9,6 +11,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -32,12 +35,26 @@
                         <a href="@Model.FilePath" download="@Model.FileName" class="btn btn-success">
                             <i class="bi bi-download me-2"></i> Tải xuống tài liệu
                         </a>
+
+                        @* Form Lưu tài liệu *@
                         <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
-        <input type="hidden" name="docId" value="@Model.Id" />
-        <button type="submit" class="btn btn-outline-primary w-100">
-            <i class="bi bi-bookmark-plus me-2"></i> Lưu tài liệu
-        </button>
-    </form>
+                            <input type="hidden" name="docId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-bookmark-plus me-2"></i> Lưu tài liệu
+                            </button>
+                        </form>
+
+                        @* 🔥 KHỐI LỆNH MỚI: Chỉ hiển thị nút Xóa cho chủ sở hữu *@
+                        @if (User.Identity.IsAuthenticated && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        {
+                            <form asp-area="User" asp-controller="User" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" 
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này? File sẽ bị xóa vĩnh viễn và không thể khôi phục.')">
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="bi bi-trash me-2"></i> Xóa tài liệu của tôi
+                                </button>
+                            </form>
+                        }
+
                         <a asp-action="Index" class="btn btn-outline-secondary">Quay lại thư viện</a>
                     </div>
                 </div>

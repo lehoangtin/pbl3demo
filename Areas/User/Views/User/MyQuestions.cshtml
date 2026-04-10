@@ -12,13 +12,19 @@
                     <small class="text-muted">
                         <i class="bi bi-clock me-1"></i>@q.CreatedAt.ToString("HH:mm dd/MM/yyyy")
                     </small>
-                    <div>
+                    <div class="d-flex align-items-center">
                         <span class="badge bg-info text-dark rounded-pill me-2">
                             @q.Answers.Count() câu trả lời
                         </span>
-                        <a href="/User/Question/Details/@q.Id" class="btn btn-sm btn-outline-secondary rounded-pill">
+                        <a href="/User/Question/Details/@q.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2">
                             Xem chi tiết
                         </a>
+                        <form asp-area="User" asp-controller="User" asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" 
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xoá câu hỏi này không? Thao tác này không thể hoàn tác.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                <i class="bi bi-trash"></i> Xoá
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

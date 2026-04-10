@@ -388,6 +388,9 @@ namespace PBL3demo.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("QuestionId")
                         .HasColumnType("int");
 
@@ -406,6 +409,8 @@ namespace PBL3demo.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnswerId");
+
+                    b.HasIndex("DocumentId");
 
                     b.HasIndex("QuestionId");
 
@@ -554,6 +559,11 @@ namespace PBL3demo.Migrations
                         .HasForeignKey("AnswerId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("StudyShare.Models.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("StudyShare.Models.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
@@ -573,6 +583,8 @@ namespace PBL3demo.Migrations
 
                     b.Navigation("Answer");
 
+                    b.Navigation("Document");
+
                     b.Navigation("Question");
 
                     b.Navigation("Reporter");
@@ -585,7 +597,7 @@ namespace PBL3demo.Migrations
                     b.HasOne("StudyShare.Models.Document", "Document")
                         .WithMany()
                         .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("StudyShare.Models.AppUser", "User")

@@ -11,7 +11,15 @@
     <div class="mb-3 p-3 bg-light rounded shadow-sm">
         <div class="d-flex justify-content-between">
             <strong>@answer.User.FullName</strong>
-            
+            @using System.Security.Claims
+
+            @if (User.Identity.IsAuthenticated && answer.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+        {
+            <form asp-area="User" asp-controller="User" asp-action="DeleteAnswer" asp-route-id="@answer.Id" method="post" 
+                  onsubmit="return confirm('Xoá câu trả lời này?')">
+                <button type="submit" class="btn btn-link text-danger p-0 ms-2">Xoá</button>
+            </form>
+        }
             <form asp-action="Report" method="post" class="d-inline">
                 <input type="hidden" name="answerId" value="@answer.Id" />
                 <div class="input-group input-group-sm">
