@@ -1,50 +1,37 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<StudyShare.Models.AppUser> SignInManager
 
-<ul class="navbar-nav">
+<ul class="navbar-nav ms-auto"> @* ms-auto để đẩy menu sang bên phải *@
 
-@if (SignInManager.IsSignedIn(User))
-{
-    <li>
-        👋 @User.Identity.Name
-    </li>
-
-    <li>
-        <a asp-area="User" asp-controller="Profile" asp-action="Index">
-            Profile
-        </a>
-    </li>
-
-    @if (User.IsInRole("Admin"))
+    @if (SignInManager.IsSignedIn(User))
     {
-        <li>
-            <a asp-area="Admin" asp-controller="Home" asp-action="Index">
-                🔥 Admin
+        <li class="nav-item d-flex align-items-center me-3">
+            <span class="navbar-text text-light">
+                👋 Chào, <strong>@User.Identity.Name</strong>
+            </span>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" asp-area="User" asp-controller="Profile" asp-action="Index">
+                <i class="bi bi-person"></i> Profile
             </a>
         </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                <button type="submit" class="nav-link btn btn-link border-0" style="cursor:pointer">
+                    Logout
+                </button>
+            </form>
+        </li>
     }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+        </li>
 
-    <li>
-        <a asp-controller="Account" asp-action="Logout">Logout</a>
-    </li>
-}
-else
-{
-    <li>
-        <a asp-controller="Account" asp-action="Login">Login</a>
-    </li>
-
-    <li>
-        <a asp-controller="Account" asp-action="Register">Register</a>
-    </li>
-}
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        @* 🔥 Phải dùng FORM và METHOD="POST" *@
-        <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-            <button type="submit" class="nav-link btn btn-link text-white border-0">Logout</button>
-        </form>
-    </li>
-}
+        <li class="nav-item">
+            <a class="nav-link btn btn-primary text-white ms-lg-2" asp-controller="Account" asp-action="Register">Register</a>
+        </li>
+    }
 </ul>

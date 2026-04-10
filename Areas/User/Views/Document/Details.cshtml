@@ -3,9 +3,23 @@
 <a href="@Model.FilePath" class="btn btn-primary" target="_blank">
     Mở file
 </a>
-<a asp-area="User" asp-action="Download" asp-route-id="@Model.Id" class="btn btn-success">
-    Download
-</a>
+<div class="d-flex align-items-center gap-2 mt-3">
+    @* NÚT 1: Tải tài liệu (Kết thúc bằng thẻ </a> ở ngay đây) *@
+    <a href="@Model.FilePath" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-download me-1"></i> Tải tài liệu
+    </a>
+
+    @* NÚT 2: Lưu tài liệu (Nằm hoàn toàn bên ngoài thẻ <a> phía trên) *@
+    @if (User.Identity.IsAuthenticated)
+    {
+        <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post" class="d-inline">
+            <input type="hidden" name="docId" value="@Model.Id" />
+            <button type="submit" class="btn btn-outline-success rounded-pill px-4 shadow-sm">
+                <i class="bi bi-bookmark-plus"></i> Lưu vào thư viện
+            </button>
+        </form>
+    }
+</div>
 <hr />
 
 @if (Model.FileType == ".pdf")

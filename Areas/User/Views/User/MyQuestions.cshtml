@@ -1,0 +1,27 @@
+@model IEnumerable<StudyShare.Models.Question>
+@{ ViewData["Title"] = "Câu hỏi của tôi"; }
+
+<div class="container mt-4">
+    <h4 class="fw-bold mb-4"><i class="bi bi-chat-dots me-2"></i>Các thảo luận của bạn</h4>
+    
+    @foreach(var q in Model) {
+        <div class="card mb-3 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="fw-bold">@q.Content</h6>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>@q.CreatedAt.ToString("HH:mm dd/MM/yyyy")
+                    </small>
+                    <div>
+                        <span class="badge bg-info text-dark rounded-pill me-2">
+                            @q.Answers.Count() câu trả lời
+                        </span>
+                        <a href="/User/Question/Details/@q.Id" class="btn btn-sm btn-outline-secondary rounded-pill">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -12,8 +12,10 @@ namespace StudyShare.Models
         public string? Avatar { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public List<Question> Questions { get; set; }
-        public List<Answer> Answers { get; set; }
+public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
+public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
         public bool IsBanned { get; set; } = false;
-    public virtual List<Document> Documents { get; set; } = new List<Document>();       }
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();      
+    public virtual ICollection<SavedDocument> SavedDocuments { get; set; } = new List<SavedDocument>();
+    }
 }

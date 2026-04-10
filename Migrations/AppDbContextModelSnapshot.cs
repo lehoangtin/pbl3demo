@@ -429,6 +429,9 @@ namespace PBL3demo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
@@ -440,6 +443,8 @@ namespace PBL3demo.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("DocumentId");
 
@@ -591,6 +596,10 @@ namespace PBL3demo.Migrations
 
             modelBuilder.Entity("StudyShare.Models.SavedDocument", b =>
                 {
+                    b.HasOne("StudyShare.Models.AppUser", null)
+                        .WithMany("SavedDocuments")
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("StudyShare.Models.Document", "Document")
                         .WithMany()
                         .HasForeignKey("DocumentId")
@@ -615,6 +624,8 @@ namespace PBL3demo.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("Questions");
+
+                    b.Navigation("SavedDocuments");
                 });
 
             modelBuilder.Entity("StudyShare.Models.Category", b =>
