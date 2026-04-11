@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MLYg4daL9bM=",
+  "dgSpecHash": "WceEHJQzWGw=",
   "success": true,
-  "projectFilePath": "/Users/mac/Bản sao PBL3demo/PBL3demo.csproj",
+  "projectFilePath": "/Users/mac/PBL3demo/PBL3demo.csproj",
   "expectedPackageFiles": [
     "/Users/mac/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",

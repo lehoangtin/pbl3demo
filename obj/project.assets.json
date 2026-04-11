@@ -4272,11 +4272,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/mac/Bản sao PBL3demo/PBL3demo.csproj",
+      "projectUniqueName": "/Users/mac/PBL3demo/PBL3demo.csproj",
       "projectName": "PBL3demo",
-      "projectPath": "/Users/mac/Bản sao PBL3demo/PBL3demo.csproj",
+      "projectPath": "/Users/mac/PBL3demo/PBL3demo.csproj",
       "packagesPath": "/Users/mac/.nuget/packages/",
-      "outputPath": "/Users/mac/Bản sao PBL3demo/obj/",
+      "outputPath": "/Users/mac/PBL3demo/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/mac/.nuget/NuGet/NuGet.Config"
