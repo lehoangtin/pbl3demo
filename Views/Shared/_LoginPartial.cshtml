@@ -1,11 +1,16 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<StudyShare.Models.AppUser> SignInManager
-
+@inject UserManager<AppUser> UserManager
 <ul class="navbar-nav ms-auto"> @* ms-auto để đẩy menu sang bên phải *@
 
     @if (SignInManager.IsSignedIn(User))
     {
+        var user = await UserManager.GetUserAsync(User);
         <li class="nav-item d-flex align-items-center me-3">
+            @* Hiển thị điểm với icon xu/ngôi sao *@
+            <span class="badge rounded-pill bg-warning text-dark me-2">
+                <i class="bi bi-coin"></i> @(user?.Points ?? 0)đ
+            </span>
             <span class="navbar-text text-light">
                 👋 Chào, <strong>@User.Identity.Name</strong>
             </span>

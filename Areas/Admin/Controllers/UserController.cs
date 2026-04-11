@@ -23,11 +23,25 @@ namespace StudyShare.Areas.Admin.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            return View(await _userManager.Users.ToListAsync());
-        }
+// Areas/Admin/Controllers/UserController.cs
 
+public async Task<IActionResult> Index(string searchString)
+{
+    // Lấy truy vấn cơ sở từ UserManager
+    var users = _userManager.Users;
+
+    // Nếu có từ khóa tìm kiếm, thực hiện lọc
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        users = users.Where(u => u.FullName.Contains(searchString) || 
+                                 u.Email.Contains(searchString));
+    }
+
+    // Lưu lại từ khóa để hiển thị lại trên ô nhập liệu (UI)
+    ViewData["CurrentFilter"] = searchString;
+
+    return View(await users.ToListAsync());
+}
         // --- ACTION CHI TIẾT NGƯỜI DÙNG ---
         public async Task<IActionResult> Details(string id)
         {
@@ -166,6 +180,39 @@ public async Task<IActionResult> Delete(string id)
         ModelState.AddModelError("", error.Description);
     }
     return View("Details", user);
+}
+// Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
+[HttpPost]
+[Authorize(Roles = "Admin")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ConfirmReport(int reportId)
+{
+    var report = await _context.Reports
+        .Include(r => r.Target)
+        .FirstOrDefaultAsync(r => r.Id == reportId);
+
+    if (report == null) return NotFound();
+
+    var targetUser = report.Target;
+    if (targetUser != null)
+    {
+        targetUser.Points -= 5; // Trừ 5 điểm
+        targetUser.WarningCount += 1; // Tăng số lần cảnh cáo
+
+        // Tự động ban nếu cảnh cáo quá 3 lần (Ví dụ thêm)
+        if (targetUser.WarningCount >= 3)
+        {
+            targetUser.IsBanned = true;
+        }
+
+        // Xóa báo cáo sau khi xử lý hoặc đánh dấu đã xử lý
+        _context.Reports.Remove(report);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã xử lý báo cáo. {targetUser.FullName} bị trừ 5đ và nhận 1 cảnh cáo.";
+    }
+
+    return RedirectToAction("ViewReports", new { id = report.TargetUserId });
 }
     }
 }

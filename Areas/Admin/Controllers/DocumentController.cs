@@ -31,22 +31,31 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(await query.OrderByDescending(d => d.UploadDate).ToListAsync());
         }
 
-        // ✅ Phê duyệt tài liệu
-        [HttpPost] // 🔥 Bắt buộc phải là HttpPost
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
+        // ✅ Phê duyệt tài liệu và cộng 10 điểm cho người đăng
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Approve(int id)
+{
+    var doc = await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
+    if (doc == null) return NotFound();
+
+    if (!doc.IsApproved) // Chỉ cộng điểm nếu tài liệu chưa được duyệt trước đó
+    {
+        doc.IsApproved = true;
+        
+        // Cộng 10 điểm cho người đăng
+        if (doc.User != null)
         {
-            var doc = await _context.Documents.FindAsync(id);
-            if (doc == null) return NotFound();
-
-            doc.IsApproved = true;
-            _context.Update(doc);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Tài liệu đã được phê duyệt!";
-            return RedirectToAction(nameof(Index)); // Quay lại trang danh sách
+            doc.User.Points += 10;
         }
 
+        _context.Update(doc);
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Tài liệu đã được phê duyệt và người dùng được cộng 10đ!";
+    }
+
+    return RedirectToAction(nameof(Index));
+}
         // 🗑️ Xóa tài liệu (Xóa cả file vật lý)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)

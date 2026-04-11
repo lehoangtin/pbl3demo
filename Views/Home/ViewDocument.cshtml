@@ -19,7 +19,21 @@
             <li class="breadcrumb-item active">@Model.Category?.Name</li>
         </ol>
     </nav>
-
+<div class="container mt-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm border-0 mb-4">
@@ -32,29 +46,38 @@
                     <p><strong>Lượt xem:</strong> <span class="badge bg-secondary">@Model.Views</span></p>
                     
                     <div class="d-grid gap-2 mt-4">
-                        <a href="@Model.FilePath" download="@Model.FileName" class="btn btn-success">
-                            <i class="bi bi-download me-2"></i> Tải xuống tài liệu
+                        @* 🔥 TẢI XUỐNG - GỌI ACTION TRỪ ĐIỂM *@
+                        <a asp-area="User" asp-controller="Document" asp-action="Download" asp-route-id="@Model.Id" 
+                           class="btn btn-success" onclick="return confirm('Bạn sẽ bị trừ 10 điểm để tải. Tiếp tục?')">
+                            <i class="bi bi-download"></i> Tải xuống (10đ)
                         </a>
 
-                        @* Form Lưu tài liệu *@
-                        <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
-                            <input type="hidden" name="docId" value="@Model.Id" />
-                            <button type="submit" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-bookmark-plus me-2"></i> Lưu tài liệu
-                            </button>
-                        </form>
-
-                        @* 🔥 KHỐI LỆNH MỚI: Chỉ hiển thị nút Xóa cho chủ sở hữu *@
-                        @if (User.Identity.IsAuthenticated && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        @* 🔥 LƯU / BỎ LƯU TÀI LIỆU *@
+                        @if (User.Identity.IsAuthenticated)
                         {
-                            <form asp-area="User" asp-controller="User" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" 
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này? File sẽ bị xóa vĩnh viễn và không thể khôi phục.')">
-                                <button type="submit" class="btn btn-danger w-100">
-                                    <i class="bi bi-trash me-2"></i> Xóa tài liệu của tôi
-                                </button>
-                            </form>
+                            if (ViewBag.IsSaved == true)
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="UnsaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-bookmark-check-fill"></i> Đã lưu</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-bookmark-plus"></i> Lưu tài liệu</button>
+                                </form>
+                            }
                         }
 
+                        @* XOÁ TÀI LIỆU (CỦA CHỦ SỞ HỮU) *@
+                        @if (User.Identity.IsAuthenticated && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        {
+                            <form asp-area="User" asp-controller="User" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xóa vĩnh viễn tài liệu này?')">
+                                <button type="submit" class="btn btn-danger w-100"><i class="bi bi-trash"></i> Xóa tài liệu của tôi</button>
+                            </form>
+                        }
                         <a asp-action="Index" class="btn btn-outline-secondary">Quay lại thư viện</a>
                     </div>
                 </div>

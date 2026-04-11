@@ -131,15 +131,20 @@ public async Task<IActionResult> Profile()
         // Thêm vào UserController.cs
 
 // --- QUẢN LÝ TÀI LIỆU CỦA TÔI ---
-        public async Task<IActionResult> MyDocuments()
-        {
-            var userId = _userManager.GetUserId(User);
-            var docs = await _context.Documents
-                .Where(d => d.UserId == userId)
-                .OrderByDescending(d => d.UploadDate)
-                .ToListAsync();
-            return View(docs);
-        }
+public async Task<IActionResult> MyQuestions()
+{
+    var userId = _userManager.GetUserId(User);
+    
+    // 🔥 Thêm dòng này để lấy User cho Sidebar
+    ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+
+    var questions = await _context.Questions
+        .Where(q => q.UserId == userId)
+        .Include(q => q.Answers)
+        .OrderByDescending(q => q.CreatedAt)
+        .ToListAsync();
+    return View(questions);
+}
 // --- XOÁ TÀI LIỆU CỦA TÔI ---
 [HttpPost]
 [Authorize]
@@ -201,70 +206,83 @@ public async Task<IActionResult> DeleteQuestion(int id)
     return RedirectToAction(nameof(MyQuestions));
 }
 // --- QUẢN LÝ CÂU HỎI CỦA TÔI ---
-        public async Task<IActionResult> MyQuestions()
-        {
-            var userId = _userManager.GetUserId(User);
-            var questions = await _context.Questions
-                .Where(q => q.UserId == userId)
-                .Include(q => q.Answers)
-                .OrderByDescending(q => q.CreatedAt)
-                .ToListAsync();
-            return View(questions);
-        }
+public async Task<IActionResult> MyDocuments()
+{
+    var userId = _userManager.GetUserId(User);
+    
+    // 🔥 Thêm dòng này để lấy User cho Sidebar
+    ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+
+    var docs = await _context.Documents
+        .Where(d => d.UserId == userId)
+        .OrderByDescending(d => d.UploadDate)
+        .ToListAsync();
+    return View(docs);
+}
         // Trong UserController.cs
 [HttpPost]
-[Authorize]
-public async Task<IActionResult> SaveDocument(int docId)
-{
-    var userId = _userManager.GetUserId(User);
-    
-    // Kiểm tra xem tài liệu này đã được người dùng lưu trước đó chưa
-    var existing = await _context.SavedDocuments
-        .AnyAsync(s => s.UserId == userId && s.DocumentId == docId);
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveDocument(int docId)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Challenge();
 
-    if (!existing)
-    {
-        // Nếu chưa, thêm một bản ghi mới vào bảng SavedDocuments
-        _context.SavedDocuments.Add(new SavedDocument { 
-            UserId = userId, 
-            DocumentId = docId,
-            SavedDate = DateTime.Now 
-        });
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
-    }
-    else 
-    {
-        TempData["Info"] = "Tài liệu này đã có trong danh sách lưu.";
-    }
-    
-    // Quay lại trang chi tiết tài liệu (HomeController)
-    return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
-}
-[HttpPost]
-[Authorize]
-public async Task<IActionResult> UnsaveDocument(int docId)
-{
-    var userId = _userManager.GetUserId(User);
-    var savedDoc = await _context.SavedDocuments
-        .FirstOrDefaultAsync(s => s.UserId == userId && s.DocumentId == docId);
+            var existing = await _context.SavedDocuments
+                .AnyAsync(s => s.UserId == userId && s.DocumentId == docId);
 
-    if (savedDoc != null)
-    {
-        _context.SavedDocuments.Remove(savedDoc);
-        await _context.SaveChangesAsync();
-        TempData["Success"] = " Đã bỏ lưu tài liệu.";
-    }
+            if (!existing)
+            {
+                _context.SavedDocuments.Add(new SavedDocument { 
+                    UserId = userId, 
+                    DocumentId = docId,
+                    SavedDate = DateTime.Now // 📝 Đã sửa thành SavedDate cho khớp Model
+                });
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
+            }
+            
+            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+        }
 
-    return RedirectToAction(nameof(SavedDocuments));
-}
+        // ✅ BỎ LƯU TÀI LIỆU
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnsaveDocument(int docId)
+        {
+            var userId = _userManager.GetUserId(User);
+            var savedDoc = await _context.SavedDocuments
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.DocumentId == docId);
+
+            if (savedDoc != null)
+            {
+                _context.SavedDocuments.Remove(savedDoc);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã bỏ lưu tài liệu.";
+            }
+
+            // Kiểm tra xem user đang ở trang nào để redirect cho hợp lý
+            string returnUrl = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("SavedDocuments"))
+            {
+                return RedirectToAction(nameof(SavedDocuments));
+            }
+            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+        }
+
+        // ✅ TRANG HIỂN THỊ DANH SÁCH ĐÃ LƯU
 public async Task<IActionResult> SavedDocuments()
 {
     var userId = _userManager.GetUserId(User);
+    
+    // 🔥 Thêm dòng này để lấy User cho Sidebar
+    ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+
     var savedDocs = await _context.SavedDocuments
         .Where(s => s.UserId == userId)
         .Include(s => s.Document)
-        .ThenInclude(d => d.User) // Để hiện tên người đăng gốc
+            .ThenInclude(d => d.User) 
         .OrderByDescending(s => s.SavedDate)
         .ToListAsync();
     return View(savedDocs);

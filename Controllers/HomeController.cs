@@ -63,7 +63,7 @@ namespace StudyShare.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id && m.IsApproved == true);
 
             if (doc == null) return NotFound();
-
+            
             // 1. Lấy ID của User đang đăng nhập
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -88,7 +88,7 @@ namespace StudyShare.Controllers
                 Response.Cookies.Append(viewCookieName, "seen", options);
             }
             // Nếu ĐÃ CÓ Cookie -> Bỏ qua khối if ở trên, không cộng view nữa.
-
+            
             return View(doc);
         }
     }

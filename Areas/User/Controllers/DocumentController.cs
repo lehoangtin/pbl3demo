@@ -126,6 +126,89 @@ namespace StudyShare.Areas.User.Controllers
             ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Name", doc.CategoryId);
             return View(doc);
         }
+        // --- THÊM VÀO DocumentController.cs ---
+
+// 1. Giao diện chỉnh sửa (GET)
+public async Task<IActionResult> Edit(int id)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+
+    if (doc == null) return NotFound();
+
+    ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Name", doc.CategoryId);
+    return View(doc);
+}
+
+// 2. Xử lý cập nhật (POST)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(int id, Document updatedDoc, IFormFile? file)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var existingDoc = await _context.Documents.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+
+    if (existingDoc == null) return NotFound();
+
+    // Loại bỏ kiểm tra các trường tự động
+    ModelState.Remove("UserId");
+    ModelState.Remove("FilePath");
+    ModelState.Remove("FileName");
+    ModelState.Remove("FileType");
+    ModelState.Remove("Category");
+    ModelState.Remove("User");
+
+    if (ModelState.IsValid)
+    {
+        try
+        {
+            updatedDoc.UserId = userId;
+            updatedDoc.UploadDate = existingDoc.UploadDate; // Giữ nguyên ngày đăng cũ
+            updatedDoc.IsApproved = false; // Phải duyệt lại sau khi sửa
+
+            if (file != null && file.Length > 0)
+            {
+                // Xử lý tệp tin mới (xóa file cũ, lưu file mới) giống như trong Create
+                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Xóa file vật lý cũ
+                var oldPath = Path.Combine(_env.WebRootPath, existingDoc.FilePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+
+                updatedDoc.FilePath = "/uploads/" + uniqueFileName;
+                updatedDoc.FileName = file.FileName;
+                updatedDoc.FileType = file.ContentType;
+                updatedDoc.FileSize = file.Length;
+            }
+            else
+            {
+                // Nếu không tải file mới, giữ nguyên thông tin file cũ
+                updatedDoc.FilePath = existingDoc.FilePath;
+                updatedDoc.FileName = existingDoc.FileName;
+                updatedDoc.FileType = existingDoc.FileType;
+                updatedDoc.FileSize = existingDoc.FileSize;
+            }
+
+            _context.Update(updatedDoc);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Cập nhật tài liệu thành công và đang chờ duyệt lại.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Lỗi: " + ex.Message);
+        }
+    }
+    ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Name", updatedDoc.CategoryId);
+    return View(updatedDoc);
+}
 
         // 4. Xóa tài liệu
         [HttpPost]
@@ -168,20 +251,37 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         // 6. Tải xuống file
-        public async Task<IActionResult> Download(int id)
-        {
-            var doc = await _context.Documents.FindAsync(id);
-            if (doc == null) return NotFound();
+       public async Task<IActionResult> Download(int id)
+{
+    var doc = await _context.Documents.FindAsync(id);
+    if (doc == null) return NotFound();
 
-            // Tăng lượt tải
-            doc.DownloadCount++;
-            _context.Update(doc);
-            await _context.SaveChangesAsync();
+    // Lấy thông tin user hiện tại đang tải
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var currentUser = await _context.Users.FindAsync(currentUserId);
 
-            var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
-            if (!System.IO.File.Exists(filePath)) return NotFound("File không tồn tại trên hệ thống.");
+    if (currentUser == null) return Challenge();
 
-            return PhysicalFile(filePath, "application/octet-stream", doc.FileName);
-        }
+    // 🔥 Kiểm tra điểm: Nếu dưới 10đ thì không cho tải
+    if (currentUser.Points < 10)
+    {
+        TempData["Error"] = "Bạn không đủ điểm để tải tài liệu này (Cần 10đ). Hãy đóng góp tài liệu hoặc trả lời câu hỏi để kiếm thêm điểm!";
+        // Quay lại trang danh sách tài liệu hoặc trang chi tiết
+        return RedirectToAction("Index", "Home", new { area = "" }); 
+    }
+
+    // 🔥 Trừ 10 điểm và tăng lượt tải
+    currentUser.Points -= 10;
+    doc.DownloadCount++;
+
+    _context.Update(currentUser);
+    _context.Update(doc);
+    await _context.SaveChangesAsync();
+
+    var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+    if (!System.IO.File.Exists(filePath)) return NotFound("File không tồn tại.");
+
+    return PhysicalFile(filePath, "application/octet-stream", doc.FileName);
+}
     }
 }

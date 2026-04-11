@@ -1,6 +1,6 @@
 @model StudyShare.Models.AppUser
 @{ 
-    ViewData["Title"] = "Trang cá nhân"; 
+    ViewData["Title"] = "Trang cá nhân";
 }
 
 <div class="container mt-4">
@@ -10,35 +10,51 @@
         </div>
 
         <div class="col-md-9">
-            
             <div class="card border-0 shadow-sm p-4 rounded-4 bg-gradient bg-primary text-white mb-4">
                 <h3 class="fw-bold">Chào bạn, @Model.FullName! 👋</h3>
-                <p class="mb-0 opacity-75">Chúc bạn một ngày học tập thật hiệu quả.</p>
+                <p class="mb-0 opacity-75">Hôm nay bạn có @Model.Points điểm tích lũy.</p>
             </div>
 
-            <div class="row g-4">
-                <div class="col-md-4">
+            <div class="row g-4 mb-4">
+                @* Cột thống kê điểm mới *@
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
+                        <h2 class="fw-bold text-warning mb-1">@Model.Points</h2>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Điểm hiện có</small>
+                    </div>
+                </div>
+
+                @* Cột thống kê cảnh cáo mới *@
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
+                        <h2 class="fw-bold text-dark mb-1">@Model.WarningCount</h2>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Số lần cảnh cáo</small>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
                         <h2 class="fw-bold text-primary mb-1">@ViewBag.TotalDocs</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Tài liệu đã đăng</small>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Tài liệu đăng</small>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
-                        <h2 class="fw-bold text-danger mb-1">@ViewBag.TotalSaved</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Tài liệu đã lưu</small>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
                         <h2 class="fw-bold text-success mb-1">@ViewBag.TotalQuestions</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Câu hỏi thảo luận</small>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Câu hỏi</small>
                     </div>
                 </div>
-            </div> @* Kết thúc hàng thẻ *@
+            </div>
 
-        </div> @* Kết thúc col-md-9 *@
-    </div> @* Kết thúc row chính *@
-</div> @* Kết thúc container *@
+            @* Nếu có cảnh cáo, hiển thị thông báo nhắc nhở *@
+            @if (Model.WarningCount > 0)
+            {
+                <div class="alert alert-warning border-0 shadow-sm rounded-4">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                    <strong>Lưu ý:</strong> Bạn đang có @Model.WarningCount lần cảnh cáo. Tài khoản sẽ bị khóa nếu vi phạm quá 3 lần.
+                </div>
+            }
+        </div>
+    </div>
+</div>

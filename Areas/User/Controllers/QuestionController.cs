@@ -33,30 +33,97 @@ namespace StudyShare.Areas.User.Controllers
 
         public IActionResult Create() => View();
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Question question)
-        {
-            ModelState.Remove("UserId");
-            ModelState.Remove("User");
-            ModelState.Remove("Answers");
+        // Cập nhật trong hàm Create (Post) của Question
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(Question question)
+{
+    ModelState.Remove("UserId");
+    ModelState.Remove("User");
+    ModelState.Remove("Answers");
 
-            if (ModelState.IsValid)
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userId == null) return Challenge();
+    if (ModelState.IsValid)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Challenge();
 
-                question.UserId = userId; 
-                question.CreatedAt = DateTime.Now;
+        question.UserId = userId; 
+        question.CreatedAt = DateTime.Now;
 
-                _context.Questions.Add(question);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(question);
-        }
+        // Cộng 5 điểm cho người đặt câu hỏi
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null) user.Points += 5;
 
-        [AllowAnonymous]
+        _context.Questions.Add(question);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+    return View(question);
+}
+// --- THÊM VÀO QuestionController.cs ---
+
+// 1. Giao diện chỉnh sửa (GET)
+public async Task<IActionResult> Edit(int id)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var question = await _context.Questions.FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
+
+    if (question == null) return NotFound();
+    return View(question);
+}
+
+// 2. Xử lý cập nhật (POST)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(int id, Question updatedQuestion)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var existingQuestion = await _context.Questions.AsNoTracking().FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
+
+    if (existingQuestion == null) return NotFound();
+
+    ModelState.Remove("UserId");
+    ModelState.Remove("User");
+    ModelState.Remove("Answers");
+
+    if (ModelState.IsValid)
+    {
+        existingQuestion.Content = updatedQuestion.Content;
+        // Có thể giữ nguyên ngày tạo cũ hoặc cập nhật ngày sửa nếu muốn
+        
+        _context.Update(existingQuestion);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+    return View(updatedQuestion);
+}
+// Cập nhật trong hàm PostAnswer
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> PostAnswer(int questionId, string content)
+{
+    if (string.IsNullOrWhiteSpace(content)) 
+        return RedirectToAction("Details", new { id = questionId });
+
+    var userId = _userManager.GetUserId(User);
+    if (userId == null) return Challenge();
+
+    var answer = new Answer
+    {
+        Content = content,
+        QuestionId = questionId,
+        UserId = userId,
+        CreatedAt = DateTime.Now
+    };
+
+    // Cộng 3 điểm cho người trả lời
+    var user = await _context.Users.FindAsync(userId);
+    if (user != null) user.Points += 3;
+
+    _context.Answers.Add(answer);
+    await _context.SaveChangesAsync();
+    return RedirectToAction("Details", new { id = questionId });
+}
         public async Task<IActionResult> Details(int id)
         {
             var question = await _context.Questions
@@ -68,28 +135,6 @@ namespace StudyShare.Areas.User.Controllers
             return View(question);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostAnswer(int questionId, string content)
-        {
-            if (string.IsNullOrWhiteSpace(content)) 
-                return RedirectToAction("Details", new { id = questionId });
-
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Challenge();
-
-            var answer = new Answer
-            {
-                Content = content,
-                QuestionId = questionId, // Model Answer thường dùng QuestionId làm FK
-                UserId = userId,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Answers.Add(answer);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new { id = questionId });
-        }
 [HttpPost]
 [Authorize]
 [ValidateAntiForgeryToken]
