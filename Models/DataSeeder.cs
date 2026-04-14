@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-<<<<<<< HEAD
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using System;
@@ -7,15 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-=======
-using StudyShare.Models;
-using StudyShare.Services;
->>>>>>> origin/minh
 namespace StudyShare.Models
 {
     public static class DataSeeder
     {
-<<<<<<< HEAD
+        // 👉 Dùng tên mới (đồng bộ với Program.cs bên minh)
         public static async Task SeedAllAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
@@ -23,15 +18,7 @@ namespace StudyShare.Models
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
-            // 1. Khởi tạo Quyền (Roles)
-=======
-        public static async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
-
-            // 1. Tạo các Role nếu chưa có
->>>>>>> origin/minh
+            // 1. Roles
             string[] roles = { "Admin", "User" };
             foreach (var role in roles)
             {
@@ -41,191 +28,99 @@ namespace StudyShare.Models
                 }
             }
 
-<<<<<<< HEAD
-            // 2. Khởi tạo Người dùng (Users)
+            // 2. Users
             var adminEmail = "admin@gmail.com";
-            var u1Email = "sinhvien1@gmail.com";
-            var u2Email = "sinhvien2@gmail.com";
+            var userEmail = "user@gmail.com";
 
-            // Tạo Admin
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
-                var admin = new AppUser 
-                { 
-                    UserName = adminEmail, 
-                    Email = adminEmail, 
-                    FullName = "Quản trị viên", 
+                var admin = new AppUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "Quản trị viên",
                     EmailConfirmed = true,
-                    Points = 999 
+                    Points = 999
                 };
                 await userManager.CreateAsync(admin, "Admin@123");
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
 
-            // Tạo Sinh viên 1
-            if (await userManager.FindByEmailAsync(u1Email) == null)
+            if (await userManager.FindByEmailAsync(userEmail) == null)
             {
-                var user1 = new AppUser 
-                { 
-                    UserName = u1Email, 
-                    Email = u1Email, 
-                    FullName = "Nguyễn Văn A", 
-                    EmailConfirmed = true, 
-                    Points = 100 
+                var user = new AppUser
+                {
+                    UserName = userEmail,
+                    Email = userEmail,
+                    FullName = "Sinh viên Test",
+                    EmailConfirmed = true,
+                    Points = 100
                 };
-                await userManager.CreateAsync(user1, "User@123");
-                await userManager.AddToRoleAsync(user1, "User");
+                await userManager.CreateAsync(user, "User@123");
+                await userManager.AddToRoleAsync(user, "User");
             }
 
-            // Tạo Sinh viên 2
-            if (await userManager.FindByEmailAsync(u2Email) == null)
-            {
-                var user2 = new AppUser 
-                { 
-                    UserName = u2Email, 
-                    Email = u2Email, 
-                    FullName = "Trần Thị B", 
-                    EmailConfirmed = true, 
-                    Points = 50 
-                };
-                await userManager.CreateAsync(user2, "User@123");
-                await userManager.AddToRoleAsync(user2, "User");
-            }
-
-            // Lấy đối tượng User đã tạo để gán ID cho các bảng sau
+            // Lấy user
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
-            var user1Obj = await userManager.FindByEmailAsync(u1Email);
-            var user2Obj = await userManager.FindByEmailAsync(u2Email);
+            var normalUser = await userManager.FindByEmailAsync(userEmail);
 
-            // 3. Khởi tạo Danh mục (Categories)
+            // 3. Categories
             if (!context.Categories.Any())
             {
                 context.Categories.AddRange(new List<Category>
                 {
                     new Category { Name = "Công nghệ thông tin", Description = "Lập trình, Database, AI..." },
-                    new Category { Name = "Kinh tế", Description = "Marketing, Kế toán, Tài chính..." },
                     new Category { Name = "Ngoại ngữ", Description = "Tiếng Anh, Tiếng Nhật..." }
                 });
                 await context.SaveChangesAsync();
             }
+
             var cat = await context.Categories.FirstAsync();
 
-            // 4. Khởi tạo Tài liệu (Documents)
+            // 4. Documents
             if (!context.Documents.Any())
             {
-                context.Documents.AddRange(new List<Document>
+                context.Documents.Add(new Document
                 {
-                    new Document 
-                    { 
-                        Title = "Giáo trình C# Nâng Cao", 
-                        Description = "Tài liệu học lập trình C# từ cơ bản đến nâng cao", 
-                        FileName = "CSharp_Advanced.pdf", 
-                        FilePath = "/uploads/csharp.pdf", 
-                        FileType = "application/pdf", 
-                        FileSize = 1024000,
-                        UserId = user1Obj.Id, 
-                        CategoryId = cat.Id,
-                        IsApproved = true,
-                        UploadDate = DateTime.Now.AddDays(-5)
-                    },
-                    new Document 
-                    { 
-                        Title = "Bài tập cấu trúc dữ liệu", 
-                        Description = "Tổng hợp các bài toán giải thuật phổ biến", 
-                        FileName = "DSA_Exercise.docx", 
-                        FilePath = "/uploads/dsa.docx", 
-                        FileType = "application/msword", 
-                        FileSize = 512000,
-                        UserId = user2Obj.Id, 
-                        CategoryId = cat.Id,
-                        IsApproved = true,
-                        UploadDate = DateTime.Now.AddDays(-2)
-                    }
+                    Title = "Giáo trình C#",
+                    Description = "Tài liệu học C#",
+                    FileName = "csharp.pdf",
+                    FilePath = "/uploads/csharp.pdf",
+                    FileType = "application/pdf",
+                    FileSize = 100000,
+                    UserId = normalUser.Id,
+                    CategoryId = cat.Id,
+                    IsApproved = true,
+                    UploadDate = DateTime.Now
                 });
                 await context.SaveChangesAsync();
             }
-            var doc1 = await context.Documents.FirstAsync();
 
-            // 5. Khởi tạo Câu hỏi (Questions)
+            // 5. Question
             if (!context.Questions.Any())
             {
-                context.Questions.Add(new Question 
-                { 
-                    Content = "Làm sao để kết nối SQL Server trong ASP.NET Core?", 
-                    UserId = user2Obj.Id,
-                    CreatedAt = DateTime.Now.AddHours(-10)
+                context.Questions.Add(new Question
+                {
+                    Content = "ASP.NET Core kết nối DB như thế nào?",
+                    UserId = normalUser.Id,
+                    CreatedAt = DateTime.Now
                 });
                 await context.SaveChangesAsync();
             }
+
             var question = await context.Questions.FirstAsync();
 
-            // 6. Khởi tạo Câu trả lời (Answers)
+            // 6. Answer
             if (!context.Answers.Any())
             {
-                context.Answers.Add(new Answer 
-                { 
-                    Content = "Bạn cần cấu hình ConnectionString trong file appsettings.json.", 
-                    QuestionId = question.Id, 
+                context.Answers.Add(new Answer
+                {
+                    Content = "Bạn cần dùng ConnectionString trong appsettings.json",
+                    QuestionId = question.Id,
                     UserId = adminUser.Id,
-                    CreatedAt = DateTime.Now.AddHours(-5)
+                    CreatedAt = DateTime.Now
                 });
                 await context.SaveChangesAsync();
-            }
-
-            // 7. Khởi tạo Báo cáo vi phạm (Reports)
-            if (!context.Reports.Any())
-            {
-                context.Reports.AddRange(new List<Report>
-                {
-                    // Kịch bản 1: Sinh viên 2 báo cáo tài liệu của Sinh viên 1
-                    new Report 
-                    { 
-                        ReporterUserId = user2Obj.Id, 
-                        TargetUserId = user1Obj.Id, 
-                        DocumentId = doc1.Id, 
-                        Reason = "Tài liệu chứa nội dung không chính xác và vi phạm bản quyền.",
-                        CreatedAt = DateTime.Now.AddDays(-1)
-                    },
-                    // Kịch bản 2: Admin báo cáo Sinh viên 2 vì spam nội dung
-                    new Report 
-                    { 
-                        ReporterUserId = adminUser.Id, 
-                        TargetUserId = user2Obj.Id, 
-                        Reason = "Người dùng cố tình đăng nội dung rác nhiều lần.",
-                        CreatedAt = DateTime.Now.AddHours(-2)
-                    }
-                });
-                await context.SaveChangesAsync();
-=======
-            // 2. Tạo tài khoản ADMIN mẫu
-            var adminEmail = "admin@gmail.com";
-            if (await userManager.FindByEmailAsync(adminEmail) == null)
-            {
-                var adminUser = new AppUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    FullName = "Quản trị viên",
-                    EmailConfirmed = true // Quan trọng để đăng nhập được ngay
-                };
-                await userManager.CreateAsync(adminUser, "Admin@123");
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-            }
-
-            // 3. Tạo tài khoản USER mẫu (Để bạn test)
-            var userEmail = "user@gmail.com";
-            if (await userManager.FindByEmailAsync(userEmail) == null)
-            {
-                var normalUser = new AppUser
-                {
-                    UserName = userEmail,
-                    Email = userEmail,
-                    FullName = "Sinh viên Test",
-                    EmailConfirmed = true
-                };
-                await userManager.CreateAsync(normalUser, "User@123");
-                await userManager.AddToRoleAsync(normalUser, "User");
->>>>>>> origin/minh
             }
         }
     }

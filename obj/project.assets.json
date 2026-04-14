@@ -93,12 +93,6 @@
           }
         }
       },
-<<<<<<< HEAD
-      "Humanizer.Core/2.14.1": {
-        "type": "package",
-        "compile": {
-          "lib/net6.0/_._": {
-=======
       "Humanizer/2.14.1": {
         "type": "package",
         "dependencies": {
@@ -156,7 +150,6 @@
         "type": "package",
         "compile": {
           "lib/net6.0/Humanizer.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -166,8 +159,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Humanizer.Core.af/2.14.1": {
         "type": "package",
         "dependencies": {
@@ -696,7 +687,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "K4os.Compression.LZ4/1.3.8": {
         "type": "package",
         "compile": {
@@ -798,8 +788,6 @@
           "buildMultiTargeting/Microsoft.AspNetCore.Identity.UI.targets": {}
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.AspNetCore.Razor.Language/6.0.24": {
         "type": "package",
         "compile": {
@@ -809,7 +797,6 @@
           "lib/netstandard2.0/Microsoft.AspNetCore.Razor.Language.dll": {}
         }
       },
->>>>>>> origin/minh
       "Microsoft.Bcl.AsyncInterfaces/8.0.0": {
         "type": "package",
         "compile": {
@@ -839,12 +826,6 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-<<<<<<< HEAD
-      "Microsoft.Build.Framework/18.0.2": {
-        "type": "package",
-        "compile": {
-          "ref/net10.0/_._": {
-=======
       "Microsoft.Build/17.11.48": {
         "type": "package",
         "dependencies": {
@@ -868,7 +849,6 @@
         "type": "package",
         "compile": {
           "ref/net10.0/Microsoft.Build.Framework.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -891,11 +871,7 @@
           "Microsoft.CodeAnalysis.Analyzers": "3.11.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/Microsoft.CodeAnalysis.dll": {
->>>>>>> origin/minh
             "related": ".pdb;.xml"
           }
         },
@@ -953,11 +929,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.0.0]"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/Microsoft.CodeAnalysis.CSharp.dll": {
->>>>>>> origin/minh
             "related": ".pdb;.xml"
           }
         },
@@ -1008,8 +980,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.CodeAnalysis.CSharp.Features/5.0.0": {
         "type": "package",
         "dependencies": {
@@ -1078,7 +1048,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "Microsoft.CodeAnalysis.CSharp.Workspaces/5.0.0": {
         "type": "package",
         "dependencies": {
@@ -1090,11 +1059,7 @@
           "System.Composition": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll": {
->>>>>>> origin/minh
             "related": ".pdb;.xml"
           }
         },
@@ -1145,8 +1110,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.CodeAnalysis.Elfie/1.0.0": {
         "type": "package",
         "dependencies": {
@@ -1298,7 +1261,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "Microsoft.CodeAnalysis.Workspaces.Common/5.0.0": {
         "type": "package",
         "dependencies": {
@@ -1308,11 +1270,7 @@
           "System.Composition": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/Microsoft.CodeAnalysis.Workspaces.dll": {
->>>>>>> origin/minh
             "related": ".pdb;.xml"
           }
         },
@@ -1375,14 +1333,10 @@
           "System.Composition": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {}
-=======
           "lib/net9.0/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll": {},
           "lib/net9.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll": {
             "related": ".pdb;.xml"
           }
->>>>>>> origin/minh
         },
         "runtime": {
           "lib/net9.0/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll": {},
@@ -1531,8 +1485,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.DiaSymReader/2.0.0": {
         "type": "package",
         "compile": {
@@ -1574,7 +1526,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "Microsoft.EntityFrameworkCore/10.0.5": {
         "type": "package",
         "dependencies": {
@@ -1680,11 +1631,7 @@
       "Microsoft.Extensions.DependencyModel/10.0.5": {
         "type": "package",
         "compile": {
-<<<<<<< HEAD
-          "lib/net10.0/_._": {
-=======
           "lib/net10.0/Microsoft.Extensions.DependencyModel.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -1843,8 +1790,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.NET.StringTools/17.11.48": {
         "type": "package",
         "compile": {
@@ -1858,7 +1803,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "Microsoft.SqlServer.Server/1.0.0": {
         "type": "package",
         "compile": {
@@ -1875,11 +1819,7 @@
       "Microsoft.VisualStudio.SolutionPersistence/1.0.52": {
         "type": "package",
         "compile": {
-<<<<<<< HEAD
-          "lib/net8.0/_._": {
-=======
           "lib/net8.0/Microsoft.VisualStudio.SolutionPersistence.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -1889,8 +1829,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "Microsoft.VisualStudio.Web.CodeGeneration/10.0.2": {
         "type": "package",
         "dependencies": {
@@ -2128,7 +2066,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "MimeKit/4.15.1": {
         "type": "package",
         "dependencies": {
@@ -2152,11 +2089,7 @@
           "System.CodeDom": "6.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net6.0/_._": {}
-=======
           "lib/net6.0/Mono.TextTemplating.dll": {}
->>>>>>> origin/minh
         },
         "runtime": {
           "lib/net6.0/Mono.TextTemplating.dll": {}
@@ -2240,11 +2173,7 @@
       "Newtonsoft.Json/13.0.3": {
         "type": "package",
         "compile": {
-<<<<<<< HEAD
-          "lib/net6.0/_._": {
-=======
           "lib/net6.0/Newtonsoft.Json.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2254,8 +2183,6 @@
           }
         }
       },
-<<<<<<< HEAD
-=======
       "NuGet.Common/6.12.1": {
         "type": "package",
         "dependencies": {
@@ -2401,7 +2328,6 @@
           }
         }
       },
->>>>>>> origin/minh
       "runtime.native.System.Data.SqlClient.sni/4.7.0": {
         "type": "package",
         "dependencies": {
@@ -2504,11 +2430,7 @@
       "System.Composition.AttributedModel/9.0.0": {
         "type": "package",
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/System.Composition.AttributedModel.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2527,11 +2449,7 @@
           "System.Composition.AttributedModel": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/System.Composition.Convention.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2550,11 +2468,7 @@
           "System.Composition.Runtime": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/System.Composition.Hosting.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2570,11 +2484,7 @@
       "System.Composition.Runtime/9.0.0": {
         "type": "package",
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/System.Composition.Runtime.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2595,11 +2505,7 @@
           "System.Composition.Runtime": "9.0.0"
         },
         "compile": {
-<<<<<<< HEAD
-          "lib/net9.0/_._": {
-=======
           "lib/net9.0/System.Composition.TypedParts.dll": {
->>>>>>> origin/minh
             "related": ".xml"
           }
         },
@@ -2631,8 +2537,6 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-<<<<<<< HEAD
-=======
       "System.Data.DataSetExtensions/4.5.0": {
         "type": "package",
         "compile": {
@@ -2642,7 +2546,6 @@
           "lib/netstandard2.0/System.Data.DataSetExtensions.dll": {}
         }
       },
->>>>>>> origin/minh
       "System.Data.SqlClient/4.8.6": {
         "type": "package",
         "dependencies": {
@@ -2702,8 +2605,6 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-<<<<<<< HEAD
-=======
       "System.Reflection.MetadataLoadContext/8.0.0": {
         "type": "package",
         "compile": {
@@ -2720,7 +2621,6 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
->>>>>>> origin/minh
       "System.Security.Cryptography.Pkcs/10.0.0": {
         "type": "package",
         "compile": {
@@ -2743,11 +2643,7 @@
           }
         }
       },
-<<<<<<< HEAD
-      "System.Security.Cryptography.ProtectedData/9.0.4": {
-=======
       "System.Security.Cryptography.ProtectedData/9.0.6": {
->>>>>>> origin/minh
         "type": "package",
         "compile": {
           "lib/net9.0/System.Security.Cryptography.ProtectedData.dll": {
@@ -2958,8 +2854,6 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
-<<<<<<< HEAD
-=======
     "Humanizer/2.14.1": {
       "sha512": "/FUTD3cEceAAmJSCPN9+J+VhGwmL/C12jvwlyM1DFXShEMsBzvLzLqSrJ2rb+k/W2znKw7JyflZgZpyE+tI7lA==",
       "type": "package",
@@ -2972,7 +2866,6 @@
         "logo.png"
       ]
     },
->>>>>>> origin/minh
     "Humanizer.Core/2.14.1": {
       "sha512": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "type": "package",
@@ -2991,8 +2884,6 @@
         "logo.png"
       ]
     },
-<<<<<<< HEAD
-=======
     "Humanizer.Core.af/2.14.1": {
       "sha512": "BoQHyu5le+xxKOw+/AUM7CLXneM/Bh3++0qh1u0+D95n6f9eGt9kNc8LcAHLIOwId7Sd5hiAaaav0Nimj3peNw==",
       "type": "package",
@@ -3709,7 +3600,6 @@
         "logo.png"
       ]
     },
->>>>>>> origin/minh
     "K4os.Compression.LZ4/1.3.8": {
       "sha512": "LhwlPa7c1zs1OV2XadMtAWdImjLIsqFJPoRcIWAadSRn0Ri1DepK65UbWLPmt4riLqx2d40xjXRk0ogpqNtK7g==",
       "type": "package",
@@ -3957,8 +3847,6 @@
         "staticwebassets/V5/lib/jquery/dist/jquery.slim.min.map"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.AspNetCore.Razor.Language/6.0.24": {
       "sha512": "kBL6ljTREp/3fk8EKN27mrPy3WTqWUjiqCkKFlCKHUKRO3/9rAasKizX3vPWy4ZTcNsIPmVWUHwjDFmiW4MyNA==",
       "type": "package",
@@ -3973,7 +3861,6 @@
         "microsoft.aspnetcore.razor.language.nuspec"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.Bcl.AsyncInterfaces/8.0.0": {
       "sha512": "3WA9q9yVqJp222P3x1wYIGDAkpjAku0TMUaaQV22g6L67AI0LdOIrVS7Ht2vJfLHGSPVuqN94vIr15qn+HEkHw==",
       "type": "package",
@@ -4026,8 +3913,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.Build/17.11.48": {
       "sha512": "g8Kn575mNAKcuFotV3C7xvF+IbxuHennl67LH2shL2au1U6UqwReTDygCHyU04+koc2Yn7fHIbVQaC08HqEWow==",
       "type": "package",
@@ -4052,7 +3937,6 @@
         "ref/net8.0/Microsoft.Build.xml"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.Build.Framework/18.0.2": {
       "sha512": "sOSb+0J4G/jCBW/YqmRuL0eOMXgfw1KQLdC9TkbvfA5xs7uNm+PBQXJCOzSJGXtZcZrtXozcwxPmUiRUbmd7FA==",
       "type": "package",
@@ -4903,8 +4787,6 @@
         "microsoft.codeanalysis.csharp.nuspec"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.CodeAnalysis.CSharp.Features/5.0.0": {
       "sha512": "Hbf3tvBghC+7S9+LuJXajgPVhjwdZO9+U4FPSTFuKbeLAunwpcbxZdJ+GXf7XJQ9bBJvBlzIDupHjMAgE5i1uQ==",
       "type": "package",
@@ -4966,7 +4848,6 @@
         "microsoft.codeanalysis.csharp.features.nuspec"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.CodeAnalysis.CSharp.Workspaces/5.0.0": {
       "sha512": "Al/Q8B+yO8odSqGVpSvrShMFDvlQdIBU//F3E6Rb0YdiLSALE9wh/pvozPNnfmh5HDnvU+mkmSjpz4hQO++jaA==",
       "type": "package",
@@ -5028,8 +4909,6 @@
         "microsoft.codeanalysis.csharp.workspaces.nuspec"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.CodeAnalysis.Elfie/1.0.0": {
       "sha512": "r12elUp4MRjdnRfxEP+xqVSUUfG3yIJTBEJGwbfvF5oU4m0jb9HC0gFG28V/dAkYGMkRmHVi3qvrnBLQSw9X3Q==",
       "type": "package",
@@ -5179,7 +5058,6 @@
         "microsoft.codeanalysis.scripting.common.nuspec"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.CodeAnalysis.Workspaces.Common/5.0.0": {
       "sha512": "ZbUmIvT6lqTNKiv06Jl5wf0MTMi1vQ1oH7ou4CLcs2C/no/L7EhP3T8y3XXvn9VbqMcJaJnEsNA1jwYUMgc5jg==",
       "type": "package",
@@ -5439,8 +5317,6 @@
         "runtimes/win-x86/native/Microsoft.Data.SqlClient.SNI.dll"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.DiaSymReader/2.0.0": {
       "sha512": "QcZrCETsBJqy/vQpFtJc+jSXQ0K5sucQ6NUFbTNVHD4vfZZOwjZ/3sBzczkC4DityhD3AVO/+K/+9ioLs1AgRA==",
       "type": "package",
@@ -5471,7 +5347,6 @@
         "microsoft.dotnet.scaffolding.shared.nuspec"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.EntityFrameworkCore/10.0.5": {
       "sha512": "9tNBmK3EpYVGRQLiqP+bqK2m+TD0Gv//4vCzR7ZOgl4FWzCFyOpYdIVka13M4kcBdPdSJcs3wbHr3rmzOqbIMA==",
       "type": "package",
@@ -5819,8 +5694,6 @@
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.NET.StringTools/17.11.48": {
       "sha512": "0IQo089IGBEC4jgtishauZMVr9ZxOWNiGKeDvyzZlvw7p2r253lJh6IJCLLFWXvZnVrVO5mnsYIPamxFPzM08w==",
       "type": "package",
@@ -5850,7 +5723,6 @@
         "ref/netstandard2.0/Microsoft.NET.StringTools.xml"
       ]
     },
->>>>>>> origin/minh
     "Microsoft.SqlServer.Server/1.0.0": {
       "sha512": "N4KeF3cpcm1PUHym1RmakkzfkEv3GRMyofVv40uXsQhCQeglr2OHNcUk2WOG51AKpGO8ynGpo9M/kFXSzghwug==",
       "type": "package",
@@ -5887,8 +5759,6 @@
         "microsoft.visualstudio.solutionpersistence.nuspec"
       ]
     },
-<<<<<<< HEAD
-=======
     "Microsoft.VisualStudio.Web.CodeGeneration/10.0.2": {
       "sha512": "LhwZTguLVNS7STgweJz/Akd1HSDHzoQBiAukcJ0t3k8QIwo5RON6UDle/w8YDnmTdSDDwZ/3BVdvPPpkrq22Ng==",
       "type": "package",
@@ -6393,7 +6263,6 @@
         "microsoft.visualstudio.web.codegenerators.mvc.nuspec"
       ]
     },
->>>>>>> origin/minh
     "MimeKit/4.15.1": {
       "sha512": "cxCcQhD0zhboFoG136jJuJtQjNRDJ+BxBm3f2vWn+53bff/CRo+K1mAkWjsW4Wuyy5O22F40MdMG2nRzQu1cJw==",
       "type": "package",
@@ -6543,8 +6412,6 @@
         "packageIcon.png"
       ]
     },
-<<<<<<< HEAD
-=======
     "NuGet.Common/6.12.1": {
       "sha512": "nk8nTdhQl4x2VaAQUvefI7DDYAuBDlE+OZZRffm50Qx5dUAEq8wkc5JIqrN2lTEohObHPI/SXyG2UFdMQkrdyg==",
       "type": "package",
@@ -6706,7 +6573,6 @@
         "nuget.versioning.nuspec"
       ]
     },
->>>>>>> origin/minh
     "runtime.native.System.Data.SqlClient.sni/4.7.0": {
       "sha512": "9kyFSIdN3T0qjDQ2R0HRXYIhS3l5psBzQi6qqhdLz+SzFyEy4sVxNOke+yyYv8Cu8rPER12c3RDjLT8wF3WBYQ==",
       "type": "package",
@@ -7093,8 +6959,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-<<<<<<< HEAD
-=======
     "System.Data.DataSetExtensions/4.5.0": {
       "sha512": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw==",
       "type": "package",
@@ -7114,7 +6978,6 @@
         "version.txt"
       ]
     },
->>>>>>> origin/minh
     "System.Data.SqlClient/4.8.6": {
       "sha512": "2Ij/LCaTQRyAi5lAv7UUTV9R2FobC8xN9mE0fXBZohum/xLl8IZVmE98Rq5ugQHjCgTBRKqpXRb4ORulRdA6Ig==",
       "type": "package",
@@ -7254,8 +7117,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-<<<<<<< HEAD
-=======
     "System.Reflection.MetadataLoadContext/8.0.0": {
       "sha512": "SZxrQ4sQYnIcdwiO3G/lHZopbPYQ2lW0ioT4JezgccWUrKaKbHLJbAGZaDfkYjWcta1pWssAo3MOXLsR0ie4tQ==",
       "type": "package",
@@ -7286,7 +7147,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
->>>>>>> origin/minh
     "System.Security.Cryptography.Pkcs/10.0.0": {
       "sha512": "UPWqLSygJlFerRi9XNIuM0a1VC8gHUIufyP24xQ0sc+XimqUAEcjpOz9DhKpyDjH+5B/wO3RpC0KpkEeDj/ddg==",
       "type": "package",
@@ -7323,17 +7183,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-<<<<<<< HEAD
-    "System.Security.Cryptography.ProtectedData/9.0.4": {
-      "sha512": "o94k2RKuAce3GeDMlUvIXlhVa1kWpJw95E6C9LwW0KlG0nj5+SgCiIxJ2Eroqb9sLtG1mEMbFttZIBZ13EJPvQ==",
-      "type": "package",
-      "path": "system.security.cryptography.protecteddata/9.0.4",
-=======
     "System.Security.Cryptography.ProtectedData/9.0.6": {
       "sha512": "yErfw/3pZkJE/VKza/Cm5idTpIKOy/vsmVi59Ta5SruPVtubzxb8CtnE8tyUpzs5pr0Y28GUFfSVzAhCLN3F/Q==",
       "type": "package",
       "path": "system.security.cryptography.protecteddata/9.0.6",
->>>>>>> origin/minh
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -7359,11 +7212,7 @@
         "lib/xamarinmac20/_._",
         "lib/xamarintvos10/_._",
         "lib/xamarinwatchos10/_._",
-<<<<<<< HEAD
-        "system.security.cryptography.protecteddata.9.0.4.nupkg.sha512",
-=======
         "system.security.cryptography.protecteddata.9.0.6.nupkg.sha512",
->>>>>>> origin/minh
         "system.security.cryptography.protecteddata.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -7455,25 +7304,16 @@
       "Microsoft.EntityFrameworkCore.Design >= 10.0.5",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.5",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.5",
-<<<<<<< HEAD
-=======
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 10.0.2",
->>>>>>> origin/minh
       "MySql.Data.EntityFramework >= 9.6.0"
     ]
   },
   "packageFolders": {
-<<<<<<< HEAD
     "/Users/mac/.nuget/packages/": {}
-=======
-    "C:\\Users\\ADMIN\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
->>>>>>> origin/minh
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< HEAD
       "projectUniqueName": "/Users/mac/PBL3demo/PBL3demo.csproj",
       "projectName": "PBL3demo",
       "projectPath": "/Users/mac/PBL3demo/PBL3demo.csproj",
@@ -7482,31 +7322,11 @@
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/mac/.nuget/NuGet/NuGet.Config"
-=======
-      "projectUniqueName": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj",
-      "projectName": "PBL3demo",
-      "projectPath": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj",
-      "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\obj\\",
-      "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
-      "configFilePaths": [
-        "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
->>>>>>> origin/minh
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-<<<<<<< HEAD
-=======
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
->>>>>>> origin/minh
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -7567,13 +7387,10 @@
             "target": "Package",
             "version": "[10.0.5, )"
           },
-<<<<<<< HEAD
-=======
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[10.0.2, )"
           },
->>>>>>> origin/minh
           "MySql.Data.EntityFramework": {
             "target": "Package",
             "version": "[9.6.0, )"
@@ -7598,11 +7415,7 @@
             "privateAssets": "all"
           }
         },
-<<<<<<< HEAD
         "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
-=======
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
->>>>>>> origin/minh
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
