@@ -22,8 +22,6 @@ namespace StudyShare.Areas.User.Controllers
             _aiService = aiService;
             _userManager = userManager;
         }
-
-        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var questions = await _context.Questions
@@ -175,7 +173,6 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         // ================= DETAILS =================
-        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var question = await _context.Questions

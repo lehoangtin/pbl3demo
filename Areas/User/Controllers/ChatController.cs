@@ -1,15 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using ai.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization; // Thêm dòng này
 
 namespace ai.Controllers
 {
-    // Class để hứng dữ liệu từ giao diện gửi lên
     public class UserMessage
     {
         public string text { get; set; }
     }
 
+    [Area("User")]
+    [Authorize] // Thêm dòng này: Bắt buộc đăng nhập mới được dùng Chat
     public class ChatController : Controller
     {
         private readonly AIService _aiService;
@@ -19,14 +21,11 @@ namespace ai.Controllers
             _aiService = aiService;
         }
 
-        // 1. Hiển thị trang Chat
-        [Area("User")]
         public IActionResult Index()
         {
             return View();
         }
 
-        // 2. Nhận tin nhắn và trả về kết quả ngầm (API dùng cho JavaScript)
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] UserMessage msg)
         {
