@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿@model IEnumerable<StudyShare.Models.Document>
 @{
     ViewData["Title"] = "Thư viện chung";
@@ -75,4 +76,83 @@
             </div>
         </div>
     </div>
+=======
+﻿@model IEnumerable<StudyShare.Models.Document>
+@{
+    ViewData["Title"] = "Thư viện chung";
+    var categories = ViewBag.Categories as List<StudyShare.Models.Category>;
+    int? currentCatId = ViewBag.CurrentCategory as int?;
+}
+
+<div class="container">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Thư viện tài liệu học tập</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-filter-left"></i> Lọc theo danh mục</h5>
+            <div class="list-group shadow-sm">
+                <a asp-action="Index" 
+                   class="list-group-item list-group-item-action @(currentCatId == null ? "active" : "")">
+                   Tất cả tài liệu
+                </a>
+
+                @if (categories != null)
+                {
+                    @foreach (var cat in categories)
+                    {
+                        <a asp-action="Index" 
+                           asp-route-categoryId="@cat.Id" 
+                           asp-route-searchTerm="@ViewBag.SearchTerm"
+                           class="list-group-item list-group-item-action @(currentCatId == cat.Id ? "active" : "")">
+                            @cat.Name
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <form asp-action="Index" method="get" class="d-flex shadow-sm bg-white p-2 rounded-3">
+                        <input type="hidden" name="categoryId" value="@currentCatId" />
+                        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                               class="form-control border-0 me-2" placeholder="Tìm trong danh mục này..." />
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                            Tìm kiếm
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                <div class="card-body">
+                                    <h6 class="fw-bold">@item.Title</h6>
+                                    <span class="badge bg-info text-dark">@item.Category?.Name</span>
+                                    </div>
+                                <div class="card-footer bg-white border-0">
+                                    <a asp-action="ViewDocument" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100">Xem</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">Không tìm thấy tài liệu nào trong danh mục này.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+>>>>>>> origin/minh
 </div>

@@ -36,4 +36,23 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <!-- 🔥 SweetAlert hiển thị lỗi AI -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (ViewBag.Error != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Nội dung vi phạm!',
+                    text: '@Html.Raw(ViewBag.Error)',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Đã hiểu'
+                });
+                </text>
+            }
+        });
+    </script>
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+<<<<<<< HEAD
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using System;
@@ -6,10 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+=======
+using StudyShare.Models;
+using StudyShare.Services;
+>>>>>>> origin/minh
 namespace StudyShare.Models
 {
     public static class DataSeeder
     {
+<<<<<<< HEAD
         public static async Task SeedAllAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
@@ -18,6 +24,14 @@ namespace StudyShare.Models
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
             // 1. Khởi tạo Quyền (Roles)
+=======
+        public static async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+
+            // 1. Tạo các Role nếu chưa có
+>>>>>>> origin/minh
             string[] roles = { "Admin", "User" };
             foreach (var role in roles)
             {
@@ -27,6 +41,7 @@ namespace StudyShare.Models
                 }
             }
 
+<<<<<<< HEAD
             // 2. Khởi tạo Người dùng (Users)
             var adminEmail = "admin@gmail.com";
             var u1Email = "sinhvien1@gmail.com";
@@ -181,6 +196,36 @@ namespace StudyShare.Models
                     }
                 });
                 await context.SaveChangesAsync();
+=======
+            // 2. Tạo tài khoản ADMIN mẫu
+            var adminEmail = "admin@gmail.com";
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            {
+                var adminUser = new AppUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "Quản trị viên",
+                    EmailConfirmed = true // Quan trọng để đăng nhập được ngay
+                };
+                await userManager.CreateAsync(adminUser, "Admin@123");
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+
+            // 3. Tạo tài khoản USER mẫu (Để bạn test)
+            var userEmail = "user@gmail.com";
+            if (await userManager.FindByEmailAsync(userEmail) == null)
+            {
+                var normalUser = new AppUser
+                {
+                    UserName = userEmail,
+                    Email = userEmail,
+                    FullName = "Sinh viên Test",
+                    EmailConfirmed = true
+                };
+                await userManager.CreateAsync(normalUser, "User@123");
+                await userManager.AddToRoleAsync(normalUser, "User");
+>>>>>>> origin/minh
             }
         }
     }

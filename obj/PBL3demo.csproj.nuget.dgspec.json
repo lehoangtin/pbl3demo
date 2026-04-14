@@ -1,6 +1,7 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< HEAD
     "/Users/mac/PBL3demo/PBL3demo.csproj": {}
   },
   "projects": {
@@ -15,11 +16,37 @@
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/mac/.nuget/NuGet/NuGet.Config"
+=======
+    "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj",
+        "projectName": "PBL3demo",
+        "projectPath": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\PBL3demo.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ADMIN\\OneDrive - The University of Technology\\PBL3-main\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+>>>>>>> origin/minh
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+<<<<<<< HEAD
+=======
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+>>>>>>> origin/minh
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -80,6 +107,13 @@
               "target": "Package",
               "version": "[10.0.5, )"
             },
+<<<<<<< HEAD
+=======
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[10.0.2, )"
+            },
+>>>>>>> origin/minh
             "MySql.Data.EntityFramework": {
               "target": "Package",
               "version": "[9.6.0, )"
@@ -104,7 +138,11 @@
               "privateAssets": "all"
             }
           },
+<<<<<<< HEAD
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
+=======
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+>>>>>>> origin/minh
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

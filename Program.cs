@@ -4,17 +4,21 @@ using StudyShare.Models;
 using StudyShare.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddControllersWithViews();
 
-// Database connection
+// 🔥 AI Service (giữ từ nhánh minh)
+builder.Services.AddHttpClient<ai.Services.AIService>();
+
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>  
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
 
-// Identity Configuration
+// Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
-    options.SignIn.RequireConfirmedEmail = true; 
+    options.SignIn.RequireConfirmedEmail = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireDigit = true;
     options.Password.RequireNonAlphanumeric = true;
@@ -24,6 +28,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+// Cookie (giữ 1 cái thôi)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -33,36 +38,37 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
 });
 
+// Mail
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<EmailSender>();
 
 var app = builder.Build();
 
-// --- ĐÂY LÀ ĐOẠN ĐÃ SỬA ---
+// 🔥 Seeder (dùng bản mới của bạn)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Đổi tên thành SeedAllAsync ở đây
-        await DataSeeder.SeedAllAsync(services); 
+        await DataSeeder.SeedAllAsync(services);
     }
     catch (Exception ex)
     {
         Console.WriteLine("Lỗi Seeding: " + ex.Message);
     }
 }
-// --------------------------
 
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Areas route
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
+// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

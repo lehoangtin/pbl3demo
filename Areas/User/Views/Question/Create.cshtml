@@ -5,7 +5,9 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h3 class="fw-bold mb-4 text-primary"><i class="bi bi-pencil-square me-2"></i> Đặt câu hỏi cho cộng đồng</h3>
+                <h3 class="fw-bold mb-4 text-primary">
+                    <i class="bi bi-pencil-square me-2"></i> Đặt câu hỏi cho cộng đồng
+                </h3>
                 
                 <form asp-action="Create" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -21,7 +23,9 @@
                         <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
                             <i class="bi bi-send me-1"></i> Đăng câu hỏi
                         </button>
-                        <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">Hủy bỏ</a>
+                        <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">
+                            Hủy bỏ
+                        </a>
                     </div>
                 </form>
             </div>
@@ -35,4 +39,23 @@
 
 @section Scripts {
     @{await Html.PartialAsync("_ValidationScriptsPartial");}
+
+    <!-- 🔥 SweetAlert hiển thị lỗi từ AI -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (ViewBag.Error != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Nội dung vi phạm!',
+                    text: '@Html.Raw(ViewBag.Error)',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Đã hiểu'
+                });
+                </text>
+            }
+        });
+    </script>
 }
