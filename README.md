@@ -4,7 +4,8 @@ CÁCH ĐỂ DÙNG AI:
 3. tải những tool cần thiết như:
 pip uninstall google-generativeai -y,
 pip install google-genai,
-pip install uvicorn
+pip install uvicorn,
+pip install python-dotenv
 5. mở terminal của folder này và gõ lệnh: uvicorn main:app --reload
 
 XONG. Thế là cứ vào web và test thôi
