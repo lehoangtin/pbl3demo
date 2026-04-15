@@ -69,7 +69,9 @@ namespace StudyShare.Models
                     new Category { Name = "Toán chuyên ngành", Description = "Đại số tuyến tính, SVD, Cholesky..." },
                     new Category { Name = "Cơ sở dữ liệu", Description = "SQL Server, MySQL, Docker Compose..." },
                     new Category { Name = "Ngoại ngữ", Description = "Tài liệu ôn thi JLPT N5, N4, N2..." },
-                    new Category { Name = "Thuật toán", Description = "Master Theorem, Phân tích độ phức tạp..." }
+                    new Category { Name = "Thuật toán", Description = "Master Theorem, Phân tích độ phức tạp..." },
+                    // 🔥 Đã thêm danh mục "Khác" ở đây
+                    new Category { Name = "Khác", Description = "Các tài liệu thuộc chủ đề khác không nằm trong danh mục trên" } 
                 });
                 await context.SaveChangesAsync();
             }
@@ -78,6 +80,7 @@ namespace StudyShare.Models
             var catNetwork = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Mạng máy tính");
             var catMath = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Toán chuyên ngành");
             var catLang = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Ngoại ngữ");
+            var catOther = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Khác"); // Lấy danh mục Khác
 
             // 4. Khởi tạo Documents (Nhiều loại file và tình trạng duyệt)
             if (!context.Documents.Any() && catSoftware != null && catNetwork != null)
@@ -87,7 +90,9 @@ namespace StudyShare.Models
                     new Document { Title = "Đồ án PBL3 - StudyShare", Description = "Mã nguồn và báo cáo PBL3", FileName = "PBL3_BaoCao.docx", FilePath = "/uploads/PBL3_BaoCao.docx", FileType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document", FileSize = 2500000, UserId = tinUser.Id, CategoryId = catSoftware.Id, IsApproved = true, UploadDate = DateTime.Now.AddDays(-10) },
                     new Document { Title = "Slide NAT PAT DHCP", Description = "Hướng dẫn cấu hình Cisco Router", FileName = "3. NAT PAT DHCP.pdf", FilePath = "/uploads/3_NAT_PAT_DHCP.pdf", FileType = "application/pdf", FileSize = 1048576, UserId = sv1User.Id, CategoryId = catNetwork.Id, IsApproved = true, UploadDate = DateTime.Now.AddDays(-5) },
                     new Document { Title = "Phân tích ma trận SVD", Description = "Code C++ implement SVD không dùng thư viện", FileName = "svd_algorithm.pdf", FilePath = "/uploads/svd_algorithm.pdf", FileType = "application/pdf", FileSize = 512000, UserId = tinUser.Id, CategoryId = catMath.Id, IsApproved = false, UploadDate = DateTime.Now.AddDays(-1) },
-                    new Document { Title = "Từ vựng & Ngữ pháp N2", Description = "Tổng hợp Kanji và Choukai N2", FileName = "JLPT_N2.pdf", FilePath = "/uploads/JLPT_N2.pdf", FileType = "application/pdf", FileSize = 4500000, UserId = sv1User.Id, CategoryId = catLang.Id, IsApproved = true, UploadDate = DateTime.Now.AddDays(-2) }
+                    new Document { Title = "Từ vựng & Ngữ pháp N2", Description = "Tổng hợp Kanji và Choukai N2", FileName = "JLPT_N2.pdf", FilePath = "/uploads/JLPT_N2.pdf", FileType = "application/pdf", FileSize = 4500000, UserId = sv1User.Id, CategoryId = catLang.Id, IsApproved = true, UploadDate = DateTime.Now.AddDays(-2) },
+                    // Thêm một tài liệu mẫu cho danh mục Khác
+                    new Document { Title = "Kỹ năng mềm cho Sinh viên", Description = "Tài liệu học kỹ năng giao tiếp và thuyết trình", FileName = "KyNangMem.pdf", FilePath = "/uploads/KyNangMem.pdf", FileType = "application/pdf", FileSize = 1200000, UserId = sv1User.Id, CategoryId = catOther.Id, IsApproved = true, UploadDate = DateTime.Now.AddDays(-1) }
                 });
                 await context.SaveChangesAsync();
             }

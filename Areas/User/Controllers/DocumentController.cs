@@ -251,7 +251,8 @@ public async Task<IActionResult> Edit(int id, Document updatedDoc, IFormFile? fi
         }
 
         // 6. Tải xuống file
-       public async Task<IActionResult> Download(int id)
+      // 6. Tải xuống file
+public async Task<IActionResult> Download(int id)
 {
     var doc = await _context.Documents.FindAsync(id);
     if (doc == null) return NotFound();
@@ -262,19 +263,25 @@ public async Task<IActionResult> Edit(int id, Document updatedDoc, IFormFile? fi
 
     if (currentUser == null) return Challenge();
 
-    // 🔥 SỬA TẠI ĐÂY: Điểm < 0 thì không cho tải nữa
-    if (currentUser.Points < 0)
+    // KIỂM TRA: Nếu không phải là tài liệu của chính mình thì mới trừ điểm
+    if (doc.UserId != currentUserId)
     {
-        TempData["Error"] = "Điểm của bạn đang âm (< 0). Bạn không được phép tải thêm tài liệu nữa!";
-        return RedirectToAction("Index", "Home", new { area = "" }); 
+        // Điểm < 0 thì không cho tải nữa
+        if (currentUser.Points < 0)
+        {
+            TempData["Error"] = "Điểm của bạn đang âm (< 0). Bạn không được phép tải thêm tài liệu nữa!";
+            return RedirectToAction("Index", "Home", new { area = "" }); 
+        }
+
+        // Trừ 10 điểm nếu là người khác tải
+        currentUser.Points -= 10;
+        _context.Update(currentUser);
     }
 
-    // 🔥 Trừ 10 điểm và tăng lượt tải
-    currentUser.Points -= 10;
+    // Tăng lượt tải (có thể đặt trong hoặc ngoài if tùy vào việc bạn có muốn đếm lượt tải của chính chủ hay không)
     doc.DownloadCount++;
-
-    _context.Update(currentUser);
     _context.Update(doc);
+    
     await _context.SaveChangesAsync();
 
     var filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));

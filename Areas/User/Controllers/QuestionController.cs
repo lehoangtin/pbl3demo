@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using System.Security.Claims;
 using ai.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -40,53 +42,58 @@ namespace StudyShare.Areas.User.Controllers
         // ================= CREATE =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Question question)
+        public async Task<IActionResult> Create(Question model)
         {
-            ModelState.Remove("UserId");
-            ModelState.Remove("User");
-            ModelState.Remove("Answers");
-
-            if (!ModelState.IsValid) return View(question);
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Challenge();
-
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return NotFound();
 
-            // 🔥 AI CHECK
-            var aiResult = await _aiService.CheckContentAsync(question.Content);
+            // 1. GỌI AI KIỂM TRA NỘI DUNG TRƯỚC KHI LƯU
+            var aiResult = await _aiService.CheckContentAsync(model.Content);
 
+            // 2. NẾU AI PHÁT HIỆN VI PHẠM
             if (aiResult.isFlagged)
             {
                 user.Points -= 10;
                 user.WarningCount += 1;
 
-                if (user.WarningCount > 3)
+                // Lưu thẳng báo cáo vào Lịch sử xử lý
+                var newReport = new Report
+                {
+                    TargetUserId = userId,
+                    ReporterUserId = null, // Logo AI
+                    Reason = $"AI Quét tự động (Tạo câu hỏi): {aiResult.reason}",
+                    CreatedAt = DateTime.Now,
+                    IsResolved = true, 
+                    ActionTaken = "Hệ thống AI chặn bài & Phạt 10đ" 
+                };
+                _context.Reports.Add(newReport);
+
+                // Khóa tài khoản nếu vi phạm nhiều
+                if (user.WarningCount >= 3 || user.Points < 0)
                 {
                     user.IsBanned = true;
                     await _context.SaveChangesAsync();
                     
-                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
                     await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá 3 lần hoặc điểm âm!";
                     return RedirectToAction("Login", "Account", new { area = "" });
                 }
 
                 await _context.SaveChangesAsync();
-                ViewBag.Error = $"Bị AI chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
-                return View(question);
+
+                ModelState.AddModelError("", $"Nội dung vi phạm: {aiResult.reason} (-10 điểm, +1 cảnh cáo)");
+                return View(model); 
             }
 
-            // ✅ OK thì lưu
-            question.UserId = userId;
-            question.CreatedAt = DateTime.Now;
-
-            user.Points += 5;
-
-            _context.Questions.Add(question);
+            // 3. NẾU AN TOÀN THÌ LƯU CÂU HỎI
+            model.UserId = userId;
+            model.CreatedAt = DateTime.Now;
+            
+            _context.Questions.Add(model);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Đăng câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -121,7 +128,7 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid) return View(updatedQuestion);
 
             var user = await _context.Users.FindAsync(userId);
-            if (user == null) return NotFound(); // Cẩn thận kiểm tra user null
+            if (user == null) return NotFound();
 
             // 🔥 AI CHECK
             var aiResult = await _aiService.CheckContentAsync(updatedQuestion.Content);
@@ -131,14 +138,26 @@ namespace StudyShare.Areas.User.Controllers
                 user.Points -= 10;
                 user.WarningCount += 1;
 
-                if (user.WarningCount > 3)
+                // Lưu thẳng báo cáo vào Lịch sử xử lý
+                var newReport = new Report
+                {
+                    TargetUserId = userId,
+                    ReporterUserId = null,
+                    QuestionId = id,
+                    Reason = $"AI Quét tự động (Sửa câu hỏi): {aiResult.reason}",
+                    CreatedAt = DateTime.Now,
+                    IsResolved = true,
+                    ActionTaken = "Hệ thống AI chặn sửa bài & Phạt 10đ"
+                };
+                _context.Reports.Add(newReport);
+
+                if (user.WarningCount >= 3 || user.Points < 0)
                 {
                     user.IsBanned = true;
                     await _context.SaveChangesAsync();
                     
-                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
                     await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá nhiều!";
                     return RedirectToAction("Login", "Account", new { area = "" });
                 }
 
@@ -152,6 +171,7 @@ namespace StudyShare.Areas.User.Controllers
             _context.Update(existingQuestion);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Cập nhật câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -175,17 +195,28 @@ namespace StudyShare.Areas.User.Controllers
             if (aiResult.isFlagged)
             {
                 user.Points -= 10;
-                user.WarningCount += 1; // 🔥 Đồng bộ: Tăng 1 lần vi phạm
+                user.WarningCount += 1;
 
-                // 🔥 Đồng bộ: Tự động khóa tài khoản nếu vi phạm trên 3 lần
-                if (user.WarningCount > 3)
+                // Lưu thẳng báo cáo vào Lịch sử xử lý
+                var newReport = new Report
+                {
+                    TargetUserId = userId,
+                    ReporterUserId = null,
+                    QuestionId = questionId,
+                    Reason = $"AI Quét tự động (Bình luận): {aiResult.reason}",
+                    CreatedAt = DateTime.Now,
+                    IsResolved = true,
+                    ActionTaken = "Hệ thống AI chặn bình luận & Phạt 10đ"
+                };
+                _context.Reports.Add(newReport);
+
+                if (user.WarningCount >= 3 || user.Points < 0)
                 {
                     user.IsBanned = true;
                     await _context.SaveChangesAsync();
 
-                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
                     await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá 3 lần!";
                     return RedirectToAction("Login", "Account", new { area = "" });
                 }
 
@@ -208,6 +239,7 @@ namespace StudyShare.Areas.User.Controllers
             _context.Answers.Add(answer);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Đã gửi câu trả lời và được cộng 3 điểm!";
             return RedirectToAction("Details", new { id = questionId });
         }
 
@@ -224,7 +256,7 @@ namespace StudyShare.Areas.User.Controllers
             return View(question);
         }
 
-        // ================= REPORT =================
+        // ================= REPORT (USER BÁO CÁO NHAU) =================
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -256,13 +288,17 @@ namespace StudyShare.Areas.User.Controllers
                 TargetUserId = targetUserId,
                 QuestionId = questionId,
                 AnswerId = answerId,
-                Reason = reason
+                Reason = reason,
+                CreatedAt = DateTime.Now,
+                // Báo cáo do User gửi thì Admin vẫn phải duyệt (chưa giải quyết)
+                IsResolved = false,
+                ActionTaken = null 
             };
 
             _context.Reports.Add(report);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = "Đã gửi báo cáo!";
+            TempData["Message"] = "Đã gửi báo cáo vi phạm thành công! Quản trị viên sẽ xem xét.";
 
             int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId))?.QuestionId ?? 0;
 

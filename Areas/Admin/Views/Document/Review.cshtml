@@ -1,0 +1,73 @@
+@model StudyShare.Models.Document
+
+@{
+    ViewData["Title"] = "Duyệt tài liệu";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-warning"><i class="bi bi-file-earmark-check"></i> Kiểm duyệt tài liệu</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4 border-warning border-start border-4">
+                <div class="card-header bg-dark text-white fw-bold">Thông tin tài liệu</div>
+                <div class="card-body">
+                    <p><strong>Tiêu đề:</strong> @Model.Title</p>
+                    <p><strong>Người đăng:</strong> @Model.User?.FullName</p>
+                    <p><strong>Danh mục:</strong> <span class="badge bg-info text-dark">@Model.Category?.Name</span></p>
+                    <p><strong>Mô tả:</strong> @Model.Description</p>
+                    <p><strong>Ngày tải lên:</strong> @Model.UploadDate.ToString("dd/MM/yyyy HH:mm")</p>
+
+                    <hr />
+                    
+                    @* Nút Duyệt *@
+                    <form asp-area="Admin" asp-controller="Document" asp-action="ApproveDocument" asp-route-id="@Model.Id" method="post">
+                        <button type="submit" class="btn btn-success w-100 fw-bold mb-3 py-2 shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Chấp nhận & Hiển thị
+                        </button>
+                    </form>
+
+                    @* Nút Xóa (Trỏ về action Delete có sẵn trong Admin/DocumentController) *@
+                    <form asp-area="Admin" asp-controller="Document" asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Tài liệu này vi phạm? Bạn có chắc muốn xoá vĩnh viễn không?');">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-trash-fill me-1"></i> Xóa / Từ chối
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow border-0" style="height: 80vh;">
+                <div class="card-header bg-primary text-white fw-bold">
+                    <i class="bi bi-file-text"></i> Bản xem trước: @Model.FileName
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.FileType.Contains("pdf"))
+                    {
+                        <iframe src="@Model.FilePath#toolbar=0" width="100%" height="100%" style="border: none;"></iframe>
+                    }
+                    else if (Model.FileType.Contains("image"))
+                    {
+                        <div class="text-center p-3 h-100 bg-light d-flex align-items-center justify-content-center">
+                            <img src="@Model.FilePath" class="img-fluid shadow-sm rounded" style="max-height: 100%;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-5 h-100 d-flex flex-column justify-content-center bg-light">
+                            <i class="bi bi-file-earmark-arrow-down text-secondary" style="font-size: 6rem;"></i>
+                            <h4 class="mt-3 text-dark">File này không hỗ trợ xem trực tiếp</h4>
+                            <p class="text-muted">Vì là file Word/Excel/Zip..., bạn cần tải về máy để kiểm tra nội dung.</p>
+                            <a href="@Model.FilePath" download="@Model.FileName" class="btn btn-primary mt-3 mx-auto px-4 rounded-pill">
+                                <i class="bi bi-download"></i> Tải file về máy
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

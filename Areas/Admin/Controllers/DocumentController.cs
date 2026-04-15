@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
@@ -18,7 +21,7 @@ namespace StudyShare.Areas.Admin.Controllers
             _env = env;
         }
 
-        // 📋 Danh sách toàn bộ tài liệu (có tìm kiếm)
+        // 📋 1. Danh sách toàn bộ tài liệu (có tìm kiếm)
         public async Task<IActionResult> Index(string search)
         {
             var query = _context.Documents.Include(d => d.User).AsQueryable();
@@ -31,32 +34,48 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(await query.OrderByDescending(d => d.UploadDate).ToListAsync());
         }
 
-        // ✅ Phê duyệt tài liệu và cộng 10 điểm cho người đăng
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Approve(int id)
-{
-    var doc = await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
-    if (doc == null) return NotFound();
-
-    if (!doc.IsApproved) // Chỉ cộng điểm nếu tài liệu chưa được duyệt trước đó
-    {
-        doc.IsApproved = true;
-        
-        // Cộng 10 điểm cho người đăng
-        if (doc.User != null)
+        // 🔍 2. Hiển thị trang Xem & Duyệt dành riêng cho Admin
+        public async Task<IActionResult> Review(int id)
         {
-            doc.User.Points += 10;
+            var document = await _context.Documents
+                .Include(d => d.User)
+                .Include(d => d.Category)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (document == null) return NotFound();
+
+            return View(document);
         }
 
-        _context.Update(doc);
-        await _context.SaveChangesAsync();
-        TempData["Success"] = "Tài liệu đã được phê duyệt và người dùng được cộng 10đ!";
-    }
+        // ✅ 3. Phê duyệt tài liệu và cộng 10 điểm cho người đăng 
+        // (Đổi tên thành ApproveDocument để khớp với nút submit bên file Review.cshtml)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveDocument(int id)
+        {
+            var doc = await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
+            if (doc == null) return NotFound();
 
-    return RedirectToAction(nameof(Index));
-}
-        // 🗑️ Xóa tài liệu (Xóa cả file vật lý)
+            if (!doc.IsApproved) // Chỉ cộng điểm nếu tài liệu chưa được duyệt trước đó
+            {
+                doc.IsApproved = true;
+                
+                // Cộng 10 điểm cho người đăng
+                if (doc.User != null)
+                {
+                    doc.User.Points += 10;
+                }
+
+                _context.Update(doc);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Tài liệu đã được phê duyệt thành công và người dùng đã được cộng 10đ!";
+            }
+
+            // Sau khi duyệt xong, trả Admin về trang Dashboard
+            return RedirectToAction("Index", "Home", new { area = "Admin" });
+        }
+
+        // 🗑️ 4. Xóa tài liệu (Xóa cả file vật lý)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -74,7 +93,10 @@ public async Task<IActionResult> Approve(int id)
             _context.Documents.Remove(doc);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Đã xóa / từ chối tài liệu thành công!";
+            
+            // Xoá xong trả về trang Dashboard (hoặc bạn có thể đổi thành trả về Index của Document)
+            return RedirectToAction("Index", "Home", new { area = "Admin" });
         }
     }
 }

@@ -66,10 +66,15 @@ namespace StudyShare.Controllers
         // ==========================================
         // XEM CHI TIẾT (BẮT BUỘC PHẢI ĐĂNG NHẬP)
         // ==========================================
-        [Authorize] 
-        public async Task<IActionResult> ViewDocument(int id)
+       [Authorize] 
+public async Task<IActionResult> ViewDocument(int id)
 {
-    var document = await _context.Documents.FindAsync(id);
+    // 🔥 SỬA Ở ĐÂY: Dùng Include() để lấy kèm dữ liệu User và Category
+    var document = await _context.Documents
+        .Include(d => d.User)      // Kéo theo dữ liệu User để lấy được FullName
+        .Include(d => d.Category)  // Kéo theo Category
+        .FirstOrDefaultAsync(d => d.Id == id);
+
     if (document == null) return NotFound();
 
     // 1. Kiểm tra xem người dùng đã đăng nhập chưa
@@ -78,7 +83,7 @@ namespace StudyShare.Controllers
     
     if (userId != null)
     {
-        // 2. Nếu đã đăng nhập, kiểm tra xem tài liệu này đã có trong danh sách SavedDocuments của user chưa
+        // 2. Nếu đã đăng nhập, kiểm tra xem tài liệu này đã có trong danh sách SavedDocuments chưa
         isSaved = await _context.SavedDocuments
             .AnyAsync(sd => sd.UserId == userId && sd.DocumentId == id);
     }

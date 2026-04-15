@@ -10,7 +10,7 @@ namespace StudyShare.Models
         public int Id { get; set; }
 
         // --- Foreign Keys ---
-        public string ReporterUserId { get; set; }
+        public string? ReporterUserId { get; set; }
         public string TargetUserId { get; set; }
         
         public int? DocumentId { get; set; } // 🔥 Bổ sung trường này
@@ -36,6 +36,8 @@ namespace StudyShare.Models
         public virtual Question Question { get; set; } 
 
         [ForeignKey("AnswerId")]
-        public virtual Answer Answer { get; set; }     
+        public virtual Answer Answer { get; set; }   
+        public bool IsResolved { get; set; } = true; // Đánh dấu đã xử lý chưa
+        public string? ActionTaken { get; set; } // Ghi chú kết quả: Đã khóa, Đã cảnh cáo, Bỏ qua...  
     }
 }

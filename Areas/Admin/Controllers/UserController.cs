@@ -6,7 +6,6 @@ using StudyShare.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using StudyShare.ViewModels;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
@@ -23,31 +22,30 @@ namespace StudyShare.Areas.Admin.Controllers
             _context = context;
         }
 
-// Areas/Admin/Controllers/UserController.cs
+        public async Task<IActionResult> Index(string searchString)
+        {
+            // Lấy truy vấn cơ sở từ UserManager
+            var users = _userManager.Users;
 
-public async Task<IActionResult> Index(string searchString)
-{
-    // Lấy truy vấn cơ sở từ UserManager
-    var users = _userManager.Users;
+            // Nếu có từ khóa tìm kiếm, thực hiện lọc
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                users = users.Where(u => u.FullName.Contains(searchString) || 
+                                         u.Email.Contains(searchString));
+            }
 
-    // Nếu có từ khóa tìm kiếm, thực hiện lọc
-    if (!string.IsNullOrEmpty(searchString))
-    {
-        users = users.Where(u => u.FullName.Contains(searchString) || 
-                                 u.Email.Contains(searchString));
-    }
+            // Lưu lại từ khóa để hiển thị lại trên ô nhập liệu (UI)
+            ViewData["CurrentFilter"] = searchString;
 
-    // Lưu lại từ khóa để hiển thị lại trên ô nhập liệu (UI)
-    ViewData["CurrentFilter"] = searchString;
+            return View(await users.ToListAsync());
+        }
 
-    return View(await users.ToListAsync());
-}
         // --- ACTION CHI TIẾT NGƯỜI DÙNG ---
         public async Task<IActionResult> Details(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
 
-            // 1. Lấy thông tin User (Đây là cái View đang đợi)
+            // 1. Lấy thông tin User
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
@@ -55,15 +53,15 @@ public async Task<IActionResult> Index(string searchString)
             var roles = await _userManager.GetRolesAsync(user);
             ViewBag.Roles = roles.Any() ? string.Join(", ", roles) : "Thành viên";
 
-            // 3. Thống kê số lượng (Hiện ở các ô trên đầu trang)
+            // 3. Thống kê số lượng
             ViewBag.DocumentCount = await _context.Documents.CountAsync(d => d.UserId == id);
             ViewBag.QuestionCount = await _context.Questions.CountAsync(q => q.UserId == id);
             ViewBag.AnswerCount = await _context.Answers.CountAsync(a => a.UserId == id);
 
-            // 4. Lấy dữ liệu liên quan và bỏ vào ViewBag (Để View gọi ra sau)
+            // 4. Lấy dữ liệu liên quan và bỏ vào ViewBag
             ViewBag.RecentDocuments = await _context.Documents
                 .Where(d => d.UserId == id)
-                .OrderByDescending(d => d.UploadDate) // Lưu ý: UploadDate hoặc CreatedAt tùy DB của bạn
+                .OrderByDescending(d => d.UploadDate) 
                 .Take(5)
                 .ToListAsync() ?? new List<Document>();
 
@@ -79,8 +77,6 @@ public async Task<IActionResult> Index(string searchString)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync() ?? new List<Report>();
 
-            // 🔥 DÒNG QUAN TRỌNG NHẤT: Trả về đối tượng user
-            // Tuyệt đối KHÔNG trả về danh sách câu hỏi ở đây
             return View(user); 
         }
 
@@ -96,163 +92,199 @@ public async Task<IActionResult> Index(string searchString)
 
             return RedirectToAction(nameof(Details), new { id = user.Id });
         }
-public async Task<IActionResult> ReportedUsers()
-{
-    var reportedList = await _context.Reports
-        .GroupBy(r => r.TargetUserId)
-        .Select(g => new ReportedUserViewModel
+
+        public async Task<IActionResult> ReportedUsers()
         {
-            UserId = g.Key,
-            FullName = _context.Users.Where(u => u.Id == g.Key).Select(u => u.FullName).FirstOrDefault(),
-            Email = _context.Users.Where(u => u.Id == g.Key).Select(u => u.Email).FirstOrDefault(),
-            // Số người báo cáo khác nhau
-            UniqueReporters = g.Select(r => r.ReporterUserId).Distinct().Count(),
-            // 🔥 Tổng số lần bị báo cáo
-            TotalReports = g.Count(), 
-            IsBanned = _context.Users.Where(u => u.Id == g.Key).Select(u => u.IsBanned).FirstOrDefault()
-        })
-        .OrderByDescending(x => x.TotalReports) // Ưu tiên hiện người bị báo cáo nhiều nhất
-        .ToListAsync();
+            // 🔥 ĐÃ FIX LỖI Ở ĐÂY: Đổi ReportedUser thành Target
+            var reports = await _context.Reports
+                .Include(r => r.Target)  
+                .Include(r => r.Reporter) 
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
-    return View(reportedList);
-}
-public async Task<IActionResult> ViewReports(string id)
-{
-    if (string.IsNullOrEmpty(id)) return NotFound();
+            // Chia làm 2 danh sách truyền ra View bằng ViewBag
+            ViewBag.PendingReports = reports.Where(r => !r.IsResolved).ToList();
+            ViewBag.HistoryReports = reports.Where(r => r.IsResolved).ToList();
 
-    var targetUser = await _userManager.FindByIdAsync(id);
-    if (targetUser == null) return NotFound();
-
-    // Lấy chi tiết tất cả các báo cáo nhắm vào User này
-    var reports = await _context.Reports
-        .Where(r => r.TargetUserId == id)
-        .Include(r => r.Reporter)   // Người báo cáo
-        .Include(r => r.Question)   // Nếu báo cáo câu hỏi
-        .Include(r => r.Answer)     // Nếu báo cáo câu trả lời
-        .OrderByDescending(r => r.CreatedAt)
-        .ToListAsync();
-
-    ViewBag.TargetUser = targetUser.FullName;
-    return View(reports);
-}
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Delete(string id)
-{
-    if (string.IsNullOrEmpty(id)) return NotFound();
-
-    var user = await _userManager.FindByIdAsync(id);
-    if (user == null) return NotFound();
-
-    // 1. Xoá tất cả báo cáo liên quan (cả người báo cáo và người bị báo cáo)
-    var relatedReports = _context.Reports.Where(r => r.ReporterUserId == id || r.TargetUserId == id);
-    _context.Reports.RemoveRange(relatedReports);
-
-    // 2. Xoá các tài liệu đã lưu
-    var savedDocs = _context.SavedDocuments.Where(sd => sd.UserId == id);
-    _context.SavedDocuments.RemoveRange(savedDocs);
-
-    // 3. Xoá các câu trả lời
-    var userAnswers = _context.Answers.Where(a => a.UserId == id);
-    _context.Answers.RemoveRange(userAnswers);
-
-    // 4. Xoá các câu hỏi
-    var userQuestions = _context.Questions.Where(q => q.UserId == id);
-    _context.Questions.RemoveRange(userQuestions);
-
-    // 5. Xoá các tài liệu đã tải lên
-    var userDocs = _context.Documents.Where(d => d.UserId == id);
-    _context.Documents.RemoveRange(userDocs);
-
-    // Lưu các thay đổi ở bảng phụ trước
-    await _context.SaveChangesAsync();
-
-    // 6. Cuối cùng mới xoá User
-    var result = await _userManager.DeleteAsync(user);
-
-    if (result.Succeeded)
-    {
-        return RedirectToAction(nameof(Index));
-    }
-
-    foreach (var error in result.Errors)
-    {
-        ModelState.AddModelError("", error.Description);
-    }
-    return View("Details", user);
-}
-// Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
-// Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
-[HttpPost]
-[Authorize(Roles = "Admin")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> ConfirmReport(int reportId)
-{
-    var report = await _context.Reports
-        .Include(r => r.Target)
-        .FirstOrDefaultAsync(r => r.Id == reportId);
-
-    if (report == null) return NotFound();
-
-    var targetUser = report.Target;
-    if (targetUser != null)
-    {
-        targetUser.Points -= 5; // Trừ 5 điểm
-        targetUser.WarningCount += 1; // Tăng số lần cảnh cáo
-
-        // Tự động ban nếu điểm dưới 0 hoặc vi phạm từ 3 lần trở lên
-        if (targetUser.WarningCount >= 3 || targetUser.Points < 0)
-        {
-            targetUser.IsBanned = true;
+            return View();
         }
 
-        // Xóa báo cáo sau khi xử lý hoặc đánh dấu đã xử lý
-        _context.Reports.Remove(report);
-        await _context.SaveChangesAsync();
+        [HttpPost]
+        public async Task<IActionResult> DismissReport(int id)
+        {
+            var report = await _context.Reports.FindAsync(id);
+            if (report != null)
+            {
+                report.IsResolved = true; // Đánh dấu đã giải quyết
+                report.ActionTaken = "Bỏ qua (Không có vi phạm)"; // Lưu lịch sử thao tác
+                
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã bỏ qua báo cáo và lưu vào lịch sử!";
+            }
+            return RedirectToAction(nameof(ReportedUsers));
+        }
 
-        TempData["Success"] = $"Đã xử lý báo cáo. {targetUser.FullName} bị trừ 5đ và nhận 1 cảnh cáo.";
-    }
+        public async Task<IActionResult> ViewReports(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
 
-    return RedirectToAction("ViewReports", new { id = report.TargetUserId });
-}
-// --- ACTION SỬA THÔNG TIN NGƯỜI DÙNG ---
-[HttpGet]
-public async Task<IActionResult> Edit(string id)
-{
-    if (string.IsNullOrEmpty(id)) return NotFound();
+            var targetUser = await _userManager.FindByIdAsync(id);
+            if (targetUser == null) return NotFound();
 
-    var user = await _userManager.FindByIdAsync(id);
-    if (user == null) return NotFound();
+            // Lấy chi tiết tất cả các báo cáo nhắm vào User này
+            var reports = await _context.Reports
+                .Where(r => r.TargetUserId == id)
+                .Include(r => r.Reporter)   // Người báo cáo
+                .Include(r => r.Question)   // Nếu báo cáo câu hỏi
+                .Include(r => r.Answer)     // Nếu báo cáo câu trả lời
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
-    return View(user);
-}
+            ViewBag.TargetUser = targetUser.FullName;
+            return View(reports);
+        }
 
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Edit(string id, AppUser model)
-{
-    if (id != model.Id) return NotFound();
-    
-    var user = await _userManager.FindByIdAsync(id);
-    if (user == null) return NotFound();
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
 
-    // Cập nhật các thông tin cần thiết
-    user.FullName = model.FullName;
-    user.Points = model.Points;
-    user.WarningCount = model.WarningCount;
-    user.IsBanned = model.IsBanned;
-    
-    var result = await _userManager.UpdateAsync(user);
-    if (result.Succeeded)
-    {
-        return RedirectToAction(nameof(Index));
-    }
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
 
-    foreach (var error in result.Errors)
-    {
-        ModelState.AddModelError(string.Empty, error.Description);
-    }
-    return View(model);
-}
+            // 1. Xoá tất cả báo cáo liên quan (cả người báo cáo và người bị báo cáo)
+            var relatedReports = _context.Reports.Where(r => r.ReporterUserId == id || r.TargetUserId == id);
+            _context.Reports.RemoveRange(relatedReports);
+
+            // 2. Xoá các tài liệu đã lưu
+            var savedDocs = _context.SavedDocuments.Where(sd => sd.UserId == id);
+            _context.SavedDocuments.RemoveRange(savedDocs);
+
+            // 3. Xoá các câu trả lời
+            var userAnswers = _context.Answers.Where(a => a.UserId == id);
+            _context.Answers.RemoveRange(userAnswers);
+
+            // 4. Xoá các câu hỏi
+            var userQuestions = _context.Questions.Where(q => q.UserId == id);
+            _context.Questions.RemoveRange(userQuestions);
+
+            // 5. Xoá các tài liệu đã tải lên
+            var userDocs = _context.Documents.Where(d => d.UserId == id);
+            _context.Documents.RemoveRange(userDocs);
+
+            // Lưu các thay đổi ở bảng phụ trước
+            await _context.SaveChangesAsync();
+
+            // 6. Cuối cùng mới xoá User
+            var result = await _userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View("Details", user);
+        }
+
+        // Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmReport(int reportId)
+        {
+            var report = await _context.Reports
+                .Include(r => r.Target)
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+
+            if (report == null) return NotFound();
+
+            var targetUser = report.Target;
+            if (targetUser != null)
+            {
+                targetUser.Points -= 5; // Trừ 5 điểm
+                targetUser.WarningCount += 1; // Tăng số lần cảnh cáo
+
+                // Tự động ban nếu điểm dưới 0 hoặc vi phạm từ 3 lần trở lên
+                if (targetUser.WarningCount >= 3 || targetUser.Points < 0)
+                {
+                    targetUser.IsBanned = true;
+                }
+
+                // Xóa báo cáo sau khi xử lý hoặc đánh dấu đã xử lý
+                _context.Reports.Remove(report);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Đã xử lý báo cáo. {targetUser.FullName} bị trừ 5đ và nhận 1 cảnh cáo.";
+            }
+
+            return RedirectToAction("ViewReports", new { id = report.TargetUserId });
+        }
+
+        // --- ACTION SỬA THÔNG TIN NGƯỜI DÙNG ---
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, AppUser model)
+        {
+            if (id != model.Id) return NotFound();
+            
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            // Cập nhật các thông tin cần thiết
+            user.FullName = model.FullName;
+            user.Points = model.Points;
+            user.WarningCount = model.WarningCount;
+            user.IsBanned = model.IsBanned;
+            
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BanUser(string userId, int reportId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsBanned = true; // Khóa User
+                
+                // Cập nhật trạng thái báo cáo
+                var report = await _context.Reports.FindAsync(reportId);
+                if (report != null)
+                {
+                    report.IsResolved = true;
+                    report.ActionTaken = "Đã khóa tài khoản vi phạm";
+                }
+                
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Đã khóa tài khoản của {user.FullName} và lưu lịch sử!";
+            }
+            return RedirectToAction(nameof(ReportedUsers));
+        }
     }
 }
