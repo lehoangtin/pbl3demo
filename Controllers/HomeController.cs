@@ -4,7 +4,7 @@ using StudyShare.Models;
 using Microsoft.AspNetCore.Authorization; 
 using System.Security.Claims; 
 using Microsoft.AspNetCore.Identity; 
-
+using System.Security.Claims; // Thêm dòng này ở đầu file nếu chưa có
 namespace StudyShare.Controllers
 {
     // KHÔNG CÓ [Authorize] ở mức Class để khách có thể vào xem hàm Index
@@ -68,39 +68,25 @@ namespace StudyShare.Controllers
         // ==========================================
         [Authorize] 
         public async Task<IActionResult> ViewDocument(int id)
-        {
-            var doc = await _context.Documents
-                .Include(d => d.Category)
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(m => m.Id == id && m.IsApproved == true);
+{
+    var document = await _context.Documents.FindAsync(id);
+    if (document == null) return NotFound();
 
-            if (doc == null) return NotFound();
-            
-            // 1. Lấy ID của User đang đăng nhập
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    // 1. Kiểm tra xem người dùng đã đăng nhập chưa
+    bool isSaved = false;
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    
+    if (userId != null)
+    {
+        // 2. Nếu đã đăng nhập, kiểm tra xem tài liệu này đã có trong danh sách SavedDocuments của user chưa
+        isSaved = await _context.SavedDocuments
+            .AnyAsync(sd => sd.UserId == userId && sd.DocumentId == id);
+    }
 
-            // 2. Tạo một tên Cookie duy nhất
-            string viewCookieName = $"Viewed_Doc_{id}_User_{userId}";
+    // 3. Truyền biến isSaved ra View bằng ViewBag
+    ViewBag.IsSaved = isSaved;
 
-            // 3. Kiểm tra xem trình duyệt của người này đã có Cookie này chưa
-            if (!Request.Cookies.ContainsKey(viewCookieName))
-            {
-                // Nếu CHƯA CÓ -> Tăng lượt xem
-                doc.Views++;
-                _context.Update(doc);
-                await _context.SaveChangesAsync();
-
-                // Tạo Cookie lưu vào trình duyệt của người dùng
-                CookieOptions options = new CookieOptions
-                {
-                    Expires = DateTime.Now.AddDays(30),
-                    HttpOnly = true,
-                    IsEssential = true
-                };
-                Response.Cookies.Append(viewCookieName, "seen", options);
-            }
-            
-            return View(doc);
-        }
+    return View(document);
+}
     }
 }

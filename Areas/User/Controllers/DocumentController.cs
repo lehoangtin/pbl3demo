@@ -282,5 +282,34 @@ public async Task<IActionResult> Edit(int id, Document updatedDoc, IFormFile? fi
 
     return PhysicalFile(filePath, "application/octet-stream", doc.FileName);
 }
+[HttpPost]
+[Authorize] // Bắt buộc đăng nhập
+public async Task<IActionResult> ToggleSave(int documentId)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    
+    // Tìm xem record lưu tài liệu này đã tồn tại chưa
+    var existingSave = await _context.SavedDocuments
+        .FirstOrDefaultAsync(sd => sd.UserId == userId && sd.DocumentId == documentId);
+
+    if (existingSave != null)
+    {
+        // NẾU ĐÃ LƯU -> XÓA KHỎI DANH SÁCH (BỎ LƯU)
+        _context.SavedDocuments.Remove(existingSave);
+        TempData["Success"] = "Đã bỏ lưu tài liệu khỏi danh sách của bạn.";
+    }
+    else
+    {
+        // NẾU CHƯA LƯU -> THÊM VÀO DANH SÁCH (LƯU)
+        var newSave = new SavedDocument { UserId = userId, DocumentId = documentId };
+        _context.SavedDocuments.Add(newSave);
+        TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
+    }
+    
+    await _context.SaveChangesAsync();
+
+    // Quay trở lại trang xem tài liệu hiện tại
+    return RedirectToAction("ViewDocument", "Home", new { id = documentId, area = "" });
+}
     }
 }

@@ -200,9 +200,8 @@ public async Task<IActionResult> ConfirmReport(int reportId)
         targetUser.Points -= 5; // Trừ 5 điểm
         targetUser.WarningCount += 1; // Tăng số lần cảnh cáo
 
-        // 🔥 SỬA TẠI ĐÂY: Trên 3 lần vi phạm (> 3) thì ban tài khoản
-        // (Nếu ý bạn là 3 lần vi phạm là ban luôn thì giữ nguyên >= 3 nhé)
-        if (targetUser.WarningCount > 3)
+        // Tự động ban nếu điểm dưới 0 hoặc vi phạm từ 3 lần trở lên
+        if (targetUser.WarningCount >= 3 || targetUser.Points < 0)
         {
             targetUser.IsBanned = true;
         }
@@ -215,6 +214,45 @@ public async Task<IActionResult> ConfirmReport(int reportId)
     }
 
     return RedirectToAction("ViewReports", new { id = report.TargetUserId });
+}
+// --- ACTION SỬA THÔNG TIN NGƯỜI DÙNG ---
+[HttpGet]
+public async Task<IActionResult> Edit(string id)
+{
+    if (string.IsNullOrEmpty(id)) return NotFound();
+
+    var user = await _userManager.FindByIdAsync(id);
+    if (user == null) return NotFound();
+
+    return View(user);
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(string id, AppUser model)
+{
+    if (id != model.Id) return NotFound();
+    
+    var user = await _userManager.FindByIdAsync(id);
+    if (user == null) return NotFound();
+
+    // Cập nhật các thông tin cần thiết
+    user.FullName = model.FullName;
+    user.Points = model.Points;
+    user.WarningCount = model.WarningCount;
+    user.IsBanned = model.IsBanned;
+    
+    var result = await _userManager.UpdateAsync(user);
+    if (result.Succeeded)
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
+    foreach (var error in result.Errors)
+    {
+        ModelState.AddModelError(string.Empty, error.Description);
+    }
+    return View(model);
 }
     }
 }

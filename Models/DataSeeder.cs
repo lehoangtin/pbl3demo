@@ -33,7 +33,8 @@ namespace StudyShare.Models
                 ("admin@gmail.com", "Quản trị viên", 999, "Admin"),
                 ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, "User"),
                 ("sinhvien1@gmail.com", "Sinh Viên Chăm Chỉ", 150, "User"),
-                ("sinhvien2@gmail.com", "Sinh Viên Vi Phạm", -10, "User") // Điểm < 0 để test tính năng ban account
+                ("sinhvien2@gmail.com", "Sinh Viên Vi Phạm", -10, "User"), // Điểm < 0 để test tính năng ban account
+                ("user@gmail.com", "Người Dùng Thông Thường", 50, "User") // Điểm thấp để test cảnh cáo
             };
 
             foreach (var u in usersToSeed)

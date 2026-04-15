@@ -51,10 +51,10 @@
         chatBox.scrollTop = chatBox.scrollHeight; // Cuộn xuống dưới cùng
 
         // 2. Gửi tin nhắn ngầm (AJAX) xuống C# Controller
-        fetch('/Chat/SendMessage', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: message })
+        fetch('@Url.Action("SendMessage", "Chat", new { area = "User" })', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: message })
         })
         .then(response => response.json())
         .then(data => {

@@ -23,24 +23,19 @@
 
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav me-auto">
-
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Thư viện chung</a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="User" asp-controller="Chat" asp-action="Index">Trợ lí AI</a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link text-white fw-bold" asp-area="User" asp-controller="Question" asp-action="Index">Thảo luận</a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="User" asp-controller="Ranking" asp-action="Index">Bảng vàng</a>
                         </li>
 
-                        @* KIỂM TRA ĐĂNG NHẬP: Giờ chỉ dùng để phân quyền hiện Menu Admin hoặc nút Quản lý Tài liệu cá nhân *@
                         @if (SignInManager.IsSignedIn(User))
                         {
                             @if (User.IsInRole("Admin"))
@@ -75,7 +70,6 @@
                             }
                         }
                     </ul>
-
                     <partial name="_LoginPartial" />
                 </div>
             </div>
@@ -84,6 +78,24 @@
 
     <div class="container mt-4">
         <main role="main" class="pb-3">
+            
+            @* --- ĐOẠN CODE HIỂN THỊ THÔNG BÁO CHUNG --- *@
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @* ---------------------------------------- *@
+
             @RenderBody()
         </main>
     </div>
