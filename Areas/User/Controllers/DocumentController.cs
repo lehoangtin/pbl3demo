@@ -262,11 +262,10 @@ public async Task<IActionResult> Edit(int id, Document updatedDoc, IFormFile? fi
 
     if (currentUser == null) return Challenge();
 
-    // 🔥 Kiểm tra điểm: Nếu dưới 10đ thì không cho tải
-    if (currentUser.Points < 10)
+    // 🔥 SỬA TẠI ĐÂY: Điểm < 0 thì không cho tải nữa
+    if (currentUser.Points < 0)
     {
-        TempData["Error"] = "Bạn không đủ điểm để tải tài liệu này (Cần 10đ). Hãy đóng góp tài liệu hoặc trả lời câu hỏi để kiếm thêm điểm!";
-        // Quay lại trang danh sách tài liệu hoặc trang chi tiết
+        TempData["Error"] = "Điểm của bạn đang âm (< 0). Bạn không được phép tải thêm tài liệu nữa!";
         return RedirectToAction("Index", "Home", new { area = "" }); 
     }
 

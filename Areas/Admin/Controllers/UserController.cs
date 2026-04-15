@@ -182,6 +182,7 @@ public async Task<IActionResult> Delete(string id)
     return View("Details", user);
 }
 // Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
+// Xử lý báo cáo: Trừ 5đ và tăng 1 lần cảnh cáo
 [HttpPost]
 [Authorize(Roles = "Admin")]
 [ValidateAntiForgeryToken]
@@ -199,8 +200,9 @@ public async Task<IActionResult> ConfirmReport(int reportId)
         targetUser.Points -= 5; // Trừ 5 điểm
         targetUser.WarningCount += 1; // Tăng số lần cảnh cáo
 
-        // Tự động ban nếu cảnh cáo quá 3 lần (Ví dụ thêm)
-        if (targetUser.WarningCount >= 3)
+        // 🔥 SỬA TẠI ĐÂY: Trên 3 lần vi phạm (> 3) thì ban tài khoản
+        // (Nếu ý bạn là 3 lần vi phạm là ban luôn thì giữ nguyên >= 3 nhé)
+        if (targetUser.WarningCount > 3)
         {
             targetUser.IsBanned = true;
         }

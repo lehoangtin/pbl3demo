@@ -15,13 +15,16 @@ namespace StudyShare.Areas.User.Controllers
         private readonly AppDbContext _context;
         private readonly AIService _aiService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
 
-        public QuestionController(AppDbContext context, AIService aiService, UserManager<AppUser> userManager)
+        public QuestionController(AppDbContext context, AIService aiService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _context = context;
             _aiService = aiService;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
+
         public async Task<IActionResult> Index()
         {
             var questions = await _context.Questions
@@ -57,9 +60,21 @@ namespace StudyShare.Areas.User.Controllers
             if (aiResult.isFlagged)
             {
                 user.Points -= 10;
-                await _context.SaveChangesAsync();
+                user.WarningCount += 1;
 
-                ViewBag.Error = $"Bị AI chặn: {aiResult.reason} (-10 điểm)";
+                if (user.WarningCount > 3)
+                {
+                    user.IsBanned = true;
+                    await _context.SaveChangesAsync();
+                    
+                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
+                    await _signInManager.SignOutAsync();
+                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
+                await _context.SaveChangesAsync();
+                ViewBag.Error = $"Bị AI chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
                 return View(question);
             }
 
@@ -106,19 +121,29 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid) return View(updatedQuestion);
 
             var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound(); // Cẩn thận kiểm tra user null
 
             // 🔥 AI CHECK
             var aiResult = await _aiService.CheckContentAsync(updatedQuestion.Content);
 
             if (aiResult.isFlagged)
             {
-                if (user != null)
+                user.Points -= 10;
+                user.WarningCount += 1;
+
+                if (user.WarningCount > 3)
                 {
-                    user.Points -= 10;
+                    user.IsBanned = true;
                     await _context.SaveChangesAsync();
+                    
+                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
+                    await _signInManager.SignOutAsync();
+                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    return RedirectToAction("Login", "Account", new { area = "" });
                 }
 
-                ViewBag.Error = $"Nội dung bị chặn: {aiResult.reason} (-10 điểm)";
+                await _context.SaveChangesAsync();
+                ViewBag.Error = $"Bị AI chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
                 return View(updatedQuestion);
             }
 
@@ -150,9 +175,23 @@ namespace StudyShare.Areas.User.Controllers
             if (aiResult.isFlagged)
             {
                 user.Points -= 10;
+                user.WarningCount += 1; // 🔥 Đồng bộ: Tăng 1 lần vi phạm
+
+                // 🔥 Đồng bộ: Tự động khóa tài khoản nếu vi phạm trên 3 lần
+                if (user.WarningCount > 3)
+                {
+                    user.IsBanned = true;
+                    await _context.SaveChangesAsync();
+
+                    // 🔥 Đăng xuất ngay lập tức và chuyển hướng
+                    await _signInManager.SignOutAsync();
+                    TempData["Error"] = "Tài khoản của bạn đã bị chặn do vi phạm quá 3 lần!";
+                    return RedirectToAction("Login", "Account", new { area = "" });
+                }
+
                 await _context.SaveChangesAsync();
 
-                TempData["Error"] = $"Câu trả lời bị chặn: {aiResult.reason} (-10 điểm)";
+                TempData["Error"] = $"Câu trả lời bị chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
                 return RedirectToAction("Details", new { id = questionId });
             }
 
