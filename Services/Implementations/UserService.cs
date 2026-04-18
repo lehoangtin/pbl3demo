@@ -81,7 +81,7 @@ namespace StudyShare.Services.Implementations
                 .AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         }
 
-        public async Task<bool> UpdateUserProfileAsync(string userId, AppUser model, IFormFile avatarFile)
+        public async Task<bool> UpdateUserProfileAsync(string userId, AppUser model, IFormFile? avatarFile)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return false;
@@ -122,6 +122,17 @@ namespace StudyShare.Services.Implementations
             return await _context.SavedDocuments
                 .Where(s => s.UserId == userId).Include(s => s.Document).ThenInclude(d => d.User)
                 .OrderByDescending(s => s.SavedDate).ToListAsync();
+        }
+        public async Task<bool> IsDocumentSavedAsync(string userId, int documentId)
+        {
+            return await _context.SavedDocuments
+                .AnyAsync(sd => sd.UserId == userId && sd.DocumentId == documentId);
+        }
+
+        public async Task<bool> IsUserBannedAsync(string userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            return user?.IsBanned ?? false;
         }
     }
 }

@@ -17,5 +17,8 @@ namespace StudyShare.Services.Interfaces
         Task<bool> SaveDocumentAsync(string userId, int docId);
         Task<bool> UnsaveDocumentAsync(string userId, int docId);
         Task<IEnumerable<SavedDocument>> GetSavedDocumentsAsync(string userId);
+        // Thêm 2 hàm này kiểm tra trạng thái User
+        Task<bool> IsDocumentSavedAsync(string userId, int documentId);
+        Task<bool> IsUserBannedAsync(string userId);
     }
 }

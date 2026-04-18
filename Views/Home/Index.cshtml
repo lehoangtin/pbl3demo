@@ -1,4 +1,4 @@
-@model IEnumerable<StudyShare.Models.Document>
+@model IEnumerable<StudyShare.DTOs.Responses.DocumentResponse>
 @{
     ViewData["Title"] = "Thư viện chung";
     var categories = ViewBag.Categories as List<StudyShare.Models.Category>;
@@ -57,8 +57,8 @@
                             <div class="card h-100 shadow-sm border-0">
                                 <div class="card-body">
                                     <h6 class="fw-bold">@item.Title</h6>
-                                    <p class="text-muted small mb-2"><i class="bi bi-person-circle"></i> @(item.User?.FullName ?? "Thành viên StudyShare")</p>
-                                    <span class="badge bg-info text-dark">@item.Category?.Name</span>
+                                    <p class="text-muted small mb-2"><i class="bi bi-person-circle"></i> @item.AuthorName</p>
+                                    <span class="badge bg-info text-dark">@item.CategoryName</span>
                                 </div>
                                 <div class="card-footer bg-white border-0">
                                     <a asp-action="ViewDocument" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm w-100">Xem</a>

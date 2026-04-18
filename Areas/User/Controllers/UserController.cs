@@ -65,9 +65,10 @@ namespace StudyShare.Areas.User.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Edit(AppUser model, IFormFile avatarFile)
+        public async Task<IActionResult> Edit(AppUser model, IFormFile? avatarFile)
         {
             var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
             // Service sẽ lo việc đổi tên và lưu file ảnh vào wwwroot
             await _userService.UpdateUserProfileAsync(userId, model, avatarFile);
             return RedirectToAction("Profile", new { id = userId });
@@ -168,8 +169,7 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> SavedDocuments()
         {
-            var userId = _userManager.GetUserId(User);
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            var userId = _userManager.GetUserId(User);            if (string.IsNullOrEmpty(userId)) return Unauthorized();            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
             var savedDocs = await _userService.GetSavedDocumentsAsync(userId);
             return View(savedDocs);
         }

@@ -210,5 +210,37 @@ namespace StudyShare.Services.Implementations
             _context.Documents.Remove(doc);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId)
+        {
+            var query = _context.Documents
+                .Include(d => d.Category)
+                .Include(d => d.User)
+                .Where(d => d.IsApproved == true); 
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(d => d.Title.Contains(searchTerm) || d.Description.Contains(searchTerm));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(d => d.CategoryId == categoryId);
+            }
+
+            var docs = await query.OrderByDescending(d => d.UploadDate).ToListAsync();
+            
+            // Ánh xạ sang DTO trả về cho Controller
+            return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
+        }
+
+        public async Task<DocumentResponse?> GetDocumentDetailsAsync(int id)
+        {
+            var document = await _context.Documents
+                .Include(d => d.User)
+                .Include(d => d.Category)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            return document == null ? null : _mapper.Map<DocumentResponse>(document);
+        }
     }
 }

@@ -1,97 +1,76 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using Microsoft.AspNetCore.Authorization; 
-using System.Security.Claims; 
 using Microsoft.AspNetCore.Identity; 
-using System.Security.Claims; // Thêm dòng này ở đầu file nếu chưa có
+using System.Threading.Tasks;
+using StudyShare.Services.Interfaces; // Thêm thư viện gọi Service
+
 namespace StudyShare.Controllers
 {
-    // KHÔNG CÓ [Authorize] ở mức Class để khách có thể vào xem hàm Index
     public class HomeController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly SignInManager<AppUser> _signInManager; // 🔥 Sửa lại viết hoa chữ S
-        private readonly UserManager<AppUser> _userManager;     // 🔥 KHAI BÁO THÊM UserManager
+        private readonly IDocumentService _documentService;
+        private readonly ICategoryService _categoryService;
+        private readonly IUserService _userService;
+        private readonly SignInManager<AppUser> _signInManager;
+        private readonly UserManager<AppUser> _userManager;
 
-        // 🔥 TIÊM THÊM UserManager VÀO CONSTRUCTOR
-        public HomeController(AppDbContext context, SignInManager<AppUser> signInManager, UserManager<AppUser> userManager)
+        // Chỉ tiêm các Service và Manager, KHÔNG tiêm AppDbContext
+        public HomeController(
+            IDocumentService documentService,
+            ICategoryService categoryService,
+            IUserService userService,
+            SignInManager<AppUser> signInManager, 
+            UserManager<AppUser> userManager)
         {
-            _context = context;
+            _documentService = documentService;
+            _categoryService = categoryService;
+            _userService = userService;
             _signInManager = signInManager;
             _userManager = userManager;
         }
 
-        // ==========================================
-        // TRANG CHỦ & TÌM KIẾM (AI CŨNG XEM ĐƯỢC)
-        // ==========================================
         public async Task<IActionResult> Index(string searchTerm, int? categoryId)
         {
-            // 🔥 KIỂM TRA BANNED KHI ĐÃ ĐĂNG NHẬP
             var user = await _userManager.GetUserAsync(User);
-            if (user != null && user.IsBanned)
+            // Kiểm tra ban qua Service
+            if (user != null && await _userService.IsUserBannedAsync(user.Id))
             {
                 await _signInManager.SignOutAsync();
                 TempData["Error"] = "Tài khoản của bạn đã bị khóa!";
                 return RedirectToAction("Login", "Account", new { area = "" }); 
             }
 
-            // 1. Khởi tạo query lấy tài liệu đã duyệt
-            var query = _context.Documents
-                .Include(d => d.Category)
-                .Include(d => d.User)
-                .Where(d => d.IsApproved == true); 
-
-            // 2. Lọc theo từ khóa tìm kiếm
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(d => d.Title.Contains(searchTerm) || d.Description.Contains(searchTerm));
-                ViewBag.SearchTerm = searchTerm; 
-            }
-
-            // 3. Lọc theo chuyên mục
-            if (categoryId.HasValue)
-            {
-                query = query.Where(d => d.CategoryId == categoryId);
-                ViewBag.CurrentCategory = categoryId; 
-            }
-
-            var docs = await query.OrderByDescending(d => d.UploadDate).ToListAsync();
+            // Gọi Service để lấy danh sách
+            var docs = await _documentService.GetApprovedDocumentsAsync(searchTerm, categoryId);
             
-            // Lấy danh sách category để hiển thị menu lọc
-            ViewBag.Categories = await _context.Categories.ToListAsync();
+            ViewBag.SearchTerm = searchTerm; 
+            ViewBag.CurrentCategory = categoryId; 
+            // Gọi CategoryService để lấy danh mục hiển thị menu
+            ViewBag.Categories = await _categoryService.GetAllAsync(); 
+
             return View(docs);
         }
 
-        // ==========================================
-        // XEM CHI TIẾT (BẮT BUỘC PHẢI ĐĂNG NHẬP)
-        // ==========================================
-       [Authorize] 
-public async Task<IActionResult> ViewDocument(int id)
-{
-    // 🔥 SỬA Ở ĐÂY: Dùng Include() để lấy kèm dữ liệu User và Category
-    var document = await _context.Documents
-        .Include(d => d.User)      // Kéo theo dữ liệu User để lấy được FullName
-        .Include(d => d.Category)  // Kéo theo Category
-        .FirstOrDefaultAsync(d => d.Id == id);
+        [Authorize] 
+        public async Task<IActionResult> ViewDocument(int id)
+        {
+            // Gọi Service để lấy chi tiết
+            var document = await _documentService.GetDocumentDetailsAsync(id);
+            if (document == null) return NotFound();
 
-    if (document == null) return NotFound();
+            var userId = _userManager.GetUserId(User);
+            
+            // Gọi Service để kiểm tra đã lưu chưa
+            bool isSaved = false;
+            if (userId != null)
+            {
+                isSaved = await _userService.IsDocumentSavedAsync(userId, id);
+            }
 
-    // 1. Kiểm tra xem người dùng đã đăng nhập chưa
-    bool isSaved = false;
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    
-    if (userId != null)
-    {
-        // 2. Nếu đã đăng nhập, kiểm tra xem tài liệu này đã có trong danh sách SavedDocuments chưa
-        isSaved = await _context.SavedDocuments
-            .AnyAsync(sd => sd.UserId == userId && sd.DocumentId == id);
-    }
+            ViewBag.IsSaved = isSaved;
 
-    // 3. Truyền biến isSaved ra View bằng ViewBag
-    ViewBag.IsSaved = isSaved;
-
-    return View(document);
-}
+            return View(document);
+        }
     }
 }
