@@ -3,8 +3,9 @@ using ai.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization; 
 
-namespace ai.Controllers
+namespace StudyShare.Areas.User.Controllers
 {
+    [Area("User")]
     public class UserMessage
     {
         public string text { get; set; }

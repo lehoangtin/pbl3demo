@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "uk0wCxqRSzM=",
+  "dgSpecHash": "50Xoy19rKEU=",
   "success": true,
-  "projectFilePath": "/Users/mac/PBL3demo/PBL3demo.csproj",
+  "projectFilePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
   "expectedPackageFiles": [
+    "/Users/mac/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
+    "/Users/mac/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",
     "/Users/mac/.nuget/packages/bouncycastle.cryptography/2.6.2/bouncycastle.cryptography.2.6.2.nupkg.sha512",
@@ -151,5 +153,54 @@
     "/Users/mac/.nuget/packages/system.windows.extensions/8.0.0/system.windows.extensions.8.0.0.nupkg.sha512",
     "/Users/mac/.nuget/packages/zstdsharp.port/0.8.6/zstdsharp.port.0.8.6.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "Package 'AutoMapper' 12.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "libraryId": "AutoMapper",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'MailKit' 4.15.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
+      "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "libraryId": "MailKit",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "message": "Package 'NuGet.Packaging' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "libraryId": "NuGet.Packaging",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "message": "Package 'NuGet.Protocol' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
+      "libraryId": "NuGet.Protocol",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
 }

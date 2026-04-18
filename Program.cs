@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using StudyShare.Services;
+using StudyShare.DTOs.Requests;
+using StudyShare.Services.Interfaces;
+using StudyShare.Services.Implementations;
+using StudyShare.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
+builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<StudyShare.Services.Interfaces.ICategoryService, StudyShare.Services.Implementations.CategoryService>();
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IQuestionService, StudyShare.Services.Implementations.QuestionService>();
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IUserService, StudyShare.Services.Implementations.UserService>();
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IAnswerService, StudyShare.Services.Implementations.AnswerService>();
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyShare.Services.Implementations.ReportService>();
 
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {

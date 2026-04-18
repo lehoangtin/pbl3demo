@@ -1,0 +1,15 @@
+using System;
+namespace StudyShare.DTOs.Responses
+{
+    public class QuestionResponse
+    {
+        public int Id { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        
+        // Những dữ liệu lấy từ bảng khác sang
+        public string AuthorName { get; set; } = string.Empty; 
+        public int AnswerCount { get; set; } 
+        public string UserId { get; set; } = string.Empty;
+    }
+}

@@ -1,8 +1,7 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<StudyShare.Models.AppUser> SignInManager
-@model IEnumerable<StudyShare.Models.Question>
-
+@model IEnumerable<StudyShare.DTOs.Responses.QuestionResponse>
 @{ 
     ViewData["Title"] = "Cộng đồng thảo luận"; 
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -47,15 +46,15 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img src="@(q.User?.Avatar ?? "/images/default-avatar.png")" 
+                            <img src="/images/default-avatar.png" 
                                  class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
-                            <span class="small">@(q.User?.FullName ?? "Ẩn danh")</span>
+                            <span class="small">@(q.AuthorName ?? "Ẩn danh")</span>
                         </div>
                     </td>
                     <td>@q.CreatedAt.ToString("dd/MM/yyyy")</td>
                     <td class="text-center">
                         <span class="badge bg-light text-dark border">
-                            @q.Answers.Count <i class="bi bi-chat-dots ms-1"></i>
+                            @q.AnswerCount <i class="bi bi-chat-dots ms-1"></i>
                         </span>
                     </td>
                     <td class="text-center">

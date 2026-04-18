@@ -1,43 +1,43 @@
-@model StudyShare.Models.Document
+@model StudyShare.DTOs.Requests.DocumentUpdateRequest
 @{
     ViewData["Title"] = "Chỉnh sửa tài liệu";
 }
 
 <div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white py-3 rounded-top-4">
             <h4 class="m-0 fw-bold text-primary"><i class="bi bi-pencil-square"></i> Chỉnh sửa tài liệu</h4>
         </div>
         <div class="card-body">
             <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 
-                @* Quan trọng: Cần giữ ID để Controller biết đang sửa bản ghi nào *@
                 <input type="hidden" asp-for="Id" />
 
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label fw-bold">Tiêu đề tài liệu</label>
-                    <input asp-for="Title" class="form-control" placeholder="Ví dụ: Đồ án lập trình Java..." />
-                    <span asp-validation-for="Title" class="text-danger"></span>
+                    <input asp-for="Title" class="form-control rounded-3" placeholder="Ví dụ: Đồ án lập trình Java..." />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="CategoryId" class="form-label fw-bold">Danh mục</label>
-                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
-                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    <select asp-for="CategoryId" class="form-select rounded-3" asp-items="ViewBag.CategoryId"></select>
+                    <span asp-validation-for="CategoryId" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Description" class="form-label fw-bold">Mô tả ngắn</label>
-                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
+                    <textarea asp-for="Description" class="form-control rounded-3" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Thay đổi tệp tin (Để trống nếu giữ nguyên tệp cũ)</label>
-                    <input type="file" name="file" class="form-control" />
+                    <label asp-for="File" class="form-label fw-bold">Thay đổi tệp tin (Để trống nếu giữ nguyên tệp cũ)</label>
+                    <input asp-for="File" type="file" class="form-control rounded-3" />
+                    <span asp-validation-for="File" class="text-danger small"></span>
                     <div class="form-text mt-2">
-                        Tệp hiện tại: <span class="text-muted">@Model.FileName</span>
+                        Tệp hiện tại: <span class="text-muted">@ViewBag.CurrentFileName</span>
                     </div>
                 </div>
 

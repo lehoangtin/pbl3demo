@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/mac/PBL3demo/PBL3demo.csproj": {}
+    "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj": {}
   },
   "projects": {
-    "/Users/mac/PBL3demo/PBL3demo.csproj": {
+    "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/mac/PBL3demo/PBL3demo.csproj",
+        "projectUniqueName": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
         "projectName": "PBL3demo",
-        "projectPath": "/Users/mac/PBL3demo/PBL3demo.csproj",
+        "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
         "packagesPath": "/Users/mac/.nuget/packages/",
-        "outputPath": "/Users/mac/PBL3demo/obj/",
+        "outputPath": "/Users/mac/Bản sao PBL3demo laỷe/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/mac/.nuget/NuGet/NuGet.Config"
@@ -44,6 +44,10 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
             "Azure.Identity": {
               "target": "Package",
               "version": "[1.14.2, )"
