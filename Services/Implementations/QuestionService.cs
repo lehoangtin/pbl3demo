@@ -77,6 +77,71 @@ namespace StudyShare.Services.Implementations
 
             _context.Questions.Remove(question);
             return await _context.SaveChangesAsync() > 0;
+        }// Thêm các hàm này vào trong class QuestionService
+
+        public async Task<IEnumerable<Question>> GetAllForAdminAsync()
+        {
+            return await _context.Questions
+                .Include(q => q.User)
+                .Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<Question?> GetDetailsForAdminAsync(int id)
+        {
+            return await _context.Questions
+                .Include(q => q.User)
+                .Include(q => q.Answers).ThenInclude(a => a.User)
+                .FirstOrDefaultAsync(q => q.Id == id);
+        }
+
+        public async Task<IEnumerable<Report>> GetReportsForQuestionAsync(int questionId)
+        {
+            return await _context.Reports
+                .Where(r => r.QuestionId == questionId)
+                .Include(r => r.Reporter)
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteQuestionByAdminAsync(int id)
+        {
+            var question = await _context.Questions.FindAsync(id);
+            if (question == null) return false;
+
+            // Logic nghiệp vụ: Khi xóa câu hỏi, xóa luôn các báo cáo liên quan
+            var reports = _context.Reports.Where(r => r.QuestionId == id);
+            _context.Reports.RemoveRange(reports);
+
+            _context.Questions.Remove(question);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> DeleteAnswerByAdminAsync(int id)
+        {
+            var answer = await _context.Answers.FindAsync(id);
+            if (answer == null) return false;
+
+            _context.Answers.Remove(answer);
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<IEnumerable<Question>> GetUserQuestionsAsync(string userId)
+        {
+            return await _context.Questions.Where(q => q.UserId == userId).Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt).ToListAsync();
+        }
+
+        public async Task<bool> DeleteByUserAsync(int id, string userId)
+        {
+            var question = await _context.Questions.FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
+            if (question == null) return false;
+
+            _context.Reports.RemoveRange(_context.Reports.Where(r => r.QuestionId == id));
+            var answerIds = _context.Answers.Where(a => a.QuestionId == id).Select(a => a.Id);
+            _context.Reports.RemoveRange(_context.Reports.Where(r => r.AnswerId != null && answerIds.Contains(r.AnswerId.Value)));
+
+            _context.Questions.Remove(question);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PBL3demo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e9741d16dffbcbe5369aa57bbfd9b69ff0e95019")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e28b41373a4f0c8cd9959272eb4d576bad8a76b")]
 [assembly: System.Reflection.AssemblyProductAttribute("PBL3demo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PBL3demo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

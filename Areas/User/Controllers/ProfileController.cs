@@ -23,6 +23,7 @@ namespace StudyShare.Areas.User.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account");
             var request = await _userService.GetProfileForEditAsync(userId);
             return View(request);
         }
@@ -34,7 +35,9 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid) return View("Index", request);
             
             // Chống hack: Ép ID bằng đúng ID người đang đăng nhập
-            request.Id = _userManager.GetUserId(User); 
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account");
+            request.Id = userId; 
             await _userService.UpdateProfileAsync(request);
             
             TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công!";

@@ -25,7 +25,8 @@ builder.Services.AddScoped<StudyShare.Services.Interfaces.IQuestionService, Stud
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IUserService, StudyShare.Services.Implementations.UserService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IAnswerService, StudyShare.Services.Implementations.AnswerService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyShare.Services.Implementations.ReportService>();
-
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IDocumentService, StudyShare.Services.Implementations.DocumentService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedEmail = true;

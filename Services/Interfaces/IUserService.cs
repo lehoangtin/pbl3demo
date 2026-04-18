@@ -1,5 +1,7 @@
 using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
+using StudyShare.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace StudyShare.Services.Interfaces
 {
@@ -9,6 +11,11 @@ namespace StudyShare.Services.Interfaces
         Task<IEnumerable<UserResponse>> GetTopRankingAsync(int topCount);
         Task<ProfileUpdateRequest?> GetProfileForEditAsync(string userId);
         Task<bool> UpdateProfileAsync(ProfileUpdateRequest request);
-        Task<bool> ToggleBanUserAsync(string userId); // Khóa/Mở khóa tài khoản
+        Task<bool> ToggleBanUserAsync(string userId);
+        Task<AppUser?> GetUserProfileAsync(string userId);
+        Task<bool> UpdateUserProfileAsync(string userId, AppUser model, IFormFile? avatarFile);
+        Task<bool> SaveDocumentAsync(string userId, int docId);
+        Task<bool> UnsaveDocumentAsync(string userId, int docId);
+        Task<IEnumerable<SavedDocument>> GetSavedDocumentsAsync(string userId);
     }
 }

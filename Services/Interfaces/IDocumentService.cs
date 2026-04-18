@@ -1,5 +1,6 @@
 using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
+using StudyShare.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,5 +14,10 @@ namespace StudyShare.Services.Interfaces
         Task<bool> UpdateAsync(DocumentUpdateRequest request, string currentUserId, bool isAdmin);
         Task<bool> CreateAsync(DocumentCreateRequest request, string userId);
         Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin);
+        Task<bool> DeleteByUserAsync(int id, string userId);
+        Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId);
+        Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search);
+        Task<DocumentResponse?> GetDetailsForReviewAsync(int id);
+        Task<bool> ApproveDocumentAsync(int id);
     }
 }

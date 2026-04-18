@@ -147,5 +147,68 @@ namespace StudyShare.Services.Implementations
             _context.Documents.Remove(doc);
             return await _context.SaveChangesAsync() > 0;
         }
+                // Thêm 3 hàm này vào trong class DocumentService
+
+        public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
+        {
+            var query = _context.Documents
+                .Include(d => d.User)
+                .Include(d => d.Category) // Thêm Category nếu cần hiển thị
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(d => d.Title.Contains(search));
+            }
+
+            var docs = await query.OrderByDescending(d => d.UploadDate).ToListAsync();
+            return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
+        }
+
+        public async Task<DocumentResponse?> GetDetailsForReviewAsync(int id)
+        {
+            // Lấy chi tiết để review, dùng hàm cũ GetByIdAsync cũng được vì nó đã Include Category và User
+            return await GetByIdAsync(id); 
+        }
+
+        public async Task<bool> ApproveDocumentAsync(int id)
+        {
+            var doc = await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
+            if (doc == null) return false;
+
+            if (!doc.IsApproved) 
+            {
+                doc.IsApproved = true;
+                
+                // Logic nghiệp vụ: Cộng điểm cho user được chuyển về đúng tầng Service
+                if (doc.User != null)
+                {
+                    doc.User.Points += 10;
+                }
+
+                _context.Update(doc);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            return false;
+        }
+        public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
+        {
+            return await _context.Documents.Where(d => d.UserId == userId).OrderByDescending(d => d.UploadDate).ToListAsync();
+        }
+
+        public async Task<bool> DeleteByUserAsync(int id, string userId)
+        {
+            var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+            if (doc == null) return false;
+
+            _context.Reports.RemoveRange(_context.Reports.Where(r => r.DocumentId == id));
+            _context.SavedDocuments.RemoveRange(_context.SavedDocuments.Where(s => s.DocumentId == id));
+
+            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, doc.FilePath.TrimStart('/'));
+            if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+
+            _context.Documents.Remove(doc);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

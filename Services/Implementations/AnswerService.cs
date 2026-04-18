@@ -37,5 +37,14 @@ namespace StudyShare.Services.Implementations
             _context.Answers.Remove(answer);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<bool> DeleteByUserAsync(int id, string userId)
+        {
+            var answer = await _context.Answers.FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+            if (answer == null) return false;
+
+            _context.Reports.RemoveRange(_context.Reports.Where(r => r.AnswerId == id));
+            _context.Answers.Remove(answer);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

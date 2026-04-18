@@ -1,5 +1,4 @@
-@model IEnumerable<StudyShare.Models.Document>
-
+@model IEnumerable<StudyShare.DTOs.Responses.DocumentResponse>
 <div class="card shadow-sm p-4">
     <h3 class="fw-bold mb-4 text-primary">Quản lý kho tài liệu</h3>
     <table class="table align-middle">
@@ -12,7 +11,7 @@
             @foreach(var item in Model) {
                 <tr>
                     <td><strong>@item.Title</strong><br><small class="text-muted">@item.FileType</small></td>
-                    <td>@item.User?.FullName</td>
+                    <td>@item.AuthorName</td>
                     <td>
                         @if(item.IsApproved) { <span class="badge bg-success">Đã duyệt</span> }
                         else { <span class="badge bg-warning text-dark">Chờ duyệt</span> }
