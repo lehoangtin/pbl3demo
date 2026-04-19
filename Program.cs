@@ -26,6 +26,7 @@ builder.Services.AddScoped<StudyShare.Services.Interfaces.IUserService, StudySha
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IAnswerService, StudyShare.Services.Implementations.AnswerService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyShare.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IDocumentService, StudyShare.Services.Implementations.DocumentService>();
+builder.Services.AddScoped<StudyShare.Services.Interfaces.IAuthService, StudyShare.Services.Implementations.AuthService>(); 
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {

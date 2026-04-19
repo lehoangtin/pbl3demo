@@ -12,7 +12,7 @@
                 <i class="bi bi-coin"></i> @(user?.Points ?? 0)đ
             </span>
             <span class="navbar-text text-light">
-                👋 Chào, <strong>@User.Identity.Name</strong>
+                👋 Chào, <strong>@(User.Identity?.Name ?? "User")</strong>
             </span>
         </li>
 

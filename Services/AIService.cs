@@ -33,7 +33,7 @@ namespace ai.Services
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
                     var result = JsonSerializer.Deserialize<ChatResponse>(responseString);
-                    return result.reply;
+                    return result?.reply ?? "Xin lỗi, không thể xử lý phản hồi từ AI.";
                 }
             }
             catch { }

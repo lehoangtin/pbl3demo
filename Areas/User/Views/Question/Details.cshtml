@@ -15,7 +15,7 @@
     {
         <div class="mb-3 p-3 bg-light rounded shadow-sm">
             <div class="d-flex justify-content-between">
-                <strong>@answer.User.FullName</strong>
+                <strong>@(answer.User?.FullName ?? "Unknown")</strong>
 
                 <div class="d-flex align-items-center gap-2">
 
