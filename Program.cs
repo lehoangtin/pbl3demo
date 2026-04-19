@@ -6,6 +6,8 @@ using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
 using StudyShare.Services.Implementations;
 using StudyShare.Mappings;
+using StudyShare.Repositories.Interfaces;
+using StudyShare.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,12 @@ builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyS
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IDocumentService, StudyShare.Services.Implementations.DocumentService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IAuthService, StudyShare.Services.Implementations.AuthService>(); 
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedEmail = true;

@@ -39,6 +39,7 @@
     <Compile Include="Mappings/**/*.cs" />
     <Compile Include="Areas/**/*.cs" />
     <Compile Include="ViewModels/**/*.cs" />
+    <Compile Include="Repositories/**/*.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

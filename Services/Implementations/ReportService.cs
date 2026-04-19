@@ -3,37 +3,33 @@ using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
+using StudyShare.Repositories.Interfaces;
 
 namespace StudyShare.Services.Implementations
 {
     public class ReportService : IReportService
     {
-        private readonly AppDbContext _context;
+        private readonly IReportRepository _reportRepository;
         private readonly IMapper _mapper;
 
-        public ReportService(AppDbContext context, IMapper mapper)
+        public ReportService(IReportRepository reportRepository, IMapper mapper)
         {
-            _context = context;
+            _reportRepository = reportRepository;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<ReportResponse>> GetAllReportsAsync()
         {
-            var reports = await _context.Reports
-                .Include(r => r.Reporter)
-                .Include(r => r.Target)
-                .Include(r => r.Document)
-                .ToListAsync();
+            var reports = await _reportRepository.GetAllReportsAsync();
             return _mapper.Map<IEnumerable<ReportResponse>>(reports);
         }
 
         public async Task<bool> DeleteReportAsync(int reportId)
         {
-            var report = await _context.Reports.FindAsync(reportId);
+            var report = await _reportRepository.GetByIdAsync(reportId);
             if (report == null) return false;
 
-            _context.Reports.Remove(report);
-            return await _context.SaveChangesAsync() > 0;
+            return await _reportRepository.DeleteAsync(report);
         }
     }
 }

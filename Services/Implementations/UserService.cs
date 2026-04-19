@@ -1,47 +1,41 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
+using StudyShare.Repositories.Interfaces; // Add Repository
 
 namespace StudyShare.Services.Implementations
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepository; // Inject Repository thay vì DBContext
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
 
-        public UserService(UserManager<AppUser> userManager, AppDbContext context, IWebHostEnvironment env, IMapper mapper)
+        public UserService(IUserRepository userRepository, IWebHostEnvironment env, IMapper mapper)
         {
-            _userManager = userManager;
-            _context = context;
+            _userRepository = userRepository;
             _env = env;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userRepository.GetAllUsersAsync();
             return _mapper.Map<IEnumerable<UserResponse>>(users);
         }
 
         public async Task<IEnumerable<UserResponse>> GetTopRankingAsync(int topCount)
         {
-            var topUsers = await _userManager.Users
-                .OrderByDescending(u => u.Points)
-                .Take(topCount)
-                .ToListAsync();
+            var topUsers = await _userRepository.GetTopRankingAsync(topCount);
             return _mapper.Map<IEnumerable<UserResponse>>(topUsers);
         }
 
         public async Task<ProfileUpdateRequest?> GetProfileForEditAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return null;
             
             return new ProfileUpdateRequest { Id = user.Id, FullName = user.FullName };
@@ -49,46 +43,44 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> UpdateProfileAsync(ProfileUpdateRequest request)
         {
-            var user = await _userManager.FindByIdAsync(request.Id);
+            var user = await _userRepository.GetByIdAsync(request.Id);
             if (user == null) return false;
 
             user.FullName = request.FullName;
-            var result = await _userManager.UpdateAsync(user);
-            return result.Succeeded;
+            return await _userRepository.UpdateUserAsync(user);
         }
 
         public async Task<bool> ToggleBanUserAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            // Nếu đang bị khóa -> Mở khóa. Nếu đang mở -> Khóa 100 năm.
-            var lockoutEndDate = await _userManager.GetLockoutEndDateAsync(user);
+            var lockoutEndDate = await _userRepository.GetLockoutEndDateAsync(user);
             if (lockoutEndDate.HasValue && lockoutEndDate > DateTimeOffset.Now)
             {
-                await _userManager.SetLockoutEndDateAsync(user, null);
+                await _userRepository.SetLockoutEndDateAsync(user, null); // Mở khóa
             }
             else
             {
-                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+                await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); // Khóa
             }
             return true;
         }
+
         public async Task<AppUser?> GetUserProfileAsync(string userId)
         {
-            return await _context.Users
-                .Include(u => u.Documents).Include(u => u.Questions).Include(u => u.SavedDocuments)
-                .AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            return await _userRepository.GetUserProfileWithIncludesAsync(userId);
         }
 
         public async Task<bool> UpdateUserProfileAsync(string userId, AppUser model, IFormFile? avatarFile)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
             user.FullName = model.FullName;
             user.Email = model.Email;
 
+            // Nghiệp vụ xử lý file nằm ở lớp Business Logic
             if (avatarFile != null && avatarFile.Length > 0)
             {
                 var ext = Path.GetExtension(avatarFile.FileName);
@@ -98,40 +90,39 @@ namespace StudyShare.Services.Implementations
                 await avatarFile.CopyToAsync(stream);
                 user.Avatar = "/images/" + fileName;
             }
-            _context.Update(user);
-            return await _context.SaveChangesAsync() > 0;
+            
+            return await _userRepository.UpdateUserAsync(user);
         }
 
         public async Task<bool> SaveDocumentAsync(string userId, int docId)
         {
-            if (await _context.SavedDocuments.AnyAsync(s => s.UserId == userId && s.DocumentId == docId)) return false;
-            _context.SavedDocuments.Add(new SavedDocument { UserId = userId, DocumentId = docId, SavedDate = DateTime.Now });
-            return await _context.SaveChangesAsync() > 0;
+            if (await _userRepository.IsDocumentSavedAsync(userId, docId)) return false;
+            
+            var savedDoc = new SavedDocument { UserId = userId, DocumentId = docId, SavedDate = DateTime.Now };
+            return await _userRepository.AddSavedDocumentAsync(savedDoc);
         }
 
         public async Task<bool> UnsaveDocumentAsync(string userId, int docId)
         {
-            var savedDoc = await _context.SavedDocuments.FirstOrDefaultAsync(s => s.UserId == userId && s.DocumentId == docId);
+            var savedDoc = await _userRepository.GetSavedDocumentAsync(userId, docId);
             if (savedDoc == null) return false;
-            _context.SavedDocuments.Remove(savedDoc);
-            return await _context.SaveChangesAsync() > 0;
+            
+            return await _userRepository.RemoveSavedDocumentAsync(savedDoc);
         }
 
         public async Task<IEnumerable<SavedDocument>> GetSavedDocumentsAsync(string userId)
         {
-            return await _context.SavedDocuments
-                .Where(s => s.UserId == userId).Include(s => s.Document).ThenInclude(d => d.User)
-                .OrderByDescending(s => s.SavedDate).ToListAsync();
+            return await _userRepository.GetSavedDocumentsListAsync(userId);
         }
+
         public async Task<bool> IsDocumentSavedAsync(string userId, int documentId)
         {
-            return await _context.SavedDocuments
-                .AnyAsync(sd => sd.UserId == userId && sd.DocumentId == documentId);
+            return await _userRepository.IsDocumentSavedAsync(userId, documentId);
         }
 
         public async Task<bool> IsUserBannedAsync(string userId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             return user?.IsBanned ?? false;
         }
     }

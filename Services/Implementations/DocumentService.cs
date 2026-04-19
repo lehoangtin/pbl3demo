@@ -5,6 +5,7 @@ using StudyShare.Models;
 using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
+using StudyShare.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,38 +15,32 @@ namespace StudyShare.Services.Implementations
 {
     public class DocumentService : IDocumentService
     {
-        private readonly AppDbContext _context;
+        private readonly IDocumentRepository _documentRepository;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _webHostEnvironment; // Lấy đường dẫn thư mục wwwroot
 
-        public DocumentService(AppDbContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public DocumentService(IDocumentRepository documentRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
-            _context = context;
+            _documentRepository = documentRepository;
             _mapper = mapper;
             _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<IEnumerable<DocumentResponse>> GetAllAsync()
         {
-            var docs = await _context.Documents
-                .Include(d => d.Category)
-                .Include(d => d.User)
-                .ToListAsync();
+            var docs = await _documentRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
 
         public async Task<DocumentResponse?> GetByIdAsync(int id)
         {
-            var doc = await _context.Documents
-                .Include(d => d.Category)
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
+            var doc = await _documentRepository.GetByIdAsync(id);
             return doc == null ? null : _mapper.Map<DocumentResponse>(doc);
         }
 
         public async Task<DocumentUpdateRequest?> GetForEditAsync(int id)
         {
-            var doc = await _context.Documents.FindAsync(id);
+            var doc = await _documentRepository.GetForEditAsync(id);
             if (doc == null) return null;
 
             return new DocumentUpdateRequest
@@ -59,7 +54,7 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> UpdateAsync(DocumentUpdateRequest request, string currentUserId, bool isAdmin)
         {
-            var document = await _context.Documents.FindAsync(request.Id);
+            var document = await _documentRepository.GetForEditAsync(request.Id);
             if (document == null) return false;
             if (!isAdmin && document.UserId != currentUserId) return false;
 
@@ -91,8 +86,7 @@ namespace StudyShare.Services.Implementations
                 document.FileSize = request.File.Length;
             }
 
-            _context.Documents.Update(document);
-            return await _context.SaveChangesAsync() > 0;
+            return await _documentRepository.UpdateAsync(document);
         }
 
         public async Task<bool> CreateAsync(DocumentCreateRequest request, string userId)
@@ -126,13 +120,12 @@ namespace StudyShare.Services.Implementations
                 document.FileSize = request.File.Length;
             }
 
-            _context.Documents.Add(document);
-            return await _context.SaveChangesAsync() > 0;
+            return await _documentRepository.CreateAsync(document);
         }
 
         public async Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin)
         {
-            var doc = await _context.Documents.FindAsync(id);
+            var doc = await _documentRepository.GetForEditAsync(id);
             if (doc == null) return false;
 
             if (!isAdmin && doc.UserId != currentUserId) return false;
@@ -144,24 +137,13 @@ namespace StudyShare.Services.Implementations
                 System.IO.File.Delete(physicalPath);
             }
 
-            _context.Documents.Remove(doc);
-            return await _context.SaveChangesAsync() > 0;
+            return await _documentRepository.DeleteAsync(doc);
         }
                 // Thêm 3 hàm này vào trong class DocumentService
 
         public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
         {
-            var query = _context.Documents
-                .Include(d => d.User)
-                .Include(d => d.Category) // Thêm Category nếu cần hiển thị
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(d => d.Title.Contains(search));
-            }
-
-            var docs = await query.OrderByDescending(d => d.UploadDate).ToListAsync();
+            var docs = await _documentRepository.GetAllForAdminAsync(search);
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
 
@@ -173,61 +155,26 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> ApproveDocumentAsync(int id)
         {
-            var doc = await _context.Documents.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
+            var doc = await _documentRepository.GetByIdAsync(id);
             if (doc == null) return false;
 
-            if (!doc.IsApproved) 
-            {
-                doc.IsApproved = true;
-                
-                // Logic nghiệp vụ: Cộng điểm cho user được chuyển về đúng tầng Service
-                if (doc.User != null)
-                {
-                    doc.User.Points += 10;
-                }
-
-                _context.Update(doc);
-                return await _context.SaveChangesAsync() > 0;
-            }
-            return false;
+            return await _documentRepository.ApproveDocumentAsync(doc);
         }
         public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
         {
-            return await _context.Documents.Where(d => d.UserId == userId).OrderByDescending(d => d.UploadDate).ToListAsync();
+            return await _documentRepository.GetUserDocumentsAsync(userId);
         }
 
         public async Task<bool> DeleteByUserAsync(int id, string userId)
         {
-            var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
-            if (doc == null) return false;
+            var doc = await _documentRepository.GetForEditAsync(id);
+            if (doc == null || doc.UserId != userId) return false;
 
-            _context.Reports.RemoveRange(_context.Reports.Where(r => r.DocumentId == id));
-            _context.SavedDocuments.RemoveRange(_context.SavedDocuments.Where(s => s.DocumentId == id));
-
-            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, doc.FilePath.TrimStart('/'));
-            if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-
-            _context.Documents.Remove(doc);
-            return await _context.SaveChangesAsync() > 0;
+            return await _documentRepository.DeleteByUserAsync(doc);
         }
         public async Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId)
         {
-            var query = _context.Documents
-                .Include(d => d.Category)
-                .Include(d => d.User)
-                .Where(d => d.IsApproved == true); 
-
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(d => d.Title.Contains(searchTerm) || d.Description.Contains(searchTerm));
-            }
-
-            if (categoryId.HasValue)
-            {
-                query = query.Where(d => d.CategoryId == categoryId);
-            }
-
-            var docs = await query.OrderByDescending(d => d.UploadDate).ToListAsync();
+            var docs = await _documentRepository.GetApprovedDocumentsAsync(searchTerm, categoryId);
             
             // Ánh xạ sang DTO trả về cho Controller
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
@@ -235,10 +182,7 @@ namespace StudyShare.Services.Implementations
 
         public async Task<DocumentResponse?> GetDocumentDetailsAsync(int id)
         {
-            var document = await _context.Documents
-                .Include(d => d.User)
-                .Include(d => d.Category)
-                .FirstOrDefaultAsync(d => d.Id == id);
+            var document = await _documentRepository.GetDocumentDetailsAsync(id);
 
             return document == null ? null : _mapper.Map<DocumentResponse>(document);
         }
