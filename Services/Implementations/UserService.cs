@@ -124,6 +124,25 @@ namespace StudyShare.Services.Implementations
         {
             var user = await _userRepository.GetByIdAsync(userId);
             return user?.IsBanned ?? false;
+            var lockoutEndDate = await _userRepository.GetLockoutEndDateAsync(user);
+            return lockoutEndDate.HasValue && lockoutEndDate > DateTimeOffset.Now;
+        }
+        public async Task<bool> UpdateUserByAdminAsync(UserResponse model)
+        {
+            var user = await _userRepository.GetByIdAsync(model.Id);
+            if (user == null) return false;
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.Points = model.Points;
+            // Bạn có thể thêm các trường khác nếu cần
+
+            return await _userRepository.UpdateUserAsync(user);
+        }
+        public async Task<IEnumerable<UserResponse>> GetReportedUsersAsync()
+        {
+            var reportedUsers= await _userRepository.GetAllAsync(); // Giả sử bạn có hàm này để lấy tất cả users
+            return _mapper.Map<IEnumerable<UserResponse>>(reportedUsers);
         }
     }
 }

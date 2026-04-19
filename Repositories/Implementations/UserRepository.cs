@@ -95,5 +95,16 @@ namespace StudyShare.Repositories.Implementations
                 .OrderByDescending(s => s.SavedDate)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<AppUser>> GetAllAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+        public async Task<IEnumerable<AppUser>> GetReportedUsersAsync()
+        {
+            // Lấy những User nào có danh sách Reports không trống
+            return await _context.Users
+                .Where(u => _context.Reports.Any(r => r.TargetUserId == u.Id))
+                .ToListAsync();
+        }
     }
 }

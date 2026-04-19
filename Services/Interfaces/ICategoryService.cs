@@ -11,5 +11,6 @@ namespace StudyShare.Services.Interfaces
         Task<bool> CreateAsync(CategoryCreateRequest request);
         Task<bool> UpdateAsync(CategoryUpdateRequest request);
         Task<bool> DeleteAsync(int id);
+        Task<CategoryUpdateRequest?> GetForUpdateAsync(int id);
     }
 }

@@ -60,5 +60,12 @@ namespace StudyShare.Services.Implementations
 
             return await _categoryRepository.DeleteAsync(category);
         }
+        public async Task<CategoryUpdateRequest?> GetForUpdateAsync(int id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null) return null;
+            return _mapper.Map<CategoryUpdateRequest>(category);
+        }
+
     }
 }

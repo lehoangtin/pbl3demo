@@ -20,5 +20,8 @@ namespace StudyShare.Services.Interfaces
         // Thêm 2 hàm này kiểm tra trạng thái User
         Task<bool> IsDocumentSavedAsync(string userId, int documentId);
         Task<bool> IsUserBannedAsync(string userId);
+        Task<bool> UpdateUserByAdminAsync(UserResponse model);
+        Task<IEnumerable<UserResponse>> GetReportedUsersAsync();
+
     }
 }

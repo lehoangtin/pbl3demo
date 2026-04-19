@@ -16,5 +16,7 @@ namespace StudyShare.Repositories.Interfaces
         Task<SavedDocument?> GetSavedDocumentAsync(string userId, int documentId);
         Task<bool> IsDocumentSavedAsync(string userId, int documentId);
         Task<IEnumerable<SavedDocument>> GetSavedDocumentsListAsync(string userId);
+        Task<IEnumerable<AppUser>> GetAllAsync();
+        Task <IEnumerable<AppUser>> GetReportedUsersAsync();   
     }
 }

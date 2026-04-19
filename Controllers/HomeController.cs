@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using StudyShare.Models;
 using Microsoft.AspNetCore.Authorization; 
-using Microsoft.AspNetCore.Identity; 
 using System.Threading.Tasks;
-using StudyShare.Services.Interfaces; // Thêm thư viện gọi Service
+using StudyShare.Services.Interfaces;
+using System.Security.Claims; // Bổ sung Claims
+using AutoMapper;
+using StudyShare.ViewModels; // Bổ sung ViewModels
+
 
 namespace StudyShare.Controllers
 {
@@ -12,58 +14,47 @@ namespace StudyShare.Controllers
         private readonly IDocumentService _documentService;
         private readonly ICategoryService _categoryService;
         private readonly IUserService _userService;
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly IMapper _mapper; // Bổ sung IMapper
+        private readonly IAuthService _authService; // Thay SignInManager bằng IAuthService của bạn
 
-        // Chỉ tiêm các Service và Manager, KHÔNG tiêm AppDbContext
         public HomeController(
             IDocumentService documentService,
             ICategoryService categoryService,
             IUserService userService,
-            SignInManager<AppUser> signInManager, 
-            UserManager<AppUser> userManager)
+            IMapper mapper, // Tiêm IMapper  
+            IAuthService authService) // Tiêm IAuthService
         {
             _documentService = documentService;
             _categoryService = categoryService;
             _userService = userService;
-            _signInManager = signInManager;
-            _userManager = userManager;
+            _authService = authService;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index(string searchTerm, int? categoryId)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            // Kiểm tra ban qua Service
-            if (user != null && await _userService.IsUserBannedAsync(user.Id))
-            {
-                await _signInManager.SignOutAsync();
-                TempData["Error"] = "Tài khoản của bạn đã bị khóa!";
-                return RedirectToAction("Login", "Account", new { area = "" }); 
-            }
+public async Task<IActionResult> Index()
+{
+    // 1. Gọi hàm đã khai báo ở Bước 1
+    var documentsDto = await _documentService.GetAllApprovedAsync(); 
 
-            // Gọi Service để lấy danh sách
-            var docs = await _documentService.GetApprovedDocumentsAsync(searchTerm, categoryId);
-            
-            ViewBag.SearchTerm = searchTerm; 
-            ViewBag.CurrentCategory = categoryId; 
-            // Gọi CategoryService để lấy danh mục hiển thị menu
-            ViewBag.Categories = await _categoryService.GetAllAsync(); 
+    // 2. Map từ List DTO sang List ViewModel
+    var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documentsDto);
 
-            return View(docs);
-        }
+    // 3. Trả về View với đúng kiểu dữ liệu (DocumentViewModel)
+    return View(viewModels); 
+}
+
 
         [Authorize] 
         public async Task<IActionResult> ViewDocument(int id)
         {
-            // Gọi Service để lấy chi tiết
             var document = await _documentService.GetDocumentDetailsAsync(id);
             if (document == null) return NotFound();
 
-            var userId = _userManager.GetUserId(User);
+            // Tối ưu: Lấy User ID qua Claims
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
-            // Gọi Service để kiểm tra đã lưu chưa
             bool isSaved = false;
-            if (userId != null)
+            if (!string.IsNullOrEmpty(userId))
             {
                 isSaved = await _userService.IsDocumentSavedAsync(userId, id);
             }

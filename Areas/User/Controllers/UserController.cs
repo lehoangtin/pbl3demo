@@ -5,6 +5,9 @@ using StudyShare.Models;
 using StudyShare.ViewModels;
 using StudyShare.Services.Interfaces;
 using System.Threading.Tasks;
+using System.Security.Claims; 
+using AutoMapper;
+using System.Collections.Generic; // Bổ sung để dùng IEnumerable
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -16,48 +19,58 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IQuestionService _questionService;
         private readonly IAnswerService _answerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IReportService _reportService;
+        private readonly IMapper _mapper;
 
-        // Tiêm toàn bộ các Service vào thay cho AppDbContext
         public UserController(
             IUserService userService,
             IDocumentService documentService,
             IQuestionService questionService,
             IAnswerService answerService,
-            UserManager<AppUser> userManager)
+            IReportService reportService,
+            UserManager<AppUser> userManager,
+            IMapper mapper)
         {
             _userService = userService;
             _documentService = documentService;
             _questionService = questionService;
             _answerService = answerService;
+            _reportService = reportService;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         public IActionResult Index()
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return RedirectToAction("Profile", new { id = userId });
         }
 
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            var user = await _userService.GetUserProfileAsync(userId); // Gọi qua Service
+            
+            // 1. Lấy DTO từ Service
+            var userDto = await _userService.GetUserProfileAsync(userId);
 
-            if (user == null) return NotFound();
+            if (userDto == null) return NotFound();
 
-            ViewBag.TotalDocs = user.Documents?.Count ?? 0;
-            ViewBag.TotalQuestions = user.Questions?.Count ?? 0;
-            ViewBag.TotalSaved = user.SavedDocuments?.Count ?? 0;
+            // Gán ViewBag lấy số lượng (dùng DTO)
+            ViewBag.TotalDocs = userDto.Documents?.Count ?? 0;
+            ViewBag.TotalQuestions = userDto.Questions?.Count ?? 0;
+            ViewBag.TotalSaved = userDto.SavedDocuments?.Count ?? 0;
 
-            return View(user);
+            // 2. Map sang ViewModel và trả ra View
+            var viewModel = _mapper.Map<UserViewModel>(userDto);
+            return View(viewModel);
         }
 
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
             var user = await _userManager.FindByIdAsync(userId); 
             return View(user);
@@ -67,9 +80,9 @@ namespace StudyShare.Areas.User.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(AppUser model, IFormFile? avatarFile)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            // Service sẽ lo việc đổi tên và lưu file ảnh vào wwwroot
+            
             await _userService.UpdateUserProfileAsync(userId, model, avatarFile);
             return RedirectToAction("Profile", new { id = userId });
         }
@@ -99,20 +112,25 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> MyQuestions()
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
             ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            var questions = await _questionService.GetUserQuestionsAsync(userId); // Gọi qua Service
-            return View(questions);
+            
+            // SỬA Ở ĐÂY: Map DTO sang ViewModel
+            var dtoList = await _questionService.GetUserQuestionsAsync(userId); 
+            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
+            
+            return View(viewModels);
         }
 
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> DeleteDocument(int id)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            // Service sẽ lo logic xóa Report, SavedDocs và File vật lý
+            
             var success = await _documentService.DeleteByUserAsync(id, userId); 
             if (success) TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
             
@@ -123,8 +141,9 @@ namespace StudyShare.Areas.User.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteQuestion(int id)
         {
-            var userId = _userManager.GetUserId(User);
-            // Service sẽ lo logic xóa Report của Question và Answer
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
             var success = await _questionService.DeleteByUserAsync(id, userId);
             if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
             
@@ -133,9 +152,16 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> MyDocuments()
         {
-            var userId = _userManager.GetUserId(User);            if (string.IsNullOrEmpty(userId)) return Unauthorized();            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            var docs = await _documentService.GetUserDocumentsAsync(userId);
-            return View(docs);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            // SỬA Ở ĐÂY: Map DTO sang ViewModel
+            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            
+            return View(viewModels);
         }
 
         [HttpPost]
@@ -143,7 +169,9 @@ namespace StudyShare.Areas.User.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveDocument(int docId)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
             var success = await _userService.SaveDocumentAsync(userId, docId);
             if (success) TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
             
@@ -155,7 +183,9 @@ namespace StudyShare.Areas.User.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UnsaveDocument(int docId)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
             var success = await _userService.UnsaveDocumentAsync(userId, docId);
             if (success) TempData["Success"] = "Đã bỏ lưu tài liệu.";
 
@@ -169,9 +199,16 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> SavedDocuments()
         {
-            var userId = _userManager.GetUserId(User);            if (string.IsNullOrEmpty(userId)) return Unauthorized();            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            var savedDocs = await _userService.GetSavedDocumentsAsync(userId);
-            return View(savedDocs);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            // SỬA Ở ĐÂY: Map DTO sang ViewModel
+            var dtoList = await _userService.GetSavedDocumentsAsync(userId);
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            
+            return View(viewModels);
         }
 
         [HttpPost]
@@ -179,8 +216,9 @@ namespace StudyShare.Areas.User.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAnswer(int id)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
             var success = await _answerService.DeleteByUserAsync(id, userId);
 
             if (!success) TempData["Error"] = "Bạn không có quyền xoá hoặc nội dung không tồn tại.";
@@ -189,5 +227,17 @@ namespace StudyShare.Areas.User.Controllers
             string returnUrl = Request.Headers["Referer"].ToString();
             return string.IsNullOrEmpty(returnUrl) ? RedirectToAction("Index", "Home") : Redirect(returnUrl);
         }
+        public async Task<IActionResult> ViewReports(string userId)
+        {
+            // 1. Lấy DTO từ Service
+            var reportsDto = await _reportService.GetReportsForUserAsync(userId);
+            
+            // 2. Map sang ViewModel để hiển thị ra giao diện
+            var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
+            
+            ViewBag.TargetUserId = userId;
+            return View(viewModels);
+        }
+
     }
 }

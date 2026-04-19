@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "50Xoy19rKEU=",
+  "dgSpecHash": "4OFn+qJ1+6U=",
   "success": true,
   "projectFilePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
   "expectedPackageFiles": [
-    "/Users/mac/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
-    "/Users/mac/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
+    "/Users/mac/.nuget/packages/automapper/13.0.1/automapper.13.0.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",
     "/Users/mac/.nuget/packages/bouncycastle.cryptography/2.6.2/bouncycastle.cryptography.2.6.2.nupkg.sha512",
@@ -64,7 +63,7 @@
     "/Users/mac/.nuget/packages/k4os.compression.lz4/1.3.8/k4os.compression.lz4.1.3.8.nupkg.sha512",
     "/Users/mac/.nuget/packages/k4os.compression.lz4.streams/1.3.8/k4os.compression.lz4.streams.1.3.8.nupkg.sha512",
     "/Users/mac/.nuget/packages/k4os.hash.xxhash/1.0.8/k4os.hash.xxhash.1.0.8.nupkg.sha512",
-    "/Users/mac/.nuget/packages/mailkit/4.15.1/mailkit.4.15.1.nupkg.sha512",
+    "/Users/mac/.nuget/packages/mailkit/4.16.0/mailkit.4.16.0.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/10.0.5/microsoft.aspnetcore.identity.entityframeworkcore.10.0.5.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.aspnetcore.identity.ui/10.0.5/microsoft.aspnetcore.identity.ui.10.0.5.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.aspnetcore.razor.language/6.0.24/microsoft.aspnetcore.razor.language.6.0.24.nupkg.sha512",
@@ -114,7 +113,7 @@
     "/Users/mac/.nuget/packages/microsoft.visualstudio.web.codegeneration.templating/10.0.2/microsoft.visualstudio.web.codegeneration.templating.10.0.2.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.visualstudio.web.codegeneration.utils/10.0.2/microsoft.visualstudio.web.codegeneration.utils.10.0.2.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.visualstudio.web.codegenerators.mvc/10.0.2/microsoft.visualstudio.web.codegenerators.mvc.10.0.2.nupkg.sha512",
-    "/Users/mac/.nuget/packages/mimekit/4.15.1/mimekit.4.15.1.nupkg.sha512",
+    "/Users/mac/.nuget/packages/mimekit/4.16.0/mimekit.4.16.0.nupkg.sha512",
     "/Users/mac/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/Users/mac/.nuget/packages/mysql.data/9.6.0/mysql.data.9.6.0.nupkg.sha512",
     "/Users/mac/.nuget/packages/mysql.data.entityframework/9.6.0/mysql.data.entityframework.9.6.0.nupkg.sha512",
@@ -157,23 +156,11 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "Package 'AutoMapper' 12.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "message": "Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
       "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
       "warningLevel": 1,
       "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
       "libraryId": "AutoMapper",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    },
-    {
-      "code": "NU1902",
-      "level": "Warning",
-      "message": "Package 'MailKit' 4.15.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
-      "projectPath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
-      "warningLevel": 1,
-      "filePath": "/Users/mac/Bản sao PBL3demo laỷe/PBL3demo.csproj",
-      "libraryId": "MailKit",
       "targetGraphs": [
         "net10.0"
       ]

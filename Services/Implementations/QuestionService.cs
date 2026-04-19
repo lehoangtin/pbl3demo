@@ -11,11 +11,13 @@ namespace StudyShare.Services.Implementations
     public class QuestionService : IQuestionService
     {
         private readonly IQuestionRepository _questionRepository;
+        private readonly IAnswerRepository _answerRepository; // Add AnswerRepository for admin delete answer function
         private readonly IMapper _mapper;
 
-        public QuestionService(IQuestionRepository questionRepository, IMapper mapper)
+        public QuestionService(IQuestionRepository questionRepository, IAnswerRepository answerRepository, IMapper mapper)
         {
             _questionRepository = questionRepository;
+            _answerRepository = answerRepository;
             _mapper = mapper;
         }
 
@@ -94,7 +96,7 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> DeleteAnswerByAdminAsync(int id)
         {
-            var answer = await _context.Answers.FindAsync(id); // Note: This still uses _context, but since it's in QuestionService, perhaps move to AnswerRepository later
+            var answer = await _answerRepository.GetByIdAsync(id); // Note: This still uses _context, but since it's in QuestionService, perhaps move to AnswerRepository later
             if (answer == null) return false;
 
             return await _questionRepository.DeleteAnswerByAdminAsync(answer);
@@ -106,10 +108,18 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> DeleteByUserAsync(int id, string userId)
         {
-            var question = await _context.Questions.FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId); // Still uses _context, but can be adjusted
-            if (question == null) return false;
+            var question = await _questionRepository.GetByIdAsync(id); // Still uses _context, but can be adjusted
+            if (question == null || question.UserId != userId) return false;
 
             return await _questionRepository.DeleteByUserAsync(question);
         }
+        public async Task<bool> DeleteByAdminAsync(int id) 
+        {
+            var item = await _questionRepository.GetByIdAsync(id); // Đổi thành _questionRepository nếu ở QuestionService
+            if (item == null) return false;
+            await _questionRepository.DeleteAsync(item);
+            return true;
+        }
+
     }
 }

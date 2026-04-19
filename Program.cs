@@ -22,6 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.ICategoryService, StudyShare.Services.Implementations.CategoryService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IQuestionService, StudyShare.Services.Implementations.QuestionService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IUserService, StudyShare.Services.Implementations.UserService>();
@@ -29,7 +30,7 @@ builder.Services.AddScoped<StudyShare.Services.Interfaces.IAnswerService, StudyS
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyShare.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IDocumentService, StudyShare.Services.Implementations.DocumentService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.IAuthService, StudyShare.Services.Implementations.AuthService>(); 
-builder.Services.AddScoped<IDashboardService, DashboardService>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

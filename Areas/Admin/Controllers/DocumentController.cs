@@ -1,8 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
-using System.Security.Claims; // Thêm thư viện này để lấy thông tin User đang đăng nhập
+using StudyShare.ViewModels;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
@@ -11,58 +13,42 @@ namespace StudyShare.Areas.Admin.Controllers
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;
+        private readonly IMapper _mapper;
 
-        // Tiêm Service thay vì DbContext
-        public DocumentController(IDocumentService documentService)
+        public DocumentController(IDocumentService documentService, IMapper mapper)
         {
             _documentService = documentService;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index(string search)
+        public async Task<IActionResult> Index()
         {
-            var documents = await _documentService.GetAllForAdminAsync(search);
-            return View(documents);
+            var dtoList = await _documentService.GetAllAsync();
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            return View(viewModels);
         }
 
         public async Task<IActionResult> Review(int id)
         {
-            var document = await _documentService.GetDetailsForReviewAsync(id);
-            if (document == null) return NotFound();
-
-            return View(document);
+            var docDto = await _documentService.GetByIdAsync(id);
+            if (docDto == null) return NotFound();
+            
+            var viewModel = _mapper.Map<DocumentViewModel>(docDto);
+            return View(viewModel);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveDocument(int id)
+        public async Task<IActionResult> Approve(int id)
         {
-            var success = await _documentService.ApproveDocumentAsync(id);
-            if (success)
-            {
-                TempData["Success"] = "Tài liệu đã được phê duyệt thành công và người dùng đã được cộng 10đ!";
-            }
-            else
-            {
-                TempData["Error"] = "Không tìm thấy tài liệu hoặc tài liệu đã được duyệt.";
-            }
-
-            return RedirectToAction("Index", "Home", new { area = "Admin" });
+            await _documentService.ApproveDocumentAsync(id);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            // Lấy ID của admin hiện tại
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
-            
-            // Gọi hàm xóa qua Service (đã tích hợp sẵn logic xóa file vật lý trong Service của bạn)
-            var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin: true);
-            
-            if (!success) return NotFound();
-
-            TempData["Success"] = "Đã xóa / từ chối tài liệu thành công!";
-            return RedirectToAction("Index", "Home", new { area = "Admin" });
+            await _documentService.DeleteByAdminAsync(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

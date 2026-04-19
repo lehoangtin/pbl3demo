@@ -21,6 +21,8 @@ namespace StudyShare.Services.Interfaces
         Task<bool> ApproveDocumentAsync(int id);
         // Thêm 2 hàm này dùng cho trang chủ
         Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId);
+        Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync();
         Task<DocumentResponse?> GetDocumentDetailsAsync(int id);
+        Task<bool>DeleteByAdminAsync(int id);
     }
 }

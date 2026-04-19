@@ -1,4 +1,4 @@
-@model IEnumerable<StudyShare.Models.Document>
+@model IEnumerable<StudyShare.ViewModels.DocumentViewModel>
 @{ ViewData["Title"] = "Tài liệu của tôi"; }
 
 <div class="container mt-4">
@@ -22,7 +22,7 @@
                 @foreach (var item in Model) {
                 <tr>
                     <td class="fw-bold">@item.Title</td>
-                    <td>@item.Category?.Name</td>
+                    <td>@item.CategoryName</td>
                     <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
                     <td>
                         @if(item.IsApproved) { 

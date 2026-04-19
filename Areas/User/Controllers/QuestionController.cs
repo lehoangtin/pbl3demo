@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using StudyShare.Models;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
-
+using System.Security.Claims; // Dùng cái này thay cho UserManager
+using AutoMapper; // Dùng AutoMapper để map DTO sang ViewModel, tránh lộ chi tiết DB
+using StudyShare.ViewModels; // Bổ sung thư viện này để dùng ViewModel
 namespace StudyShare.Areas.User.Controllers
 {
     [Area("User")]
@@ -12,18 +12,20 @@ namespace StudyShare.Areas.User.Controllers
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
-        private readonly UserManager<AppUser> _userManager; // Vẫn giữ UserManager để lấy ID người dùng hiện tại
-
-        public QuestionController(IQuestionService questionService, UserManager<AppUser> userManager)
+        private readonly IMapper _mapper; // Dùng AutoMapper để map DTO sang ViewModel, tránh lộ chi tiết DB
+        
+        // SỬA: Đã bỏ UserManager, Controller giờ đây cực kỳ nhẹ và sạch
+        public QuestionController(IQuestionService questionService, IMapper mapper)
         {
             _questionService = questionService;
-            _userManager = userManager;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
             var data = await _questionService.GetAllAsync();
-            return View(data);
+            var viewModel = _mapper.Map<IEnumerable<QuestionViewModel>>(data);
+            return View(viewModel);
         }
 
         public IActionResult Create() => View();
@@ -34,7 +36,8 @@ namespace StudyShare.Areas.User.Controllers
         {
             if (!ModelState.IsValid) return View(request);
             
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+            // SỬA: Lấy currentUserId trực tiếp từ Claims (nhanh và không chọc xuống DB)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _questionService.CreateAsync(request, currentUserId);
             
             return RedirectToAction(nameof(Index));
@@ -53,7 +56,8 @@ namespace StudyShare.Areas.User.Controllers
         {
             if (!ModelState.IsValid) return View(request);
 
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+            // SỬA: Lấy currentUserId bằng Claims
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");
 
             var success = await _questionService.UpdateAsync(request, currentUserId, isAdmin);
@@ -64,7 +68,8 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+            // SỬA: Lấy currentUserId bằng Claims
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");
 
             await _questionService.DeleteAsync(id, currentUserId, isAdmin);

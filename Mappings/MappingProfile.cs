@@ -2,6 +2,7 @@ using AutoMapper;
 using StudyShare.Models;
 using StudyShare.DTOs.Responses;
 using StudyShare.DTOs.Requests;
+using StudyShare.ViewModels;
 
 namespace StudyShare.Mappings
 {
@@ -9,48 +10,72 @@ namespace StudyShare.Mappings
     {
         public MappingProfile()
         {
-            // Map từ DB Model -> DTO hiển thị (Kèm tính tổng số tài liệu)
+            // ==========================================
+            // 1. CATEGORY MAPPINGS
+            // ==========================================
             CreateMap<Category, CategoryResponse>()
                 .ForMember(dest => dest.DocumentCount, 
                            opt => opt.MapFrom(src => src.Documents != null ? src.Documents.Count : 0));
-
-            // Map từ Form Request -> DB Model
+            
+            CreateMap<CategoryResponse, CategoryViewModel>();
+            
             CreateMap<CategoryCreateRequest, Category>();
-            CreateMap<CategoryUpdateRequest, Category>();
-            CreateMap<Question, QuestionResponse>()
-                // Lấy FullName từ bảng User đính kèm vào AuthorName
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
-                // Đếm số lượng câu trả lời
-                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+            CreateMap<Category, CategoryUpdateRequest>().ReverseMap();
 
-            CreateMap<QuestionCreateRequest, Question>();
-            CreateMap<QuestionUpdateRequest, Question>();
-            // --- MAPPING CHO DOCUMENT ---
+
+            // ==========================================
+            // 2. DOCUMENT MAPPINGS
+            // ==========================================
             CreateMap<Document, DocumentResponse>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"))
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
 
-            // Cực kỳ quan trọng: Bỏ qua thuộc tính File khi map từ Request sang Entity DB (vì DB không lưu IFormFile)
+            // Map từ Response sang ViewModel để hiển thị ở View
+            CreateMap<DocumentResponse, DocumentViewModel>();
+
             CreateMap<DocumentCreateRequest, Document>()
                 .ForMember(dest => dest.FilePath, opt => opt.Ignore())
                 .ForMember(dest => dest.FileName, opt => opt.Ignore())
                 .ForMember(dest => dest.FileType, opt => opt.Ignore())
                 .ForMember(dest => dest.FileSize, opt => opt.Ignore());
 
-            // --- MAPPING CHO USER & PROFILE ---
-            CreateMap<AppUser, UserResponse>();
-            CreateMap<ProfileUpdateRequest, AppUser>();
 
-            // --- MAPPING CHO ANSWER ---
+            // ==========================================
+            // 3. QUESTION & ANSWER MAPPINGS
+            // ==========================================
+            CreateMap<Question, QuestionResponse>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+            
+            CreateMap<QuestionResponse, QuestionViewModel>();
+            CreateMap<QuestionCreateRequest, Question>();
+            CreateMap<QuestionUpdateRequest, Question>();
+
             CreateMap<Answer, AnswerResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
+            
+            CreateMap<AnswerResponse, AnswerViewModel>();
             CreateMap<AnswerCreateRequest, Answer>();
 
-            // --- MAPPING CHO REPORT ---
+
+            // ==========================================
+            // 4. USER & PROFILE MAPPINGS
+            // ==========================================
+            CreateMap<AppUser, UserResponse>();
+            CreateMap<UserResponse, UserViewModel>();
+            CreateMap<ProfileUpdateRequest, AppUser>();
+
+
+            // ==========================================
+            // 5. REPORT MAPPINGS
+            // ==========================================
             CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Ẩn danh"))
-                .ForMember(dest => dest.ReportedUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : null))
-                .ForMember(dest => dest.DocumentTitle, opt => opt.MapFrom(src => src.Document != null ? src.Document.Title : null));
+                // Lưu ý: Đảm bảo tên thuộc tính ở Report Entity là 'Target' hay 'TargetUser' cho khớp
+                .ForMember(dest => dest.ReportedUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "N/A"))
+                .ForMember(dest => dest.DocumentTitle, opt => opt.MapFrom(src => src.Document != null ? src.Document.Title : "N/A"));
+
+            CreateMap<ReportResponse, ReportViewModel>();
         }
     }
 }

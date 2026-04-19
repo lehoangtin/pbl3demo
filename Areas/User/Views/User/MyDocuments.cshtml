@@ -1,4 +1,5 @@
-@model IEnumerable<StudyShare.Models.Document>
+@using StudyShare.ViewModels
+@model IEnumerable<StudyShare.ViewModels.DocumentViewModel>
 @{ ViewData["Title"] = "Tài liệu của tôi"; }
 
 <div class="container mt-4">
@@ -29,7 +30,7 @@
                             <tr>
                                 <td>
                                     <div class="fw-bold">@item.Title</div>
-                                    <small class="text-muted">@item.Category?.Name</small>
+                                    <small class="text-muted">@item.CategoryName</small>
                                 </td>
                                 <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
                                 <td><span class="badge bg-light text-dark">@item.Views</span></td>

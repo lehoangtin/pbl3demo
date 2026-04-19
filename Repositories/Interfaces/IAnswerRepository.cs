@@ -9,5 +9,7 @@ namespace StudyShare.Repositories.Interfaces
         Task<bool> CreateAsync(Answer answer);
         Task<bool> DeleteAsync(Answer answer);
         Task<bool> DeleteByUserAsync(Answer answer);
+        Task<IEnumerable<Answer>> GetAllAsync();
+
     }
 }

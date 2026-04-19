@@ -186,5 +186,25 @@ namespace StudyShare.Services.Implementations
 
             return document == null ? null : _mapper.Map<DocumentResponse>(document);
         }
+        public async Task<bool> DeleteByAdminAsync(int id) 
+        {
+            var item = await _documentRepository.GetByIdAsync(id); // Đổi thành _questionRepository nếu ở QuestionService
+            if (item == null) return false;
+            await _documentRepository.DeleteAsync(item);
+            return true;
+        }
+        public async Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync()
+        {
+            // Giả sử bạn dùng Repository để lấy dữ liệu
+            var documents = await _documentRepository.GetAllAsync();
+            
+            // Lọc ra những tài liệu đã được duyệt (IsApproved == true)
+            var approvedDocs = documents.Where(d => d.IsApproved);
+            
+            // Map từ Entity sang DTO
+            return _mapper.Map<IEnumerable<DocumentResponse>>(approvedDocs);
+        }
+
+
     }
 }

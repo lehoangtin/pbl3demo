@@ -3,7 +3,7 @@ namespace StudyShare.Services.Interfaces
 {
     public interface IReportService
     {
-        Task<IEnumerable<ReportResponse>> GetAllReportsAsync();
-        Task<bool> DeleteReportAsync(int reportId);
+        Task<IEnumerable<ReportResponse>> GetReportsForUserAsync(string userId);
+        Task<bool> ResolveReportAsync(int reportId); // Xử lý báo cáo xong
     }
 }

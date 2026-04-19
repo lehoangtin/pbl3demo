@@ -1,10 +1,11 @@
+using AutoMapper; // 1. Bổ sung thư viện này
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using StudyShare.Models;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
+using StudyShare.ViewModels; // 2. Bổ sung thư viện này
+using System.Security.Claims;
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -13,25 +14,25 @@ namespace StudyShare.Areas.User.Controllers
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;
-        private readonly ICategoryService _categoryService; // Gọi CategoryService để lấy danh sách thẻ Select
-        private readonly UserManager<AppUser> _userManager;
+        private readonly ICategoryService _categoryService;
+        private readonly IMapper _mapper;
 
-        public DocumentController(IDocumentService documentService, ICategoryService categoryService, UserManager<AppUser> userManager)
+        public DocumentController(IDocumentService documentService, ICategoryService categoryService, IMapper mapper)
         {
             _documentService = documentService;
             _categoryService = categoryService;
-            _userManager = userManager;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
             var data = await _documentService.GetAllAsync();
-            return View(data);
+            var viewModel = _mapper.Map<IEnumerable<DocumentViewModel>>(data);
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Create()
         {
-            // Truyền danh sách Category ra View để làm Dropdown
             var categories = await _categoryService.GetAllAsync();
             ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
             return View();
@@ -47,10 +48,10 @@ namespace StudyShare.Areas.User.Controllers
                 ViewBag.CategoryId = new SelectList(categories, "Id", "Name", request.CategoryId);
                 return View(request);
             }
-            
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
-            
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -81,7 +82,7 @@ namespace StudyShare.Areas.User.Controllers
                 return View(request);
             }
 
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");
 
             var success = await _documentService.UpdateAsync(request, currentUserId, isAdmin);
@@ -92,7 +93,7 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");
 
             await _documentService.DeleteAsync(id, currentUserId, isAdmin);

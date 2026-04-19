@@ -1,6 +1,9 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
+using StudyShare.ViewModels;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StudyShare.Areas.Admin.Controllers
@@ -10,48 +13,42 @@ namespace StudyShare.Areas.Admin.Controllers
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
+        private readonly IMapper _mapper;
 
-        // Chỉ tiêm Service, bỏ AppDbContext và UserManager
-        public QuestionController(IQuestionService questionService)
+        public QuestionController(IQuestionService questionService, IMapper mapper)
         {
             _questionService = questionService;
+            _mapper = mapper;
         }
 
-        // 1. Danh sách tất cả câu hỏi
         public async Task<IActionResult> Index()
         {
-            var questions = await _questionService.GetAllForAdminAsync();
-            return View(questions);
+            var dtoList = await _questionService.GetAllAsync();
+            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
+            return View(viewModels);
         }
 
-        // 2. Xem chi tiết câu hỏi và các báo cáo liên quan
         public async Task<IActionResult> Details(int id)
         {
-            var question = await _questionService.GetDetailsForAdminAsync(id);
-            if (question == null) return NotFound();
+            var questionDto = await _questionService.GetByIdAsync(id);
+            if (questionDto == null) return NotFound();
 
-            // Lấy danh sách báo cáo qua Service
-            ViewBag.Reports = await _questionService.GetReportsForQuestionAsync(id);
-
-            return View(question);
+            var viewModel = _mapper.Map<QuestionViewModel>(questionDto);
+            return View(viewModel);
         }
 
-        // 3. Xóa câu hỏi (Xóa luôn các câu trả lời/báo cáo liên quan)
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteQuestion(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            await _questionService.DeleteQuestionByAdminAsync(id);
+            await _questionService.DeleteByAdminAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        // 4. Xóa câu trả lời vi phạm
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAnswer(int id, int questionId)
+        public async Task<IActionResult> DeleteAnswer(int id)
         {
             await _questionService.DeleteAnswerByAdminAsync(id);
-            return RedirectToAction(nameof(Details), new { id = questionId });
+            return Redirect(Request.Headers["Referer"].ToString());
         }
     }
 }

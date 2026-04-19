@@ -1,7 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
+using StudyShare.ViewModels;
+using System.Threading.Tasks;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
@@ -9,7 +11,7 @@ namespace StudyShare.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
-        private readonly IDashboardService _dashboardService;
+        private readonly IDashboardService   _dashboardService;
 
         public HomeController(IDashboardService dashboardService)
         {
@@ -18,20 +20,19 @@ namespace StudyShare.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Giả sử hàm GetStats của bạn trả về một object chứa số lượng User, Doc, Question
             var stats = await _dashboardService.GetAdminDashboardStatsAsync();
             
-            ViewBag.TotalUsers = stats.TotalUsers;
-            ViewBag.BannedUsers = stats.BannedUsers;
-            ViewBag.TotalDocuments = stats.TotalDocuments;
-            ViewBag.ApprovedDocuments = stats.ApprovedDocuments;
-            ViewBag.PendingDocuments = stats.PendingDocuments;
-            ViewBag.TotalQuestions = stats.TotalQuestions;
-            ViewBag.TotalAnswers = stats.TotalAnswers;
-            ViewBag.TotalCategories = stats.TotalCategories;
-            ViewBag.TopUsers = stats.TopUsers;
-            ViewBag.RecentPendingDocs = stats.RecentPendingDocs;
+            // Bạn nên tạo AdminDashboardViewModel để chứa các con số này
+            var viewModel = new AdminDashboardViewModel 
+            {
+                TotalUsers = stats.TotalUsers,
+                TotalDocuments = stats.TotalDocuments,
+                TotalQuestions = stats.TotalQuestions,
+                PendingDocuments = stats.PendingDocuments
+            };
 
-            return View();
+            return View(viewModel);
         }
     }
 }

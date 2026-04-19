@@ -1,9 +1,7 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using StudyShare.Models;
 using StudyShare.DTOs.Responses;
-using StudyShare.Services.Interfaces;
 using StudyShare.Repositories.Interfaces;
+using StudyShare.Services.Interfaces;
 
 namespace StudyShare.Services.Implementations
 {
@@ -18,18 +16,19 @@ namespace StudyShare.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ReportResponse>> GetAllReportsAsync()
+        public async Task<IEnumerable<ReportResponse>> GetReportsForUserAsync(string userId)
         {
-            var reports = await _reportRepository.GetAllReportsAsync();
+            var reports = await _reportRepository.GetReportsByTargetUserAsync(userId);
             return _mapper.Map<IEnumerable<ReportResponse>>(reports);
         }
 
-        public async Task<bool> DeleteReportAsync(int reportId)
+        public async Task<bool> ResolveReportAsync(int reportId)
         {
             var report = await _reportRepository.GetByIdAsync(reportId);
             if (report == null) return false;
-
-            return await _reportRepository.DeleteAsync(report);
+            report.IsResolved = true; // Giả sử model Report có field này
+            await _reportRepository.UpdateAsync(report);
+            return true;
         }
     }
 }

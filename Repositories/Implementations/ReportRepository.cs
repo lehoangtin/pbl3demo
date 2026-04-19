@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using StudyShare.Repositories.Interfaces;
+using StudyShare.Models; // Đảm bảo đúng namespace chứa AppDbContext của bạn
 
 namespace StudyShare.Repositories.Implementations
 {
@@ -13,24 +14,27 @@ namespace StudyShare.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<IEnumerable<Report>> GetAllReportsAsync()
+        // 1. Thực thi hàm lấy danh sách báo cáo theo User bị tố cáo
+        public async Task<IEnumerable<Report>> GetReportsByTargetUserAsync(string userId)
         {
             return await _context.Reports
-                .Include(r => r.Reporter)
-                .Include(r => r.Target)
-                .Include(r => r.Document)
+                .Where(r => r.TargetUserId == userId)
+                .Include(r => r.Reporter) // Lấy thông tin người gửi báo cáo
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
+        // 2. Thực thi hàm cập nhật báo cáo (ví dụ: đánh dấu đã xử lý)
+        public async Task UpdateAsync(Report report)
+        {
+            _context.Reports.Update(report);
+            await _context.SaveChangesAsync();
+        }
+
+        // Thêm hàm GetByIdAsync nếu Interface của bạn có yêu cầu
         public async Task<Report?> GetByIdAsync(int id)
         {
             return await _context.Reports.FindAsync(id);
-        }
-
-        public async Task<bool> DeleteAsync(Report report)
-        {
-            _context.Reports.Remove(report);
-            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

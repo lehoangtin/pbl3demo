@@ -1,11 +1,11 @@
-@model StudyShare.Models.Question
+@model StudyShare.ViewModels.QuestionViewModel
 @using System.Security.Claims
 
 <div class="container mt-4">
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <h2 class="fw-bold">@Model.Content</h2>
-            <p class="text-muted">Đăng bởi: @Model.User?.FullName</p>
+            <p class="text-muted">Đăng bởi: @Model.AuthorName</p>
         </div>
     </div>
 
@@ -15,7 +15,7 @@
     {
         <div class="mb-3 p-3 bg-light rounded shadow-sm">
             <div class="d-flex justify-content-between">
-                <strong>@(answer.User?.FullName ?? "Unknown")</strong>
+                <strong>@(answer.AuthorName ?? "Unknown")</strong>
 
                 <div class="d-flex align-items-center gap-2">
 

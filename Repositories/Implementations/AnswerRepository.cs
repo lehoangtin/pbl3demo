@@ -40,5 +40,10 @@ namespace StudyShare.Repositories.Implementations
             _context.Answers.Remove(answer);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<IEnumerable<Answer>> GetAllAsync()
+        {
+            return await _context.Answers.ToListAsync();
+        }
+
     }
 }
