@@ -17,12 +17,14 @@ namespace StudyShare.Services.Implementations
     public class DocumentService : IDocumentService
     {
         private readonly IDocumentRepository _documentRepository;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DocumentService(IDocumentRepository documentRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public DocumentService(IDocumentRepository documentRepository, IUserService userService, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _documentRepository = documentRepository;
+            _userService = userService;
             _mapper = mapper;
             _webHostEnvironment = webHostEnvironment;
         }
@@ -124,16 +126,22 @@ namespace StudyShare.Services.Implementations
         {
             var doc = await _documentRepository.GetForEditAsync(id);
             if (doc == null) return false;
-
             if (!isAdmin && doc.UserId != currentUserId) return false;
 
-            var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, doc.FilePath.TrimStart('/'));
-            if (System.IO.File.Exists(physicalPath))
-            {
-                System.IO.File.Delete(physicalPath);
-            }
+            // Lưu đường dẫn file trước khi xóa trong DB
+            var filePath = doc.FilePath; 
 
-            return await _documentRepository.DeleteAsync(doc);
+            var result = await _documentRepository.DeleteAsync(doc);
+            if (result)
+            {
+                // Chỉ xóa file vật lý sau khi DB đã xóa thành công
+                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
+                if (System.IO.File.Exists(physicalPath))
+                {
+                    System.IO.File.Delete(physicalPath);
+                }
+            }
+            return result;
         }
 
         public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
@@ -150,11 +158,27 @@ namespace StudyShare.Services.Implementations
         public async Task<bool> ApproveDocumentAsync(int id)
         {
             var doc = await _documentRepository.GetByIdAsync(id);
-            if (doc == null) return false;
+            if (doc == null || doc.IsApproved) return false;
 
-            return await _documentRepository.ApproveDocumentAsync(doc);
+            // 1. Phê duyệt tài liệu
+            var success = await _documentRepository.ApproveDocumentAsync(doc);
+            
+            if (success)
+            {
+                // 2. Cộng điểm thưởng cho người đăng (ví dụ: 50 điểm)
+                await _userService.AddPointsAsync(doc.UserId, 50);
+            }
+
+            return success;
         }
-        
+        public async Task<bool> IncreaseDownloadCountAsync(int id)
+        {
+            var doc = await _documentRepository.GetByIdAsync(id);
+            if (doc == null) return false;
+            
+            doc.DownloadCount++;
+            return await _documentRepository.UpdateAsync(doc);
+        }
         public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
         {
             return await _documentRepository.GetUserDocumentsAsync(userId);

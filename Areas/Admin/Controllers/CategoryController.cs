@@ -31,6 +31,7 @@ namespace StudyShare.Areas.Admin.Controllers
 
         public IActionResult Create() => View();
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryCreateRequest request)
@@ -38,6 +39,7 @@ namespace StudyShare.Areas.Admin.Controllers
             if (ModelState.IsValid)
             {
                 await _categoryService.CreateAsync(request);
+                TempData["Success"] = "Thêm danh mục mới thành công!"; // Thêm dòng này
                 return RedirectToAction(nameof(Index));
             }
             return View(request);
@@ -73,7 +75,10 @@ namespace StudyShare.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _categoryService.DeleteAsync(id);
+            var success = await _categoryService.DeleteAsync(id);
+            if (success) TempData["Success"] = "Xóa danh mục thành công!"; // Thêm dòng này
+            else TempData["Error"] = "Không thể xóa danh mục này.";
+            
             return RedirectToAction(nameof(Index));
         }
     }

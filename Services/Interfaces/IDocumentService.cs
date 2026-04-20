@@ -15,6 +15,7 @@ namespace StudyShare.Services.Interfaces
         Task<bool> CreateAsync(DocumentCreateRequest request, string userId);
         Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin);
         Task<bool> DeleteByUserAsync(int id, string userId);
+        Task<bool> IncreaseDownloadCountAsync(int id);
         Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId);
         Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search);
         Task<DocumentResponse?> GetDetailsForReviewAsync(int id);

@@ -48,5 +48,11 @@ namespace StudyShare.Services.Implementations
             var answers = await _answerRepository.GetByQuestionIdAsync(questionId);
             return _mapper.Map<IEnumerable<AnswerResponse>>(answers);
         }
+        public async Task<bool> DeleteByAdminAsync(int id)
+        {
+            var answer = await _answerRepository.GetByIdAsync(id);
+            if (answer == null) return false;
+            return await _answerRepository.DeleteAsync(answer);
+        }
     }
 }

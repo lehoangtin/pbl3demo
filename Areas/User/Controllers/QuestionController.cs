@@ -141,11 +141,13 @@ namespace StudyShare.Areas.User.Controllers
             if (aiCheck.isFlagged)
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
-                TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
+                TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
                 return RedirectToAction(nameof(Details), new { id = request.QuestionId });
             }
 
-            await _answerService.CreateAsync(request, currentUserId);
+            var success = await _answerService.CreateAsync(request, currentUserId);
+            if (success) TempData["Success"] = "Đã đăng câu trả lời!"; // Thêm dòng này
+            
             return RedirectToAction(nameof(Details), new { id = request.QuestionId });
         }
     }

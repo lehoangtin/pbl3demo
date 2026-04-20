@@ -14,13 +14,17 @@ namespace StudyShare.Areas.User.Controllers
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;
+        private readonly IUserService _userService; // 🔥 Đã khai báo UserService
         private readonly ICategoryService _categoryService;
+        private readonly IWebHostEnvironment _webHostEnvironment; // 🔥 Đã khai báo IWebHostEnvironment
         private readonly IMapper _mapper;
 
-        public DocumentController(IDocumentService documentService, ICategoryService categoryService, IMapper mapper)
+        public DocumentController(IDocumentService documentService, IUserService userService, ICategoryService categoryService, IWebHostEnvironment webHostEnvironment, IMapper mapper)
         {
             _documentService = documentService;
+            _userService = userService;
             _categoryService = categoryService;
+            _webHostEnvironment = webHostEnvironment;
             _mapper = mapper;
         }
 
@@ -125,6 +129,48 @@ namespace StudyShare.Areas.User.Controllers
             }
             
             return RedirectToAction(nameof(Index));
+        }
+        [HttpGet]
+        public async Task<IActionResult> Download(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId)) return Challenge();
+
+            // 1. Lấy thông tin tài liệu và người dùng
+            var document = await _documentService.GetByIdAsync(id);
+            var user = await _userService.GetUserProfileAsync(currentUserId);
+
+            if (document == null) return NotFound();
+
+            // 2. Kiểm tra điều kiện tải (Ví dụ: tốn 10 điểm)
+            int downloadCost = 10;
+
+            // Admin hoặc chủ sở hữu tài liệu thì được miễn phí
+            bool isFree = User.IsInRole("Admin") || document.UserId == currentUserId;
+
+            if (!isFree)
+            {
+                if (user.Points < downloadCost)
+                {
+                    TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm).";
+                    return RedirectToAction("Details", new { id = id });
+                }
+
+                // 3. Trừ điểm người tải
+                await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
+            }
+
+            // 4. Tăng lượt tải trong DB
+            await _documentService.IncreaseDownloadCountAsync(id);
+
+            // 5. Trả về file vật lý
+            var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
+            
+            if (!System.IO.File.Exists(physicalPath))
+                return NotFound("Tệp tin không tồn tại trên hệ thống.");
+
+            byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
+            return File(fileBytes, document.FileType, document.FileName);
         }
     }
 }

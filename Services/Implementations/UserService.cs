@@ -123,7 +123,11 @@ namespace StudyShare.Services.Implementations
         public async Task<bool> IsUserBannedAsync(string userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            return user?.IsBanned ?? false;
+            if (user == null) return false;
+
+            // Ưu tiên kiểm tra flag IsBanned trước, sau đó đến thời gian khóa (nếu dùng Identity Lockout)
+            if (user.IsBanned) return true;
+
             var lockoutEndDate = await _userRepository.GetLockoutEndDateAsync(user);
             return lockoutEndDate.HasValue && lockoutEndDate > DateTimeOffset.Now;
         }
@@ -156,6 +160,14 @@ namespace StudyShare.Services.Implementations
             // Tăng số lần cảnh báo
             user.WarningCount += warningIncrement;
 
+            return await _userRepository.UpdateUserAsync(user);
+        }
+        public async Task<bool> AddPointsAsync(string userId, int points)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+
+            user.Points += points;
             return await _userRepository.UpdateUserAsync(user);
         }
     }

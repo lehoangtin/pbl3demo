@@ -58,8 +58,10 @@
                     <small class="text-muted d-block mt-1">Kích thước: @(Model.FileSize / 1024) KB</small>
                 </div>
                 <div class="ms-md-3">
-                    <a href="@Model.FilePath" class="btn btn-success btn-lg rounded-pill shadow-sm px-4" download="@Model.FileName">
-                        <i class="bi bi-download me-2"></i> Tải xuống file
+                    @* Sửa href thành asp-action="Download" để chạy qua logic trừ điểm *@
+                    <a asp-area="User" asp-controller="Document" asp-action="Download" asp-route-id="@Model.Id" 
+                    class="btn btn-success btn-lg rounded-pill shadow-sm px-4">
+                        <i class="bi bi-download me-2"></i> Tải xuống (10 điểm)
                     </a>
                 </div>
             </div>
