@@ -4,7 +4,7 @@ using StudyShare.Models;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
 using StudyShare.Repositories.Interfaces;
-
+using StudyShare.DTOs.Responses; // Thêm dòng này
 namespace StudyShare.Services.Implementations
 {
     public class AnswerService : IAnswerService
@@ -42,6 +42,11 @@ namespace StudyShare.Services.Implementations
             if (answer == null) return false;
 
             return await _answerRepository.DeleteByUserAsync(answer);
+        }
+        public async Task<IEnumerable<AnswerResponse>> GetByQuestionIdAsync(int questionId)
+        {
+            var answers = await _answerRepository.GetByQuestionIdAsync(questionId);
+            return _mapper.Map<IEnumerable<AnswerResponse>>(answers);
         }
     }
 }

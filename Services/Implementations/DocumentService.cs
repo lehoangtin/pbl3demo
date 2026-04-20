@@ -9,6 +9,7 @@ using StudyShare.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace StudyShare.Services.Implementations
@@ -17,7 +18,7 @@ namespace StudyShare.Services.Implementations
     {
         private readonly IDocumentRepository _documentRepository;
         private readonly IMapper _mapper;
-        private readonly IWebHostEnvironment _webHostEnvironment; // Lấy đường dẫn thư mục wwwroot
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public DocumentService(IDocumentRepository documentRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
@@ -96,10 +97,8 @@ namespace StudyShare.Services.Implementations
             document.UploadDate = DateTime.Now;
             document.IsApproved = false; // Mặc định phải chờ Admin duyệt
 
-            // LOGIC XỬ LÝ FILE AN TOÀN
             if (request.File != null && request.File.Length > 0)
             {
-                // Tạo tên file độc nhất để chống trùng lặp
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.File.FileName);
                 string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
                 
@@ -107,13 +106,11 @@ namespace StudyShare.Services.Implementations
                 
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // Dùng "using" để tự động giải phóng bộ nhớ RAM sau khi lưu file xong
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await request.File.CopyToAsync(fileStream);
                 }
 
-                // Cập nhật thông tin file vào Model
                 document.FilePath = "/uploads/" + uniqueFileName;
                 document.FileName = request.File.FileName;
                 document.FileType = request.File.ContentType;
@@ -130,7 +127,6 @@ namespace StudyShare.Services.Implementations
 
             if (!isAdmin && doc.UserId != currentUserId) return false;
 
-            // Xóa file vật lý trong ổ cứng
             var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, doc.FilePath.TrimStart('/'));
             if (System.IO.File.Exists(physicalPath))
             {
@@ -139,7 +135,6 @@ namespace StudyShare.Services.Implementations
 
             return await _documentRepository.DeleteAsync(doc);
         }
-                // Thêm 3 hàm này vào trong class DocumentService
 
         public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
         {
@@ -149,7 +144,6 @@ namespace StudyShare.Services.Implementations
 
         public async Task<DocumentResponse?> GetDetailsForReviewAsync(int id)
         {
-            // Lấy chi tiết để review, dùng hàm cũ GetByIdAsync cũng được vì nó đã Include Category và User
             return await GetByIdAsync(id); 
         }
 
@@ -160,6 +154,7 @@ namespace StudyShare.Services.Implementations
 
             return await _documentRepository.ApproveDocumentAsync(doc);
         }
+        
         public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
         {
             return await _documentRepository.GetUserDocumentsAsync(userId);
@@ -172,39 +167,33 @@ namespace StudyShare.Services.Implementations
 
             return await _documentRepository.DeleteByUserAsync(doc);
         }
+        
         public async Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId)
         {
             var docs = await _documentRepository.GetApprovedDocumentsAsync(searchTerm, categoryId);
-            
-            // Ánh xạ sang DTO trả về cho Controller
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
 
         public async Task<DocumentResponse?> GetDocumentDetailsAsync(int id)
         {
             var document = await _documentRepository.GetDocumentDetailsAsync(id);
-
             return document == null ? null : _mapper.Map<DocumentResponse>(document);
         }
+        
         public async Task<bool> DeleteByAdminAsync(int id) 
         {
-            var item = await _documentRepository.GetByIdAsync(id); // Đổi thành _questionRepository nếu ở QuestionService
+            var item = await _documentRepository.GetByIdAsync(id); 
             if (item == null) return false;
             await _documentRepository.DeleteAsync(item);
             return true;
         }
+        
         public async Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync()
         {
-            // Giả sử bạn dùng Repository để lấy dữ liệu
-            var documents = await _documentRepository.GetAllAsync();
-            
-            // Lọc ra những tài liệu đã được duyệt (IsApproved == true)
-            var approvedDocs = documents.Where(d => d.IsApproved);
-            
-            // Map từ Entity sang DTO
+            // 🔥 Tối ưu: Dùng lại hàm GetApprovedDocumentsAsync để lấy trực tiếp từ DB
+            // Truyền string rỗng và null để lấy tất cả
+            var approvedDocs = await _documentRepository.GetApprovedDocumentsAsync(string.Empty, null);
             return _mapper.Map<IEnumerable<DocumentResponse>>(approvedDocs);
         }
-
-
     }
 }

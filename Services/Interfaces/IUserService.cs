@@ -22,6 +22,8 @@ namespace StudyShare.Services.Interfaces
         Task<bool> IsUserBannedAsync(string userId);
         Task<bool> UpdateUserByAdminAsync(UserResponse model);
         Task<IEnumerable<UserResponse>> GetReportedUsersAsync();
+        // Thêm vào file Services/Interfaces/IUserService.cs
+        Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement);
 
     }
 }

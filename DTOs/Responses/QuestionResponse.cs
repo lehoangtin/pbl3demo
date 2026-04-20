@@ -11,5 +11,6 @@ namespace StudyShare.DTOs.Responses
         public string AuthorName { get; set; } = string.Empty; 
         public int AnswerCount { get; set; } 
         public string UserId { get; set; } = string.Empty;
+        
     }
 }

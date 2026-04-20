@@ -21,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
+builder.Services.AddHttpClient<ai.Services.AIService>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.ICategoryService, StudyShare.Services.Implementations.CategoryService>();

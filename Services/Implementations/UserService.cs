@@ -144,5 +144,19 @@ namespace StudyShare.Services.Implementations
             var reportedUsers= await _userRepository.GetAllAsync(); // Giả sử bạn có hàm này để lấy tất cả users
             return _mapper.Map<IEnumerable<UserResponse>>(reportedUsers);
         }
+        // Trong file Services/Implementations/UserService.cs
+        public async Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+
+            // Trừ điểm (không để âm)
+            user.Points = Math.Max(0, user.Points - pointsToDeduct);
+            
+            // Tăng số lần cảnh báo
+            user.WarningCount += warningIncrement;
+
+            return await _userRepository.UpdateUserAsync(user);
+        }
     }
 }

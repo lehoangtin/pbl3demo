@@ -19,7 +19,7 @@ namespace StudyShare.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login(string? returnUrl = null) // Đã thêm ? để hết warning null
+        public IActionResult Login(string? returnUrl = null) 
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -27,7 +27,7 @@ namespace StudyShare.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null) // Đã thêm ?
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null) 
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
@@ -39,6 +39,13 @@ namespace StudyShare.Controllers
                     return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) 
                         ? Redirect(returnUrl) 
                         : RedirectToAction("Index", "Home");
+                }
+                
+                // 🔥 Thêm kiểm tra khóa tài khoản (Lockout)
+                if (result.IsLockedOut)
+                {
+                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa tạm thời do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
+                    return View(model);
                 }
                 
                 ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu không đúng.");
@@ -63,7 +70,7 @@ namespace StudyShare.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _authService.GetUserByEmailAsync(model.Email);
-                    if (user != null) // Check null để hết warning CS8604
+                    if (user != null) 
                     {
                         var code = await _authService.GenerateEmailConfirmationTokenAsync(user);
                         var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
@@ -129,7 +136,7 @@ namespace StudyShare.Controllers
         public IActionResult ForgotPasswordConfirmation() => View();
 
         [HttpGet]
-        public IActionResult ResetPassword(string? code = null) // Đã thêm ?
+        public IActionResult ResetPassword(string? code = null) 
         {
             return code == null ? BadRequest("Cần có mã Token để đổi mật khẩu.") : View();
         }
@@ -143,7 +150,6 @@ namespace StudyShare.Controllers
             var user = await _authService.GetUserByEmailAsync(model.Email);
             if (user == null) return RedirectToAction(nameof(ResetPasswordConfirmation));
 
-            // Đã sửa lại thành model.Token và model.NewPassword cho khớp với ResetPasswordViewModel
             var result = await _authService.ResetPasswordAsync(user, model.Token, model.NewPassword);
             if (result.Succeeded) return RedirectToAction(nameof(ResetPasswordConfirmation));
 

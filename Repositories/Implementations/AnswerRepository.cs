@@ -1,9 +1,12 @@
 using StudyShare.Models;
 using StudyShare.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 namespace StudyShare.Repositories.Implementations
 {
-    public class AnswerRepository : IAnswerRepository
+    public class AnswerRepository : IAnswerRepository   
     {
         private readonly AppDbContext _context;
 
@@ -43,6 +46,14 @@ namespace StudyShare.Repositories.Implementations
         public async Task<IEnumerable<Answer>> GetAllAsync()
         {
             return await _context.Answers.ToListAsync();
+        }
+        public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId)
+        {
+            return await _context.Answers
+                .Include(a => a.User)
+                .Where(a => a.QuestionId == questionId)
+                .OrderBy(a => a.CreatedAt)
+                .ToListAsync();
         }
 
     }

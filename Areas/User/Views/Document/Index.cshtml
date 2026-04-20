@@ -1,48 +1,87 @@
 @model IEnumerable<StudyShare.ViewModels.DocumentViewModel>
-@{ ViewData["Title"] = "Tài liệu của tôi"; }
+@{
+    ViewData["Title"] = "Quản lý tài liệu của tôi";
+}
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Tài liệu cá nhân</h2>
-        <a asp-action="Create" class="btn btn-primary rounded-pill">Tải lên bản mới</a>
+        <h2 class="fw-bold text-primary">Tài liệu của bạn</h2>
+        <a asp-action="Create" class="btn btn-success rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-circle me-2"></i> Tải lên mới
+        </a>
     </div>
 
-    <div class="table-responsive bg-white shadow-sm rounded-4 p-3">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Tiêu đề</th>
-                    <th>Danh mục</th>
-                    <th>Ngày đăng</th>
-                    <th>Trạng thái</th>
-                    <th class="text-center">Thao tác</th> @* Thêm tiêu đề cột *@
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model) {
-                <tr>
-                    <td class="fw-bold">@item.Title</td>
-                    <td>@item.CategoryName</td>
-                    <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        @if(item.IsApproved) { 
-                            <span class="badge bg-success">Đã duyệt</span> 
-                        } else { 
-                            <span class="badge bg-warning text-dark">Chờ duyệt</span> 
-                        }
-                    </td>
-                    <td class="text-center">
-                        @* Nút Sửa mới thêm vào *@
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning me-1" title="Sửa tài liệu">
-                            <i class="bi bi-pencil"></i> Sửa
-                        </a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Xem chi tiết">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                }
-            </tbody>
-        </table>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Tiêu đề</th>
+                        <th>Chuyên mục</th>
+                        <th>Ngày đăng</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Bạn chưa tải lên tài liệu nào.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-truncate" style="max-width: 250px;">@item.Title</div>
+                                <small class="text-muted text-truncate d-inline-block" style="max-width: 250px;">@item.FileName</small>
+                            </td>
+                            <td><span class="badge bg-info text-dark">@item.CategoryName</span></td>
+                            <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (item.IsApproved)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success">Đã duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning border border-warning">Chờ duyệt</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info rounded-circle me-1" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-circle me-1" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xóa tài liệu này?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

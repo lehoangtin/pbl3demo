@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <h4>Thảo luận (@Model.Answers.Count)</h4>
+    <h4>Thảo luận (@Model.Answers.Count())</h4>
 
     @foreach (var answer in Model.Answers)
     {
@@ -19,9 +19,9 @@
 
                 <div class="d-flex align-items-center gap-2">
 
-                    @if (User.Identity.IsAuthenticated && answer.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                    @if (User.Identity?.IsAuthenticated == true && answer.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
                     {
-                        <form asp-area="User" asp-controller="User" asp-action="DeleteAnswer"
+                        <form asp-area="User" asp-controller="Question" asp-action="DeleteAnswer"
                               asp-route-id="@answer.Id" method="post"
                               onsubmit="return confirm('Xoá câu trả lời này?')">
                             <button type="submit" class="btn btn-link text-danger p-0">Xoá</button>
@@ -51,15 +51,13 @@
         </div>
     }
 
-    <!-- FORM TRẢ LỜI -->
     <form asp-action="PostAnswer" method="post" class="mt-4">
         <input type="hidden" name="questionId" value="@Model.Id" />
         <textarea name="content" class="form-control mb-2"
-                  placeholder="Trả lời câu hỏi này..."></textarea>
+                  placeholder="Trả lời câu hỏi này..." required></textarea>
         <button type="submit" class="btn btn-primary">Gửi câu trả lời</button>
     </form>
 
-    <!-- REPORT QUESTION -->
     <button class="btn btn-sm btn-link text-danger mt-3"
             data-bs-toggle="modal" data-bs-target="#reportQuestionModal">
         <i class="bi bi-flag"></i> Báo cáo vi phạm câu hỏi
@@ -98,7 +96,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // 🔴 ERROR (AI chặn)
+            // 🔴 ERROR
             @if (TempData["Error"] != null)
             {
                 <text>
@@ -111,7 +109,7 @@
                 </text>
             }
 
-            // 🟢 SUCCESS (report ok)
+            // 🟢 SUCCESS
             @if (TempData["Message"] != null)
             {
                 <text>

@@ -1,10 +1,10 @@
-using AutoMapper; // 1. Bổ sung thư viện này
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
-using StudyShare.ViewModels; // 2. Bổ sung thư viện này
+using StudyShare.ViewModels;
 using System.Security.Claims;
 
 namespace StudyShare.Areas.User.Controllers
@@ -24,6 +24,7 @@ namespace StudyShare.Areas.User.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var data = await _documentService.GetAllAsync();
@@ -31,6 +32,17 @@ namespace StudyShare.Areas.User.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var data = await _documentService.GetDocumentDetailsAsync(id);
+            if (data == null) return NotFound();
+            
+            var viewModel = _mapper.Map<DocumentViewModel>(data);
+            return View(viewModel);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryService.GetAllAsync();
@@ -52,9 +64,11 @@ namespace StudyShare.Areas.User.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
 
+            TempData["Success"] = "Tải lên thành công! Tài liệu đang chờ duyệt.";
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var request = await _documentService.GetForEditAsync(id);
@@ -88,15 +102,28 @@ namespace StudyShare.Areas.User.Controllers
             var success = await _documentService.UpdateAsync(request, currentUserId, isAdmin);
             if (!success) return Unauthorized("Bạn không có quyền chỉnh sửa tài liệu này hoặc tài liệu không tồn tại.");
 
+            TempData["Success"] = "Cập nhật tài liệu thành công!";
             return RedirectToAction(nameof(Index));
         }
 
+        // Đã thêm HttpPost và ValidateAntiForgeryToken để bảo mật việc xóa
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");
 
-            await _documentService.DeleteAsync(id, currentUserId, isAdmin);
+            var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin);
+            if (success)
+            {
+                TempData["Success"] = "Xóa tài liệu thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Không thể xóa tài liệu. Bạn không có quyền hoặc tài liệu không tồn tại.";
+            }
+            
             return RedirectToAction(nameof(Index));
         }
     }
