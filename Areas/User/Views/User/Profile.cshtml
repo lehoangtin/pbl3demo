@@ -1,9 +1,9 @@
 @model StudyShare.ViewModels.UserViewModel
 @{ 
-    ViewData["Title"] = "Trang cá nhân";
+    ViewData["Title"] = "Tổng quan hồ sơ";
 }
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row">
         <div class="col-md-3">
             @await Html.PartialAsync("_UserSidebarPartial", Model)
@@ -11,12 +11,12 @@
 
         <div class="col-md-9">
             <div class="card border-0 shadow-sm p-4 rounded-4 bg-gradient bg-primary text-white mb-4">
-                <h3 class="fw-bold">Chào bạn, @Model.FullName! 👋</h3>
-                <p class="mb-0 opacity-75">Hôm nay bạn có @Model.Points điểm tích lũy.</p>
+                <h3 class="fw-bold"><i class="bi bi-stars me-2 text-warning"></i>Chào bạn, @Model.FullName! 👋</h3>
+                <p class="mb-0 opacity-75 fs-5">Hôm nay bạn có <strong>@Model.Points</strong> điểm tích lũy.</p>
             </div>
 
             <div class="row g-4 mb-4">
-                @* Cột thống kê điểm mới *@
+                @* Cột thống kê điểm *@
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
                         <h2 class="fw-bold text-warning mb-1">@Model.Points</h2>
@@ -24,7 +24,7 @@
                     </div>
                 </div>
 
-                @* Cột thống kê cảnh cáo mới *@
+                @* Cột thống kê cảnh cáo *@
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
                         <h2 class="fw-bold text-dark mb-1">@Model.WarningCount</h2>
@@ -32,6 +32,7 @@
                     </div>
                 </div>
 
+                @* Cột thống kê tài liệu *@
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
                         <h2 class="fw-bold text-primary mb-1">@ViewBag.TotalDocs</h2>
@@ -39,6 +40,7 @@
                     </div>
                 </div>
 
+                @* Cột thống kê câu hỏi *@
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
                         <h2 class="fw-bold text-success mb-1">@ViewBag.TotalQuestions</h2>
@@ -50,9 +52,11 @@
             @* Nếu có cảnh cáo, hiển thị thông báo nhắc nhở *@
             @if (Model.WarningCount > 0)
             {
-                <div class="alert alert-warning border-0 shadow-sm rounded-4">
-                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
-                    <strong>Lưu ý:</strong> Bạn đang có @Model.WarningCount lần cảnh cáo. Tài khoản sẽ bị khóa nếu vi phạm quá 3 lần.
+                <div class="alert alert-warning border-0 shadow-sm rounded-4 d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-3"></i>
+                    <div>
+                        <strong>Lưu ý quan trọng:</strong> Bạn đang có <strong>@Model.WarningCount</strong> lần cảnh cáo từ hệ thống. Tài khoản sẽ bị khóa nếu vi phạm quá 3 lần. Vui lòng tuân thủ quy định cộng đồng nhé!
+                    </div>
                 </div>
             }
         </div>

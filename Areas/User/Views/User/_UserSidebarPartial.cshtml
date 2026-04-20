@@ -1,33 +1,50 @@
-@model StudyShare.Models.AppUser
+@model dynamic
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-    <div class="card-body text-center pt-5">
-        <div class="mb-3">
-            <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default-avatar.png" : Model.Avatar)" 
-                 class="rounded-circle img-thumbnail shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" />
+@{
+    string fullName = "Thành viên";
+    string email = "";
+    string avatar = "/images/default-avatar.png";
+
+    try {
+        if (Model != null) {
+            fullName = Model.FullName ?? "Thành viên";
+            email = Model.Email ?? "";
+            var avatarProp = Model.Avatar;
+            if (avatarProp != null && !string.IsNullOrEmpty((string)avatarProp)) {
+                avatar = (string)avatarProp;
+            }
+        }
+    } catch { }
+}
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-body text-center pt-5 bg-white">
+        <div class="mb-3 position-relative d-inline-block">
+            <img src="@avatar" class="rounded-circle img-thumbnail shadow-sm border-2 border-primary" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar" />
         </div>
-        <h5 class="fw-bold mb-0">@Model.FullName</h5>
-        <p class="text-muted small">@Model.Email</p>
+        <h5 class="fw-bold mb-0 text-dark">@fullName</h5>
+        <p class="text-muted small mb-0">@email</p>
     </div>
-    <div class="list-group list-group-flush pb-3">
-        <a asp-action="Profile" class="list-group-item list-group-item-action border-0 px-4 py-2">
-            <i class="bi bi-person-circle me-2"></i> Tổng quan
+    <div class="list-group list-group-flush pb-3 bg-white">
+        <a asp-area="User" asp-controller="User" asp-action="Profile" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-person-vcard me-2 text-primary fs-5 align-middle"></i> Tổng quan hồ sơ
         </a>
-        <a asp-action="MyDocuments" class="list-group-item list-group-item-action border-0 px-4 py-2">
-            <i class="bi bi-file-earmark-text me-2"></i> Tài liệu của tôi
+        <a asp-area="User" asp-controller="User" asp-action="MyDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-file-earmark-arrow-up me-2 text-info fs-5 align-middle"></i> Tài liệu đã đăng
         </a>
-        <a asp-action="SavedDocuments" class="list-group-item list-group-item-action border-0 px-4 py-2">
-            <i class="bi bi-bookmark-heart me-2"></i> Tài liệu đã lưu
+        <a asp-area="User" asp-controller="User" asp-action="SavedDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-bookmark-heart me-2 text-danger fs-5 align-middle"></i> Tài liệu đã lưu
         </a>
-        <a asp-action="MyQuestions" class="list-group-item list-group-item-action border-0 px-4 py-2">
-            <i class="bi bi-patch-question me-2"></i> Câu hỏi của tôi
+        <a asp-area="User" asp-controller="User" asp-action="MyQuestions" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-chat-square-text me-2 text-success fs-5 align-middle"></i> Câu hỏi của tôi
         </a>
-        <hr class="mx-4 my-2">
-        <a asp-action="Edit" class="list-group-item list-group-item-action border-0 px-4 py-2 text-primary">
-            <i class="bi bi-pencil-square me-2"></i> Chỉnh sửa hồ sơ
+        <hr class="mx-4 my-2 text-muted opacity-25">
+        
+        <a asp-area="User" asp-controller="User" asp-action="Edit" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-pencil-square me-2 text-warning fs-5 align-middle"></i> Chỉnh sửa thông tin
         </a>
-        <a asp-action="ChangePassword" class="list-group-item list-group-item-action border-0 px-4 py-2 text-danger">
-            <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
+        <a asp-area="User" asp-controller="User" asp-action="ChangePassword" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
+            <i class="bi bi-shield-lock me-2 text-secondary fs-5 align-middle"></i> Đổi mật khẩu
         </a>
     </div>
 </div>

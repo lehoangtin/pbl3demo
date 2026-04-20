@@ -7,7 +7,8 @@ using StudyShare.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Security.Claims; 
 using AutoMapper;
-using System.Collections.Generic; // Bổ sung để dùng IEnumerable
+using System.Collections.Generic;
+using System.Linq;
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -19,7 +20,6 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IQuestionService _questionService;
         private readonly IAnswerService _answerService;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IReportService _reportService;
         private readonly IMapper _mapper;
 
         public UserController(
@@ -27,7 +27,6 @@ namespace StudyShare.Areas.User.Controllers
             IDocumentService documentService,
             IQuestionService questionService,
             IAnswerService answerService,
-            IReportService reportService,
             UserManager<AppUser> userManager,
             IMapper mapper)
         {
@@ -35,7 +34,6 @@ namespace StudyShare.Areas.User.Controllers
             _documentService = documentService;
             _questionService = questionService;
             _answerService = answerService;
-            _reportService = reportService;
             _userManager = userManager;
             _mapper = mapper;
         }
@@ -52,18 +50,21 @@ namespace StudyShare.Areas.User.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
             
-            // 1. Lấy DTO từ Service
+            // Lấy thông tin qua Service
             var userDto = await _userService.GetUserProfileAsync(userId);
-
             if (userDto == null) return NotFound();
 
-            // Gán ViewBag lấy số lượng (dùng DTO)
             ViewBag.TotalDocs = userDto.Documents?.Count ?? 0;
             ViewBag.TotalQuestions = userDto.Questions?.Count ?? 0;
             ViewBag.TotalSaved = userDto.SavedDocuments?.Count ?? 0;
 
-            // 2. Map sang ViewModel và trả ra View
+            // Map qua ViewModel để đồng bộ với View
             var viewModel = _mapper.Map<UserViewModel>(userDto);
+            
+            if (string.IsNullOrEmpty(viewModel.FullName)) {
+                viewModel.FullName = userDto.UserName;
+            }
+
             return View(viewModel);
         }
 
@@ -72,8 +73,9 @@ namespace StudyShare.Areas.User.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
             var user = await _userManager.FindByIdAsync(userId); 
-            return View(user);
+            return View(user); // File Edit.cshtml của bạn đang dùng AppUser nên ta truyền thẳng
         }
 
         [HttpPost]
@@ -117,9 +119,36 @@ namespace StudyShare.Areas.User.Controllers
             
             ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
             
-            // SỬA Ở ĐÂY: Map DTO sang ViewModel
+            // Lấy qua Service và map qua ViewModel
             var dtoList = await _questionService.GetUserQuestionsAsync(userId); 
             var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
+            
+            return View(viewModels);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DeleteQuestion(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var success = await _questionService.DeleteByUserAsync(id, userId);
+            if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
+            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
+            
+            return RedirectToAction(nameof(MyQuestions));
+        }
+
+        public async Task<IActionResult> MyDocuments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
             
             return View(viewModels);
         }
@@ -133,35 +162,9 @@ namespace StudyShare.Areas.User.Controllers
             
             var success = await _documentService.DeleteByUserAsync(id, userId); 
             if (success) TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
+            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
             
             return RedirectToAction(nameof(MyDocuments));
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> DeleteQuestion(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var success = await _questionService.DeleteByUserAsync(id, userId);
-            if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
-            
-            return RedirectToAction(nameof(MyQuestions));
-        }
-
-        public async Task<IActionResult> MyDocuments()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            
-            // SỬA Ở ĐÂY: Map DTO sang ViewModel
-            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
-            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
-            
-            return View(viewModels);
         }
 
         [HttpPost]
@@ -204,9 +207,11 @@ namespace StudyShare.Areas.User.Controllers
             
             ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
             
-            // SỬA Ở ĐÂY: Map DTO sang ViewModel
-            var dtoList = await _userService.GetSavedDocumentsAsync(userId);
-            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            var savedDocsList = await _userService.GetSavedDocumentsAsync(userId);
+            
+            // Trích xuất Document ra để map
+            var documents = savedDocsList.Select(s => s.Document).ToList();
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documents);
             
             return View(viewModels);
         }
@@ -227,17 +232,5 @@ namespace StudyShare.Areas.User.Controllers
             string returnUrl = Request.Headers["Referer"].ToString();
             return string.IsNullOrEmpty(returnUrl) ? RedirectToAction("Index", "Home") : Redirect(returnUrl);
         }
-        public async Task<IActionResult> ViewReports(string userId)
-        {
-            // 1. Lấy DTO từ Service
-            var reportsDto = await _reportService.GetReportsForUserAsync(userId);
-            
-            // 2. Map sang ViewModel để hiển thị ra giao diện
-            var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
-            
-            ViewBag.TargetUserId = userId;
-            return View(viewModels);
-        }
-
     }
 }

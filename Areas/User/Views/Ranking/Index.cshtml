@@ -1,5 +1,4 @@
-@using StudyShare.Models
-@model IEnumerable<StudyShare.Models.AppUser>
+@model IEnumerable<StudyShare.DTOs.Responses.UserResponse>
 
 @{
     ViewData["Title"] = "Bảng Vàng Thành Tích";
@@ -51,9 +50,9 @@
                                     
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=@user.UserName&background=random" class="rounded-circle me-3 shadow-sm" width="45" alt="Avatar">
+                                            <img src="https://ui-avatars.com/api/?name=@user.FullName&background=random" class="rounded-circle me-3 shadow-sm" width="45" alt="Avatar">
                                             <div>
-                                                <h5 class="mb-0 text-primary">@user.UserName</h5>
+                                                <h5 class="mb-0 text-primary">@user.FullName</h5>
                                             </div>
                                         </div>
                                     </td>

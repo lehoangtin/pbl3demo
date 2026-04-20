@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
 using System.Security.Claims;
 using AutoMapper;
 using StudyShare.ViewModels;
-using ai.Services; 
+using ai.Services;
+using StudyShare.Models; // Thêm để dùng AppUser, Report
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -17,23 +20,31 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IAnswerService _answerService; 
         private readonly IMapper _mapper;
         private readonly AIService _aiService; 
-        private readonly IUserService _userService; // 🔥 Đã khai báo UserService
+        private readonly IUserService _userService;
+        
+        // 🔥 Bổ sung thêm Context và UserManager để xử lý Cộng điểm & Report giống bản cũ
+        private readonly AppDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        // 🔥 Đã bổ sung IUserService vào Constructor
         public QuestionController(
             IQuestionService questionService, 
             IAnswerService answerService, 
             IMapper mapper, 
             AIService aiService, 
-            IUserService userService)
+            IUserService userService,
+            AppDbContext context,
+            UserManager<AppUser> userManager)
         {
             _questionService = questionService;
             _answerService = answerService;
             _mapper = mapper;
             _aiService = aiService;
             _userService = userService;
+            _context = context;
+            _userManager = userManager;
         }
 
+        // 🔥 Mở cho khách vãng lai xem danh sách
         public async Task<IActionResult> Index()
         {
             var data = await _questionService.GetAllAsync();
@@ -41,6 +52,7 @@ namespace StudyShare.Areas.User.Controllers
             return View(viewModel);
         }
 
+        // 🔥 Mở cho khách vãng lai xem chi tiết
         public async Task<IActionResult> Details(int id)
         {
             var questionDto = await _questionService.GetByIdAsync(id);
@@ -62,21 +74,29 @@ namespace StudyShare.Areas.User.Controllers
         {
             if (!ModelState.IsValid) return View(request);
             
-            // 🔥 Đưa dòng lấy ID lên trước khi sử dụng để tránh lỗi CS0841
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
+            // KIỂM DUYỆT AI
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
-                // PHẠT: Trừ 10 điểm, Tăng 1 lần cảnh báo (WarningCount)
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
-                
                 TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
                 return View(request);
             }
 
+            // TẠO CÂU HỎI
             await _questionService.CreateAsync(request, currentUserId);
-            TempData["Success"] = "Đăng câu hỏi thành công!";
+
+            // 🔥 CỘNG ĐIỂM (Logic từ bản cũ)
+            var user = await _userManager.FindByIdAsync(currentUserId);
+            if (user != null) 
+            {
+                user.Points += 5; // Lưu ý: Nếu Model AppUser của bạn là Points (có s) thì sửa lại nhé
+                await _userManager.UpdateAsync(user);
+            }
+
+            TempData["Success"] = "Đăng câu hỏi thành công! Bạn được cộng 5 điểm.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -137,6 +157,7 @@ namespace StudyShare.Areas.User.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
+            // KIỂM DUYỆT AI CHO CÂU TRẢ LỜI
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
@@ -146,9 +167,63 @@ namespace StudyShare.Areas.User.Controllers
             }
 
             var success = await _answerService.CreateAsync(request, currentUserId);
-            if (success) TempData["Success"] = "Đã đăng câu trả lời!"; // Thêm dòng này
+            if (success) 
+            {
+                // 🔥 CỘNG ĐIỂM (Logic từ bản cũ)
+                var user = await _userManager.FindByIdAsync(currentUserId);
+                if (user != null) 
+                {
+                    user.Points+= 3;
+                    await _userManager.UpdateAsync(user);
+                }
+                TempData["Success"] = "Đã đăng câu trả lời! Bạn được cộng 3 điểm."; 
+            }
             
             return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+        }
+
+        // 🔥 PHỤC HỒI CHỨC NĂNG REPORT TỪ BẢN CŨ
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)
+        {
+            var reporterId = _userManager.GetUserId(User);
+            string targetUserId = "";
+
+            if (answerId.HasValue)
+            {
+                var answer = await _context.Answers.FindAsync(answerId);
+                if (answer != null) targetUserId = answer.UserId;
+            }
+            else if (questionId.HasValue)
+            {
+                var question = await _context.Questions.FindAsync(questionId);
+                if (question != null) targetUserId = question.UserId;
+            }
+
+            if (string.IsNullOrEmpty(targetUserId) || reporterId == targetUserId)
+            {
+                TempData["Error"] = "Thao tác không hợp lệ.";
+                int returnId = questionId ?? (answerId.HasValue ? _context.Answers.Find(answerId)?.QuestionId ?? 0 : 0);
+                return RedirectToAction("Details", new { id = returnId });
+            }
+
+            var report = new Report
+            {
+                ReporterUserId = reporterId,
+                TargetUserId = targetUserId,
+                QuestionId = questionId,
+                AnswerId = answerId,
+                Reason = reason
+            };
+
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
+            
+            int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId)).QuestionId;
+            return RedirectToAction("Details", new { id = redirectId });
         }
     }
 }

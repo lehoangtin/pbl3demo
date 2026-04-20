@@ -31,9 +31,19 @@ namespace StudyShare.Areas.User.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var data = await _documentService.GetAllAsync();
-            var viewModel = _mapper.Map<IEnumerable<DocumentViewModel>>(data);
-            return View(viewModel);
+            // 1. Lấy ID của người dùng đang đăng nhập hiện tại
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
+
+            // 2. CHÌA KHÓA Ở ĐÂY: Thay vì dùng GetAllAsync(), 
+            // chúng ta dùng GetUserDocumentsAsync để chỉ lấy đúng đồ của mình.
+            var dtoList = await _documentService.GetUserDocumentsAsync(currentUserId);
+            
+            // 3. Map sang ViewModel để hiển thị lên View
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+
+            return View(viewModels);
         }
 
         [HttpGet]
@@ -133,44 +143,53 @@ namespace StudyShare.Areas.User.Controllers
         [HttpGet]
         public async Task<IActionResult> Download(int id)
         {
+            // Fix lỗi _userManager: Dùng ClaimTypes để lấy UserId trực tiếp từ User
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(currentUserId)) return Challenge();
 
-            // 1. Lấy thông tin tài liệu và người dùng
+            // 1. Fix lỗi GetDocumentByIdAsync và GetUserByIdAsync: Sử dụng đúng tên hàm trong Interface
             var document = await _documentService.GetByIdAsync(id);
             var user = await _userService.GetUserProfileAsync(currentUserId);
 
-            if (document == null) return NotFound();
+            if (document == null || user == null) return NotFound("Không tìm thấy tài liệu hoặc người dùng.");
 
-            // 2. Kiểm tra điều kiện tải (Ví dụ: tốn 10 điểm)
+            // 2. Kiểm tra điều kiện tải (Tốn 10 điểm)
             int downloadCost = 10;
-
-            // Admin hoặc chủ sở hữu tài liệu thì được miễn phí
+            
+            // Fix lỗi Null Reference: Dùng document.UserId so sánh với currentUserId thay vì User.Identity.Name
             bool isFree = User.IsInRole("Admin") || document.UserId == currentUserId;
 
             if (!isFree)
             {
-                if (user.Points < downloadCost)
+                // Lưu ý: Đảm bảo thuộc tính điểm trong model AppUser của bạn là Point hoặc Points
+                if (user.Points < downloadCost) 
                 {
-                    TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm).";
+                    TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm, bạn đang có {user.Points} điểm).";
                     return RedirectToAction("Details", new { id = id });
                 }
 
-                // 3. Trừ điểm người tải
+                // 3. Fix lỗi UpdateUserAsync: Sử dụng đúng hàm PenalizeUserAsync có sẵn để trừ điểm
                 await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
             }
 
-            // 4. Tăng lượt tải trong DB
+            // 4. Fix lỗi UpdateDocumentAsync: Sử dụng đúng hàm IncreaseDownloadCountAsync có sẵn
             await _documentService.IncreaseDownloadCountAsync(id);
 
             // 5. Trả về file vật lý
+            // Dùng TrimStart('/') để tránh lỗi ghép sai đường dẫn Path.Combine
             var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
             
             if (!System.IO.File.Exists(physicalPath))
-                return NotFound("Tệp tin không tồn tại trên hệ thống.");
+            {
+                TempData["Error"] = "Tệp tin không tồn tại trên hệ thống.";
+                return RedirectToAction("Details", new { id = id });
+            }
 
             byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
-            return File(fileBytes, document.FileType, document.FileName);
+            
+            // Nếu document.FileType rỗng thì dùng octet-stream làm mặc định
+            string fileType = !string.IsNullOrEmpty(document.FileType) ? document.FileType : "application/octet-stream";
+            return File(fileBytes, fileType, document.FileName);
         }
     }
 }

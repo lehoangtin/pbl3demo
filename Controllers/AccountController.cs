@@ -32,6 +32,18 @@ namespace StudyShare.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                // 🔥 KIỂM TRA SỐ LẦN VI PHẠM TRƯỚC KHI ĐĂNG NHẬP
+                // Lưu ý: Nếu trong LoginViewModel của bạn dùng trường UserName thay vì Email để đăng nhập, 
+                // thì bạn đổi model.Email thành model.UserName nhé.
+                var user = await _authService.GetUserByEmailAsync(model.Email); 
+                
+                if (user != null && user.WarningCount >= 3)
+                {
+                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm quy định cộng đồng từ 3 lần trở lên.");
+                    return View(model);
+                }
+
+                // Nếu an toàn (chưa tới 3 lần) thì cho phép đăng nhập bình thường
                 var result = await _authService.LoginAsync(model);
                 
                 if (result.Succeeded)
@@ -41,7 +53,7 @@ namespace StudyShare.Controllers
                         : RedirectToAction("Index", "Home");
                 }
                 
-                // 🔥 Thêm kiểm tra khóa tài khoản (Lockout)
+                // Kiểm tra khóa tài khoản (Lockout) do nhập sai pass nhiều lần
                 if (result.IsLockedOut)
                 {
                     ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa tạm thời do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
@@ -52,8 +64,7 @@ namespace StudyShare.Controllers
             }
             return View(model);
         }
-
-        [HttpGet]
+                [HttpGet]
         public IActionResult Register()
         {
             return View();

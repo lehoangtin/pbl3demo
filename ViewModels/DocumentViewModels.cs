@@ -19,5 +19,6 @@ namespace StudyShare.ViewModels
         public string UserId { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public int Views { get; set; }
+        public int DownloadCount { get; set; }
     }
 }

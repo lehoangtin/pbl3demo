@@ -31,15 +31,36 @@ namespace StudyShare.Controllers
             _mapper = mapper;
         }
 
-public async Task<IActionResult> Index()
+public async Task<IActionResult> Index(int? categoryId, string? searchTerm)
 {
-    // 1. Gọi hàm đã khai báo ở Bước 1
-    var documentsDto = await _documentService.GetAllApprovedAsync(); 
+    // 1. Lấy danh sách danh mục để hiển thị ở Sidebar
+    var categories = await _categoryService.GetAllAsync();
+    ViewBag.Categories = categories;
+    ViewBag.CurrentCategory = categoryId;
+    ViewBag.SearchTerm = searchTerm;
 
-    // 2. Map từ List DTO sang List ViewModel
+    // 2. Lấy tất cả tài liệu đã duyệt
+    var documentsDto = await _documentService.GetAllApprovedAsync(); 
+    
+    // 3. Lọc theo Danh mục (CategoryId) nếu người dùng có bấm chọn
+    if (categoryId.HasValue && categoryId.Value > 0)
+    {
+        documentsDto = documentsDto.Where(d => d.CategoryId == categoryId.Value).ToList();
+    }
+
+    // 4. Lọc theo Từ khóa tìm kiếm nếu người dùng có nhập
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        var term = searchTerm.ToLower().Trim();
+        documentsDto = documentsDto.Where(d => 
+            d.Title.ToLower().Contains(term) || 
+            (d.Description != null && d.Description.ToLower().Contains(term))
+        ).ToList();
+    }
+
+    // 5. Map sang ViewModel và trả về giao diện
     var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documentsDto);
 
-    // 3. Trả về View với đúng kiểu dữ liệu (DocumentViewModel)
     return View(viewModels); 
 }
 

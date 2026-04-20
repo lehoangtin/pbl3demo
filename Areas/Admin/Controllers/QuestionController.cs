@@ -47,7 +47,7 @@ namespace StudyShare.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAnswer(int id)
         {
-            await _questionService.DeleteAnswerByAdminAsync(id);
+            await _questionService.DeleteByAdminAsync(id);
             return Redirect(Request.Headers["Referer"].ToString());
         }
     }

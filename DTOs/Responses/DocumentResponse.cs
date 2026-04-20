@@ -23,5 +23,6 @@ namespace StudyShare.DTOs.Responses
         public string CategoryName { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
     }
 }

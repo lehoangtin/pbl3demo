@@ -16,17 +16,19 @@ namespace StudyShare.Services.Implementations
 {
     public class DocumentService : IDocumentService
     {
+        private readonly AppDbContext _context;
         private readonly IDocumentRepository _documentRepository;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DocumentService(IDocumentRepository documentRepository, IUserService userService, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public DocumentService(IDocumentRepository documentRepository, IUserService userService, IMapper mapper, IWebHostEnvironment webHostEnvironment, AppDbContext context)
         {
             _documentRepository = documentRepository;
             _userService = userService;
             _mapper = mapper;
             _webHostEnvironment = webHostEnvironment;
+            _context = context;
         }
 
         public async Task<IEnumerable<DocumentResponse>> GetAllAsync()
@@ -179,9 +181,15 @@ namespace StudyShare.Services.Implementations
             doc.DownloadCount++;
             return await _documentRepository.UpdateAsync(doc);
         }
-        public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
+        public async Task<IEnumerable<DocumentResponse>> GetUserDocumentsAsync(string userId)
         {
-            return await _documentRepository.GetUserDocumentsAsync(userId);
+            var docs = await _context.Documents
+                .Where(d => d.UserId == userId)
+                .Include(d => d.Category) // Load thêm Category để có tên danh mục
+                .OrderByDescending(d => d.UploadDate)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
 
         public async Task<bool> DeleteByUserAsync(int id, string userId)

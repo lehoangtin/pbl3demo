@@ -31,25 +31,29 @@
                         </a>
 
                         @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU (Dùng chung hàm ToggleSave) *@
+                        @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU *@
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
-                            <form asp-area="User" asp-controller="Document" asp-action="ToggleSave" method="post">
-                                <input type="hidden" name="documentId" value="@Model.Id" />
-                                
-                                @if (ViewBag.IsSaved == true)
-                                {
+                            @if (ViewBag.IsSaved == true)
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="UnsaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-outline-danger w-100 fw-bold">
                                         <i class="bi bi-bookmark-x-fill me-1"></i> Bỏ lưu tài liệu
                                     </button>
-                                }
-                                else
-                                {
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-primary w-100 fw-bold">
                                         <i class="bi bi-bookmark-plus me-1"></i> Lưu tài liệu
                                     </button>
-                                }
-                            </form>
+                                </form>
+                            }
                         }
+
 
                         @* 🔥 XOÁ TÀI LIỆU (CỦA CHỦ SỞ HỮU) *@
                         @if (User?.Identity?.IsAuthenticated == true && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
