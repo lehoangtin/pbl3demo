@@ -30,5 +30,21 @@ namespace StudyShare.Services.Implementations
             await _reportRepository.UpdateAsync(report);
             return true;
         }
+        public async Task<bool> ResolveWithActionAsync(int reportId, string action)
+        {
+            var report = await _reportRepository.GetByIdAsync(reportId);
+            if (report == null) return false;
+
+            report.IsResolved = true;
+            report.ActionTaken = action; // Lưu lại lý do hoặc hình thức phạt
+
+            await _reportRepository.UpdateAsync(report);
+            return true;
+        }
+        public async Task<IEnumerable<ReportResponse>> GetAllPendingReportsAsync()
+        {
+            var reports = await _reportRepository.GetAllPendingReportsAsync();
+            return _mapper.Map<IEnumerable<ReportResponse>>(reports);
+        }
     }
 }

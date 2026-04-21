@@ -61,5 +61,27 @@ namespace StudyShare.Areas.Admin.Controllers
             ViewBag.TargetUserId = userId;
             return View(viewModels);
         }
+        // Trong Areas/Admin/Controllers/UserController.cs
+// Trang này sẽ liệt kê MỌI báo cáo mới nhất từ MỌI người dùng
+public async Task<IActionResult> PendingReports()
+{
+    var reportsDto = await _reportService.GetAllPendingReportsAsync();
+    var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
+    return View(viewModels);
+}
+
+// Thêm Action để Admin bấm nút xử phạt trực tiếp
+[HttpPost]
+public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
+{
+    // Gọi UserService để trừ điểm và tăng WarningCount
+    await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
+    
+    // Đánh dấu báo cáo này đã được giải quyết
+    await _reportService.ResolveReportAsync(reportId);
+    
+    TempData["Success"] = "Đã thực hiện xử phạt.";
+    return RedirectToAction(nameof(PendingReports));
+}
     }
 }

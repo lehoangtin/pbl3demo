@@ -15,7 +15,7 @@ namespace StudyShare.Areas.User.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var topUsers = await _userService.GetTopRankingAsync(50); // Lấy top 50
+            var topUsers = await _userService.GetTopRankingAsync(10); // Lấy top 10
             return View(topUsers);
         }
     }

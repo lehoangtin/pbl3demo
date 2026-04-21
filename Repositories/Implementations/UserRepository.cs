@@ -23,12 +23,16 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<IEnumerable<AppUser>> GetTopRankingAsync(int topCount)
         {
-            return await _userManager.Users
+            // 1. Lấy tất cả người dùng có vai trò là "User" (tài khoản thường)
+            // Lệnh này tự động loại bỏ những ai là "Admin"
+            var regularUsers = await _userManager.GetUsersInRoleAsync("User");
+
+            // 2. Sắp xếp điểm từ cao xuống thấp và lấy ra danh sách Top
+            return regularUsers
                 .OrderByDescending(u => u.Points)
                 .Take(topCount)
-                .ToListAsync();
+                .ToList();
         }
-
         public async Task<AppUser?> GetByIdAsync(string userId)
         {
             return await _userManager.FindByIdAsync(userId) ?? await _context.Users.FindAsync(userId);

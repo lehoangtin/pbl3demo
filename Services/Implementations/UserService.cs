@@ -145,7 +145,9 @@ namespace StudyShare.Services.Implementations
         }
         public async Task<IEnumerable<UserResponse>> GetReportedUsersAsync()
         {
-            var reportedUsers= await _userRepository.GetAllAsync(); // Giả sử bạn có hàm này để lấy tất cả users
+            // Bạn đang gọi GetAllAsync() (lấy tất cả) 
+            // trong khi UserRepository đã có hàm GetReportedUsersAsync() riêng biệt
+            var reportedUsers = await _userRepository.GetReportedUsersAsync(); 
             return _mapper.Map<IEnumerable<UserResponse>>(reportedUsers);
         }
         // Trong file Services/Implementations/UserService.cs

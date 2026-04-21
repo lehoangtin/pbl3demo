@@ -7,5 +7,6 @@ namespace StudyShare.Repositories.Interfaces
         Task<IEnumerable<Report>> GetReportsByTargetUserAsync(string userId);
         Task UpdateAsync(Report report);
         Task<Report?> GetByIdAsync(int id);
+        Task<IEnumerable<Report>> GetAllPendingReportsAsync(); // Lấy tất cả báo cáo chưa được xử lý
     }
 }
