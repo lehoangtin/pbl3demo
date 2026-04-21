@@ -43,25 +43,32 @@ namespace StudyShare.Mappings
             CreateMap<Document, DocumentResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
+            CreateMap<DocumentResponse, DocumentViewModel>();
 
             // --- QUESTION MAPPINGS ---
             CreateMap<QuestionCreateRequest, Question>();
             CreateMap<Question, QuestionResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
                 .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+            CreateMap<QuestionResponse, QuestionViewModel>();
 
             // --- ANSWER MAPPINGS ---
             CreateMap<AnswerCreateRequest, Answer>();
             CreateMap<Answer, AnswerResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"));
-            
+            CreateMap<AnswerResponse, AnswerViewModel>();
+
             // --- CATEGORY MAPPINGS ---
             CreateMap<CategoryCreateRequest, Category>();
             CreateMap<Category, CategoryResponse>();
+            CreateMap<CategoryResponse, CategoryViewModel>();
 
-            CreateMap<DocumentResponse, DocumentViewModel>();
-            CreateMap<QuestionResponse, QuestionViewModel>();
-            CreateMap<AnswerResponse, AnswerViewModel>();
+            //REPORT 
+            CreateMap<Report, ReportResponse>()
+                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "Ẩn danh"));
+            CreateMap<UserResponse, UserViewModel>();   
+            CreateMap<ReportResponse, ReportViewModel>();
         }
     }
 }

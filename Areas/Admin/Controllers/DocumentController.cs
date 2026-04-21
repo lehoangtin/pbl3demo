@@ -40,14 +40,20 @@ namespace StudyShare.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Approve(int id)
         {
-            await _documentService.ApproveDocumentAsync(id);
+            var success = await _documentService.ApproveDocumentAsync(id);
+            if (success) TempData["Success"] = "Đã phê duyệt tài liệu thành công!";
+            else TempData["Error"] = "Có lỗi xảy ra khi phê duyệt.";
+            
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            await _documentService.DeleteByAdminAsync(id);
+            var success = await _documentService.DeleteByAdminAsync(id);
+            if (success) TempData["Success"] = "Đã xóa tài liệu khỏi hệ thống.";
+            else TempData["Error"] = "Không thể xóa tài liệu này.";
+            
             return RedirectToAction(nameof(Index));
         }
     }

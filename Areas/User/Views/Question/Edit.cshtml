@@ -1,27 +1,37 @@
 @model StudyShare.DTOs.Requests.QuestionUpdateRequest
-@{ ViewData["Title"] = "Chỉnh sửa câu hỏi"; }
+@{ 
+    ViewData["Title"] = "Chỉnh sửa câu hỏi"; 
+}
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-dark text-white py-3 rounded-top-4">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> Chỉnh sửa câu hỏi</h5>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mb-3">
+                <a asp-action="Details" asp-route-id="@Model.Id" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại chi tiết câu hỏi
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2 text-warning"></i> Chỉnh sửa câu hỏi</h5>
                 </div>
-                <div class="card-body p-4 p-md-5">
-                    <form asp-action="Edit" method="post">
+                <div class="card-body p-4 p-md-5 bg-light">
+                    <form asp-action="Edit" method="post" class="bg-white p-4 rounded-4 shadow-sm border">
                         <input type="hidden" asp-for="Id" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
 
                         <div class="mb-4">
-                            <label asp-for="Content" class="form-label fw-bold">Nội dung chi tiết</label>
-                            <textarea asp-for="Content" class="form-control rounded-3" rows="6"></textarea>
-                            <span asp-validation-for="Content" class="text-danger small"></span>
+                            <label asp-for="Content" class="form-label fw-bold text-dark">Nội dung chi tiết</label>
+                            <textarea asp-for="Content" class="form-control rounded-3 bg-light border-0 shadow-sm" rows="6"></textarea>
+                            <span asp-validation-for="Content" class="text-danger small mt-1"></span>
                         </div>
 
-                        <div class="d-flex gap-3 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold flex-grow-1 shadow-sm">Lưu thay đổi</button>
-                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light btn-lg rounded-pill px-4 border">Hủy</a>
+                        <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm">Hủy</a>
+                            <button type="submit" class="btn btn-warning btn-lg rounded-pill px-5 fw-bold text-dark shadow-sm">
+                                <i class="bi bi-save me-2"></i> Lưu thay đổi
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -29,3 +39,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

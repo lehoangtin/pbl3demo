@@ -1,71 +1,119 @@
-@model StudyShare.DTOs.Responses.DocumentResponse
+@model StudyShare.ViewModels.DocumentViewModel
 @{
     ViewData["Title"] = "Duyệt tài liệu";
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-warning"><i class="bi bi-file-earmark-check"></i> Kiểm duyệt tài liệu</h2>
-    </div>
-
+<div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow mb-4 border-warning border-start border-4">
-                <div class="card-header bg-dark text-white fw-bold">Thông tin tài liệu</div>
-                <div class="card-body">
-                    <p><strong>Tiêu đề:</strong> @Model.Title</p>
-                    <p><strong>Người đăng:</strong> @Model.AuthorName</p>
-                    <p><strong>Danh mục:</strong> <span class="badge bg-info text-dark">@Model.CategoryName</span></p>
-                    <p><strong>Mô tả:</strong> @Model.Description</p>
-                    <p><strong>Ngày tải lên:</strong> @Model.UploadDate.ToString("dd/MM/yyyy HH:mm")</p>
-
-                    <hr />
-                    
-                    @* Nút Duyệt *@
-                    <form asp-area="Admin" asp-controller="Document" asp-action="Approve" asp-route-id="@Model.Id" method="post">
-                        <button type="submit" class="btn btn-success w-100 fw-bold mb-3 py-2 shadow-sm">
-                            <i class="bi bi-check-circle-fill me-1"></i> Chấp nhận & Hiển thị
-                        </button>
-                    </form>
-
-                    @* Nút Xóa (Trỏ về action Delete có sẵn trong Admin/DocumentController) *@
-                    <form asp-area="Admin" asp-controller="Document" asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Tài liệu này vi phạm? Bạn có chắc muốn xoá vĩnh viễn không?');">
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-trash-fill me-1"></i> Xóa / Từ chối
-                        </button>
-                    </form>
-                </div>
-            </div>
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
         </div>
 
-        <div class="col-md-8">
-            <div class="card shadow border-0" style="height: 80vh;">
-                <div class="card-header bg-primary text-white fw-bold">
-                    <i class="bi bi-file-text"></i> Bản xem trước: @Model.FileName
+        <div class="col-md-9">
+            <div class="mb-3">
+                <a asp-action="Index" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-dark m-0"><i class="bi bi-file-earmark-check text-warning me-2"></i>Kiểm duyệt tài liệu</h3>
+                @if (Model.IsApproved)
+                {
+                    <span class="badge bg-success fs-6 px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-check-circle me-1"></i> Tài liệu đã được duyệt</span>
+                }
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+                        <div class="card-header bg-white p-4 border-bottom">
+                            <h5 class="fw-bold m-0 text-primary">Thông tin chi tiết</h5>
+                        </div>
+                        <div class="card-body p-4 bg-light">
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Tiêu đề</small>
+                                <strong class="fs-5 text-dark">@Model.Title</strong>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Danh mục</small>
+                                <span class="badge bg-info-subtle text-info border border-info rounded-pill px-3 py-2 mt-1">@Model.CategoryName</span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Người đăng</small>
+                                <span class="fw-medium text-dark"><i class="bi bi-person-circle me-1 text-secondary"></i> @Model.AuthorName</span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Ngày tải lên</small>
+                                <span class="text-dark"><i class="bi bi-calendar3 me-1 text-secondary"></i> @Model.UploadDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Mô tả</small>
+                                <div class="bg-white p-3 rounded-3 border shadow-sm mt-1 text-dark" style="min-height: 80px;">
+                                    @(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-body p-4 text-center">
+                            <h6 class="fw-bold mb-3 text-muted">Quyết định kiểm duyệt</h6>
+                            
+                            @if (!Model.IsApproved)
+                            {
+                                <form asp-action="Approve" asp-route-id="@Model.Id" method="post" class="mb-2">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill shadow-sm fw-bold">
+                                        <i class="bi bi-check-circle-fill me-2"></i> Phê duyệt & Hiển thị
+                                    </button>
+                                </form>
+                            }
+
+                            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Tài liệu này vi phạm? Bạn có chắc muốn xoá vĩnh viễn không?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger w-100 rounded-pill shadow-sm">
+                                    <i class="bi bi-trash-fill me-2"></i> @(Model.IsApproved ? "Xóa tài liệu này" : "Từ chối & Xóa file")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    @if (Model.FileType.Contains("pdf"))
-                    {
-                        <iframe src="@Model.FilePath#toolbar=0" width="100%" height="100%" style="border: none;"></iframe>
-                    }
-                    else if (Model.FileType.Contains("image"))
-                    {
-                        <div class="text-center p-3 h-100 bg-light d-flex align-items-center justify-content-center">
-                            <img src="@Model.FilePath" class="img-fluid shadow-sm rounded" style="max-height: 100%;" />
+
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                        <div class="card-header bg-dark text-white p-3 d-flex align-items-center">
+                            <i class="bi bi-file-text fs-5 me-2"></i> 
+                            <span class="text-truncate" style="max-width: 90%;">Bản xem trước: @Model.FileName</span>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center p-5 h-100 d-flex flex-column justify-content-center bg-light">
-                            <i class="bi bi-file-earmark-arrow-down text-secondary" style="font-size: 6rem;"></i>
-                            <h4 class="mt-3 text-dark">File này không hỗ trợ xem trực tiếp</h4>
-                            <p class="text-muted">Vì là file Word/Excel/Zip..., bạn cần tải về máy để kiểm tra nội dung.</p>
-                            <a asp-area="User" asp-controller="Document" asp-action="Download" asp-route-id="@Model.Id" 
-                            class="btn btn-primary mt-3 mx-auto px-4 rounded-pill">
-                                <i class="bi bi-download"></i> Tải file về máy
-                            </a>
+                        <div class="card-body p-0 bg-light" style="min-height: 600px;">
+                            @if (!string.IsNullOrEmpty(Model.FileType) && Model.FileType.Contains("pdf"))
+                            {
+                                <iframe src="@Model.FilePath#toolbar=0" width="100%" height="100%" style="border: none; min-height: 600px;"></iframe>
+                            }
+                            else if (!string.IsNullOrEmpty(Model.FileType) && Model.FileType.Contains("image"))
+                            {
+                                <div class="d-flex align-items-center justify-content-center h-100 p-4">
+                                    <img src="@Model.FilePath" class="img-fluid shadow rounded-3 border" style="max-height: 550px;" alt="Bản xem trước" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center p-5 d-flex flex-column justify-content-center align-items-center h-100">
+                                    <div class="bg-white p-4 rounded-circle shadow-sm mb-4" style="width: 120px; height: 120px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-file-earmark-x text-secondary" style="font-size: 4rem;"></i>
+                                    </div>
+                                    <h4 class="fw-bold text-dark">Không hỗ trợ xem trước</h4>
+                                    <p class="text-muted mb-4">Định dạng file (@Model.FileType) cần được tải về máy để xem nội dung chi tiết.</p>
+                                    
+                                    <a asp-area="User" asp-controller="Document" asp-action="Download" asp-route-id="@Model.Id" 
+                                       class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                                        <i class="bi bi-cloud-download me-2"></i> Tải file về máy
+                                    </a>
+                                </div>
+                            }
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>

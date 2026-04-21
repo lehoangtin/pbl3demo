@@ -30,7 +30,7 @@ namespace StudyShare.Models
         public virtual AppUser Target { get; set; }
 
         [ForeignKey("DocumentId")]
-        public virtual Document Document { get; set; } // 🔥 Thêm dòng này để hết lỗi CS1061
+        public virtual Document Document { get; set; } 
 
         [ForeignKey("QuestionId")]
         public virtual Question Question { get; set; } 

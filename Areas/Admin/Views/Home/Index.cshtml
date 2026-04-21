@@ -1,150 +1,177 @@
+@* Khai báo Model nếu Controller của bạn đang truyền AdminDashboardViewModel *@
+@model StudyShare.ViewModels.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Tổng quan quản trị";
 }
 
-<div class="container-fluid mt-4">
-    <h2 class="fw-bold mb-4"><i class="bi bi-speedometer2"></i> Dashboard Thống Kê</h2>
-
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-primary border-4 shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Tổng người dùng</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalUsers</div>
-                            <small class="text-danger">Đã khóa: @ViewBag.BannedUsers</small>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-people fa-2x text-gray-300 fs-1 text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-success border-4 shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Tài liệu (Đã duyệt)</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ApprovedDocuments / @ViewBag.TotalDocuments</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-file-earmark-text fa-2x text-gray-300 fs-1 text-success"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-warning border-4 shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Tài liệu chờ duyệt</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.PendingDocuments</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-hourglass-split fa-2x text-gray-300 fs-1 text-warning"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-info border-4 shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Thảo luận (Hỏi / Đáp)</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalQuestions / @ViewBag.TotalAnswers</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-chat-dots fa-2x text-gray-300 fs-1 text-info"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+<div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-dark text-white">
-                    <h6 class="m-0 fw-bold"><i class="bi bi-trophy text-warning"></i> Top 5 Thành viên Năng nổ</h6>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Họ tên</th>
-                                <th>Email</th>
-                                <th>Điểm</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in ViewBag.TopUsers)
-                            {
-                                <tr>
-                                    <td>@user.FullName</td>
-                                    <td>@user.Email</td>
-                                    <td><span class="badge bg-warning text-dark"><i class="bi bi-coin"></i> @user.Points</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
         </div>
 
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-warning text-dark">
-                    <h6 class="m-0 fw-bold"><i class="bi bi-clock-history"></i> Cần duyệt gấp (5 mới nhất)</h6>
+        <div class="col-md-9">
+            <h4 class="fw-bold mb-4 text-dark">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard Thống Kê
+            </h4>
+
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
+                            <div class="z-1">
+                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tổng người dùng</small>
+                                <h3 class="fw-bold mb-1 text-dark">@(Model?.TotalUsers ?? ViewBag.TotalUsers ?? 0)</h3>
+                                <small class="text-danger fw-medium"><i class="bi bi-lock-fill"></i> Đã khóa: @(ViewBag.BannedUsers ?? 0)</small>
+                            </div>
+                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
+                                <i class="bi bi-people-fill fs-3"></i>
+                            </div>
+                            <div class="position-absolute end-0 bottom-0 opacity-10" style="transform: translate(20%, 20%);">
+                                <i class="bi bi-people-fill" style="font-size: 6rem;"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Tiêu đề</th>
-                                <th>Người đăng</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (ViewBag.RecentPendingDocs != null && ViewBag.RecentPendingDocs.Count > 0)
-                            {
-                                foreach (var doc in ViewBag.RecentPendingDocs)
-                                {
-                                    <tr>
-                                        <td>@(doc.Title.Length > 30 ? doc.Title.Substring(0,30) + "..." : doc.Title)</td>
-                                        <td>@doc.User?.FullName</td>
-                                        <td>
-                                            @* 🔥 ĐÃ SỬA DÒNG NÀY: Trỏ về trang Review của Admin *@
-                                            <a asp-area="Admin" asp-controller="Document" asp-action="Review" asp-route-id="@doc.Id" class="btn btn-sm btn-info text-white">
-                                                <i class="bi bi-eye"></i> Xem & Duyệt
-                                            </a>                                       
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">Không có tài liệu nào chờ duyệt. Tuyệt vời!</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
+                            <div class="z-1">
+                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tài liệu (Đã duyệt)</small>
+                                <h3 class="fw-bold mb-1 text-dark">@(ViewBag.ApprovedDocuments ?? 0) <span class="fs-6 text-muted fw-normal">/ @(Model?.TotalDocuments ?? ViewBag.TotalDocuments ?? 0)</span></h3>
+                            </div>
+                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
+                                <i class="bi bi-file-earmark-check-fill fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
+                            <div class="z-1">
+                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tài liệu chờ duyệt</small>
+                                <h3 class="fw-bold mb-1 text-dark">@(Model?.PendingDocuments ?? ViewBag.PendingDocuments ?? 0)</h3>
+                            </div>
+                            <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
+                                <i class="bi bi-hourglass-split fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
+                            <div class="z-1">
+                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Thảo luận (Hỏi/Đáp)</small>
+                                <h3 class="fw-bold mb-1 text-dark">@(Model?.TotalQuestions ?? ViewBag.TotalQuestions ?? 0) <span class="fs-6 text-muted fw-normal">/ @(ViewBag.TotalAnswers ?? 0)</span></h3>
+                            </div>
+                            <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
+                                <i class="bi bi-chat-dots-fill fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                            <i class="bi bi-trophy-fill text-warning fs-5 me-2"></i>
+                            <h6 class="m-0 fw-bold text-dark">Top 5 Thành viên Năng nổ</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light text-muted">
+                                        <tr>
+                                            <th class="ps-4">Thành viên</th>
+                                            <th class="text-end pe-4">Điểm</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (ViewBag.TopUsers != null)
+                                        {
+                                            foreach (var user in ViewBag.TopUsers)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <div class="fw-bold text-dark">@user.FullName</div>
+                                                        <small class="text-muted">@user.Email</small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning px-3 py-2 rounded-pill">
+                                                            <i class="bi bi-coin me-1"></i> @user.Points
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center py-4 text-muted border-0">Chưa có dữ liệu thành viên.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                            <i class="bi bi-clock-history text-danger fs-5 me-2"></i>
+                            <h6 class="m-0 fw-bold text-dark">Cần duyệt gấp (5 mới nhất)</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light text-muted">
+                                        <tr>
+                                            <th class="ps-4">Tài liệu</th>
+                                            <th class="text-end pe-4">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (ViewBag.RecentPendingDocs != null && ViewBag.RecentPendingDocs.Count > 0)
+                                        {
+                                            foreach (var doc in ViewBag.RecentPendingDocs)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <div class="fw-bold text-dark text-truncate" style="max-width: 200px;" title="@doc.Title">@doc.Title</div>
+                                                        <small class="text-muted"><i class="bi bi-person me-1"></i> @doc.User?.FullName</small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <a asp-area="Admin" asp-controller="Document" asp-action="Review" asp-route-id="@doc.Id" 
+                                                           class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm fw-bold">
+                                                            <i class="bi bi-search me-1"></i> Xem
+                                                        </a>                                       
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center py-5 text-muted border-0">
+                                                    <i class="bi bi-check-circle text-success fs-2 d-block mb-2"></i>
+                                                    Không có tài liệu nào chờ duyệt. Tuyệt vời!
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

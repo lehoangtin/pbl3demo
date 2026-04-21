@@ -1,64 +1,59 @@
 @model StudyShare.ViewModels.UserViewModel
-@{ 
-    ViewData["Title"] = "Tổng quan hồ sơ";
-}
+@{ ViewData["Title"] = "Tổng quan hồ sơ"; }
 
 <div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-3 mb-4">
             @await Html.PartialAsync("_UserSidebarPartial", Model)
         </div>
 
         <div class="col-md-9">
-            <div class="card border-0 shadow-sm p-4 rounded-4 bg-gradient bg-primary text-white mb-4">
-                <h3 class="fw-bold"><i class="bi bi-stars me-2 text-warning"></i>Chào bạn, @Model.FullName! 👋</h3>
-                <p class="mb-0 opacity-75 fs-5">Hôm nay bạn có <strong>@Model.Points</strong> điểm tích lũy.</p>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 position-relative bg-primary text-white p-4 p-md-5">
+                <div class="position-relative z-1">
+                    <h3 class="fw-bold mb-2"><i class="bi bi-stars text-warning me-2"></i>Chào mừng, @Model.FullName! 👋</h3>
+                    <p class="mb-0 fs-5 opacity-75">Hôm nay bạn có <strong>@Model.Points</strong> điểm tích lũy.</p>
+                </div>
+                <i class="bi bi-award-fill position-absolute text-white opacity-10" style="font-size: 10rem; right: 5%; bottom: -20%;"></i>
             </div>
 
             <div class="row g-4 mb-4">
-                @* Cột thống kê điểm *@
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
-                        <h2 class="fw-bold text-warning mb-1">@Model.Points</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Điểm hiện có</small>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-white transition-hover">
+                        <div class="text-warning mb-2"><i class="bi bi-coin fs-1"></i></div>
+                        <h2 class="fw-bold text-dark mb-1">@Model.Points</h2>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Điểm hiện có</small>
                     </div>
                 </div>
-
-                @* Cột thống kê cảnh cáo *@
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-light">
-                        <h2 class="fw-bold text-dark mb-1">@Model.WarningCount</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Số lần cảnh cáo</small>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-white transition-hover">
+                        <div class="text-info mb-2"><i class="bi bi-file-earmark-arrow-up fs-1"></i></div>
+                        <h2 class="fw-bold text-dark mb-1">@ViewBag.TotalDocs</h2>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Tài liệu đã đăng</small>
                     </div>
                 </div>
-
-                @* Cột thống kê tài liệu *@
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
-                        <h2 class="fw-bold text-primary mb-1">@ViewBag.TotalDocs</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Tài liệu đăng</small>
-                    </div>
-                </div>
-
-                @* Cột thống kê câu hỏi *@
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
-                        <h2 class="fw-bold text-success mb-1">@ViewBag.TotalQuestions</h2>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Câu hỏi</small>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-white transition-hover">
+                        <div class="text-success mb-2"><i class="bi bi-chat-dots fs-1"></i></div>
+                        <h2 class="fw-bold text-dark mb-1">@ViewBag.TotalQuestions</h2>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Thảo luận</small>
                     </div>
                 </div>
             </div>
 
-            @* Nếu có cảnh cáo, hiển thị thông báo nhắc nhở *@
             @if (Model.WarningCount > 0)
             {
-                <div class="alert alert-warning border-0 shadow-sm rounded-4 d-flex align-items-center">
-                    <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-3"></i>
+                <div class="alert alert-danger border-0 shadow-sm rounded-4 d-flex align-items-center p-4">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 text-danger me-4"></i>
                     <div>
-                        <strong>Lưu ý quan trọng:</strong> Bạn đang có <strong>@Model.WarningCount</strong> lần cảnh cáo từ hệ thống. Tài khoản sẽ bị khóa nếu vi phạm quá 3 lần. Vui lòng tuân thủ quy định cộng đồng nhé!
+                        <h5 class="fw-bold text-danger mb-1">Cảnh báo vi phạm!</h5>
+                        <p class="mb-0 text-dark">Bạn đang có <strong>@Model.WarningCount</strong> lần cảnh cáo từ hệ thống. Tài khoản sẽ bị khóa nếu vi phạm quá 3 lần. Vui lòng tuân thủ quy định cộng đồng.</p>
                     </div>
                 </div>
             }
         </div>
     </div>
 </div>
+
+<style>
+    .transition-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
+</style>

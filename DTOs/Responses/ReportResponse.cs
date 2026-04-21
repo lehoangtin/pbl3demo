@@ -12,6 +12,7 @@ namespace StudyShare.DTOs.Responses
         public string? ActionTaken { get; set; }
 
         public string? ReporterName { get; set; }
+        public string TargetUserName { get; set; }
         public string? ReportedUserName { get; set; }
         public string? DocumentTitle { get; set; }
 

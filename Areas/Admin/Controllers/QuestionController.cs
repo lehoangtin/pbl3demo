@@ -28,26 +28,20 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(viewModels);
         }
 
-        public async Task<IActionResult> Details(int id)
-        {
-            var questionDto = await _questionService.GetByIdAsync(id);
-            if (questionDto == null) return NotFound();
-
-            var viewModel = _mapper.Map<QuestionViewModel>(questionDto);
-            return View(viewModel);
-        }
-
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            await _questionService.DeleteByAdminAsync(id);
+            var success = await _questionService.DeleteByAdminAsync(id);
+            if (success) TempData["Success"] = "Đã xóa câu hỏi vi phạm.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteAnswer(int id)
         {
-            await _questionService.DeleteByAdminAsync(id);
+            // Lưu ý: ID ở đây là ID của Answer
+            var success = await _questionService.DeleteByAdminAsync(id); 
+            if (success) TempData["Success"] = "Đã xóa câu trả lời vi phạm.";
             return Redirect(Request.Headers["Referer"].ToString());
         }
     }

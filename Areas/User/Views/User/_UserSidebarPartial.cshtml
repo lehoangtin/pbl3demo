@@ -18,33 +18,53 @@
 }
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <div class="card-body text-center pt-5 bg-white">
-        <div class="mb-3 position-relative d-inline-block">
+    <div class="card-body text-center pt-5 bg-white position-relative">
+        <div class="position-absolute top-0 start-0 w-100 bg-primary opacity-10" style="height: 70px;"></div>
+        
+        <div class="mb-3 position-relative d-inline-block z-1">
             <img src="@avatar" class="rounded-circle img-thumbnail shadow-sm border-2 border-primary" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar" />
         </div>
         <h5 class="fw-bold mb-0 text-dark">@fullName</h5>
-        <p class="text-muted small mb-0">@email</p>
+        <p class="text-muted small mb-3">@email</p>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold">Học viên StudyShare</span>
     </div>
+
     <div class="list-group list-group-flush pb-3 bg-white">
-        <a asp-area="User" asp-controller="User" asp-action="Profile" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-person-vcard me-2 text-primary fs-5 align-middle"></i> Tổng quan hồ sơ
-        </a>
-        <a asp-area="User" asp-controller="User" asp-action="MyDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-file-earmark-arrow-up me-2 text-info fs-5 align-middle"></i> Tài liệu đã đăng
-        </a>
-        <a asp-area="User" asp-controller="User" asp-action="SavedDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-bookmark-heart me-2 text-danger fs-5 align-middle"></i> Tài liệu đã lưu
-        </a>
-        <a asp-area="User" asp-controller="User" asp-action="MyQuestions" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-chat-square-text me-2 text-success fs-5 align-middle"></i> Câu hỏi của tôi
-        </a>
-        <hr class="mx-4 my-2 text-muted opacity-25">
         
-        <a asp-area="User" asp-controller="User" asp-action="Edit" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-pencil-square me-2 text-warning fs-5 align-middle"></i> Chỉnh sửa thông tin
+        <div class="px-4 py-2 mt-2 text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">Hồ sơ cá nhân</div>
+        
+        <a asp-area="User" asp-controller="User" asp-action="Profile" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-person-vcard me-3 text-primary fs-5 align-middle"></i> Tổng quan hồ sơ
         </a>
-        <a asp-area="User" asp-controller="User" asp-action="ChangePassword" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-shield-lock me-2 text-secondary fs-5 align-middle"></i> Đổi mật khẩu
+        <a asp-area="User" asp-controller="User" asp-action="Edit" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-pencil-square me-3 text-warning fs-5 align-middle"></i> Chỉnh sửa thông tin
+        </a>
+        <a asp-area="User" asp-controller="User" asp-action="ChangePassword" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-shield-lock me-3 text-secondary fs-5 align-middle"></i> Đổi mật khẩu
+        </a>
+
+        <div class="px-4 py-2 mt-3 text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">Kho dữ liệu của bạn</div>
+        
+        <a asp-area="User" asp-controller="User" asp-action="MyDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-file-earmark-arrow-up me-3 text-info fs-5 align-middle"></i> Tài liệu đã đăng
+        </a>
+        <a asp-area="User" asp-controller="User" asp-action="SavedDocuments" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-bookmark-heart me-3 text-danger fs-5 align-middle"></i> Tài liệu đã lưu
+        </a>
+        <a asp-area="User" asp-controller="User" asp-action="MyQuestions" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium transition-hover">
+            <i class="bi bi-chat-square-text me-3 text-success fs-5 align-middle"></i> Câu hỏi của tôi
         </a>
     </div>
 </div>
+
+<style>
+    /* Hiệu ứng mượt mà khi di chuột vào các menu */
+    .transition-hover:hover {
+        background-color: #f8f9fa !important;
+        transform: translateX(5px);
+        transition: all 0.2s ease-in-out;
+    }
+    .list-group-item {
+        transition: all 0.2s ease-in-out;
+    }
+</style>
