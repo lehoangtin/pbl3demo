@@ -77,7 +77,7 @@ namespace StudyShare.Areas.User.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
-
+            await _userService.AddPointsAsync(currentUserId, 10);
             TempData["Success"] = "Tải lên thành công! Tài liệu đang chờ duyệt.";
             return RedirectToAction(nameof(Index));
         }

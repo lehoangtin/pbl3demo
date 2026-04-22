@@ -2,8 +2,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
-namespace ai.Services
+using StudyShare.Services.Interfaces;
+namespace StudyShare.Services
 {
     // Lớp này dùng để hứng kết quả trả về từ Python
     public class AIModerationResponse
@@ -17,8 +17,14 @@ namespace ai.Services
         public string reply { get; set; }
     }
 
-    public class AIService
+    public class AIService : IAIService
     {
+        private readonly HttpClient _httpClient;
+
+        public AIService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
         // Hàm gửi tin nhắn Chat sang Python và nhận phản hồi
         public async Task<string> ChatWithAIAsync(string message)
         {
@@ -40,14 +46,6 @@ namespace ai.Services
 
             return "Xin lỗi, Server AI đang ngủ trưa. Vui lòng thử lại sau!";
         }
-
-        private readonly HttpClient _httpClient;
-
-        public AIService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
-
         // Hàm gửi nội dung sang Python kiểm tra và nhận kết quả có bị chặn hay không
         public async Task<AIModerationResponse> CheckContentAsync(string text)
         {

@@ -156,14 +156,14 @@ namespace StudyShare.Services.Implementations
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            // Trừ điểm (không để âm)
-            user.Points = Math.Max(0, user.Points - pointsToDeduct);
+            // Bỏ Math.Max để cho phép điểm trừ thẳng xuống số âm
+            user.Points -= pointsToDeduct;
             
             // Tăng số lần cảnh báo
             user.WarningCount += warningIncrement;
 
             return await _userRepository.UpdateUserAsync(user);
-        }
+}
         public async Task<bool> AddPointsAsync(string userId, int points)
         {
             var user = await _userRepository.GetByIdAsync(userId);

@@ -38,6 +38,10 @@
                                                 <input type="hidden" name="reportId" value="@item.Id" />
                                                 <button type="submit" class="btn btn-sm btn-danger">Phạt</button>
                                             </form>
+                                            <form asp-action="DismissReport" method="post" class="d-inline ms-1">
+                                                <input type="hidden" name="reportId" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-secondary">Bỏ qua</button>
+                                            </form>
                                             <a asp-action="ViewReports" asp-route-userId="@item.TargetUserId" class="btn btn-sm btn-link">Chi tiết</a>
                                         </td>
                                     </tr>

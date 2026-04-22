@@ -77,10 +77,6 @@ namespace StudyShare.Repositories.Implementations
             if (!document.IsApproved)
             {
                 document.IsApproved = true;
-                if (document.User != null)
-                {
-                    document.User.Points += 10;
-                }
                 _context.Update(document);
                 return await _context.SaveChangesAsync() > 0;
             }
@@ -89,7 +85,11 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<IEnumerable<Document>> GetUserDocumentsAsync(string userId)
         {
-            return await _context.Documents.Where(d => d.UserId == userId).OrderByDescending(d => d.UploadDate).ToListAsync();
+           return await _context.Documents
+                .Include(d => d.Category) 
+                .Where(d => d.UserId == userId)
+                .OrderByDescending(d => d.UploadDate)
+                .ToListAsync();
         }
 
         public async Task<bool> DeleteByUserAsync(Document document)

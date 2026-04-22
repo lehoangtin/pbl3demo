@@ -14,14 +14,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // 🔥 AI Service (giữ từ nhánh minh)
-builder.Services.AddHttpClient<ai.Services.AIService>();
-
+// builder.Services.AddHttpClient<ai.Services.AIService>();
+builder.Services.AddHttpClient<IAIService, AIService>();
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>  
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
-builder.Services.AddHttpClient<ai.Services.AIService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+// builder.Services.AddHttpClient<ai.Services.AIService>();
+// 2. Đăng ký AIService
+// Vì AIService của bạn có tiêm HttpClient ở hàm tạo (constructor), 
+// nên dùng AddHttpClient là chuẩn nhất trong .NET:
+// builder.Services.AddHttpClient<IAIService, AIService>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<StudyShare.Services.Interfaces.ICategoryService, StudyShare.Services.Implementations.CategoryService>();

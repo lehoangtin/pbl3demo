@@ -7,7 +7,6 @@ using StudyShare.Services.Interfaces;
 using System.Security.Claims;
 using AutoMapper;
 using StudyShare.ViewModels;
-using ai.Services;
 using StudyShare.Models; // Thêm để dùng AppUser, Report
 
 namespace StudyShare.Areas.User.Controllers
@@ -19,7 +18,7 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IQuestionService _questionService;
         private readonly IAnswerService _answerService; 
         private readonly IMapper _mapper;
-        private readonly AIService _aiService; 
+        private readonly IAIService _aiService; 
         private readonly IUserService _userService;
         
         // 🔥 Bổ sung thêm Context và UserManager để xử lý Cộng điểm & Report giống bản cũ
@@ -30,7 +29,7 @@ namespace StudyShare.Areas.User.Controllers
             IQuestionService questionService, 
             IAnswerService answerService, 
             IMapper mapper, 
-            AIService aiService, 
+            IAIService aiService, 
             IUserService userService,
             AppDbContext context,
             UserManager<AppUser> userManager)

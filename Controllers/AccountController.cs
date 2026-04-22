@@ -4,15 +4,16 @@ using StudyShare.ViewModels;
 using StudyShare.Services.Interfaces; 
 using StudyShare.Services; 
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Identity;
+using StudyShare.Models; // Thêm để dùng AppUser
 namespace StudyShare.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
-        private readonly EmailSender _emailSender;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(IAuthService authService, EmailSender emailSender)
+        public AccountController(IAuthService authService, IEmailSender emailSender)
         {
             _authService = authService;
             _emailSender = emailSender;

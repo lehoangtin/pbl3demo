@@ -183,11 +183,7 @@ namespace StudyShare.Services.Implementations
         }
         public async Task<IEnumerable<DocumentResponse>> GetUserDocumentsAsync(string userId)
         {
-            var docs = await _context.Documents
-                .Where(d => d.UserId == userId)
-                .Include(d => d.Category) // Load thêm Category để có tên danh mục
-                .OrderByDescending(d => d.UploadDate)
-                .ToListAsync();
+            var docs = await _documentRepository.GetUserDocumentsAsync(userId);
 
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
