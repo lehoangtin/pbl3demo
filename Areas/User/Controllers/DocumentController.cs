@@ -66,49 +66,56 @@ namespace StudyShare.Areas.User.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(DocumentCreateRequest request)
+        public async Task<IActionResult> Create(DocumentCreateViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 var categories = await _categoryService.GetAllAsync();
-                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", request.CategoryId);
-                return View(request);
+                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+                return View(viewModel);
             }
 
+            var request = _mapper.Map<DocumentCreateRequest>(viewModel);
+            
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
             await _userService.AddPointsAsync(currentUserId, 10);
+            
             TempData["Success"] = "Tải lên thành công! Tài liệu đang chờ duyệt.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
-        {
-            var request = await _documentService.GetForEditAsync(id);
-            if (request == null) return NotFound();
+        {var requestDto = await _documentService.GetForEditAsync(id);
+            if (requestDto == null) return NotFound();
+
+            // Map DTO -> ViewModel để hiển thị lên UI
+            var viewModel = _mapper.Map<DocumentEditViewModel>(requestDto);
 
             var categories = await _categoryService.GetAllAsync();
-            ViewBag.CategoryId = new SelectList(categories, "Id", "Name", request.CategoryId);
+            ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
 
             var existingDocument = await _documentService.GetByIdAsync(id);
             ViewBag.CurrentFileName = existingDocument?.FileName ?? "Không có tệp";
 
-            return View(request);
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(DocumentUpdateRequest request)
+        public async Task<IActionResult> Edit(DocumentEditViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 var categories = await _categoryService.GetAllAsync();
-                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", request.CategoryId);
-                var existingDocument = await _documentService.GetByIdAsync(request.Id);
+                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+                var existingDocument = await _documentService.GetByIdAsync(viewModel.Id);
                 ViewBag.CurrentFileName = existingDocument?.FileName ?? "Không có tệp";
-                return View(request);
+                return View(viewModel);
             }
+
+            var request = _mapper.Map<DocumentUpdateRequest>(viewModel);
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             bool isAdmin = User.IsInRole("Admin");

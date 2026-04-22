@@ -223,5 +223,14 @@ namespace StudyShare.Services.Implementations
             var approvedDocs = await _documentRepository.GetApprovedDocumentsAsync(string.Empty, null);
             return _mapper.Map<IEnumerable<DocumentResponse>>(approvedDocs);
         }
+        public async Task<IEnumerable<DocumentResponse>> GetPendingDocumentsAsync()
+        {
+            // Gọi repo để lấy danh sách chưa duyệt
+            var docs = await _documentRepository.GetPendingDocumentsAsync();
+            
+            // Map từ Entity sang Response DTO để trả về Controller
+            return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
+        }
+
     }
 }

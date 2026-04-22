@@ -1,174 +1,184 @@
-@* Khai báo Model nếu Controller của bạn đang truyền AdminDashboardViewModel *@
 @model StudyShare.ViewModels.AdminDashboardViewModel
 @{
-    ViewData["Title"] = "Tổng quan quản trị";
+    ViewData["Title"] = "Bảng điều khiển quản trị";
 }
 
-<div class="container mt-4 mb-5">
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            @await Html.PartialAsync("_AdminSidebarPartial")
+<div class="admin-dashboard-wrapper py-4" style="background-color: #f8f9fc; min-height: 100vh;">
+    <div class="container-fluid">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4 px-2">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800 fw-bold">Tổng quan hệ thống</h1>
+                <p class="text-muted mb-0">Chào mừng trở lại! Đây là tóm tắt hoạt động của StudyShare.</p>
+            </div>
+            <div class="text-end d-none d-sm-block">
+                <span class="badge bg-white text-dark shadow-sm p-2 border">
+                    <i class="bi bi-clock me-1 text-primary"></i> @DateTime.Now.ToString("HH:mm, dd/MM/yyyy")
+                </span>
+            </div>
         </div>
 
-        <div class="col-md-9">
-            <h4 class="fw-bold mb-4 text-dark">
-                <i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard Thống Kê
-            </h4>
-
-            <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
-                            <div class="z-1">
-                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tổng người dùng</small>
-                                <h3 class="fw-bold mb-1 text-dark">@(Model?.TotalUsers ?? ViewBag.TotalUsers ?? 0)</h3>
-                                <small class="text-danger fw-medium"><i class="bi bi-lock-fill"></i> Đã khóa: @(ViewBag.BannedUsers ?? 0)</small>
-                            </div>
-                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
-                                <i class="bi bi-people-fill fs-3"></i>
-                            </div>
-                            <div class="position-absolute end-0 bottom-0 opacity-10" style="transform: translate(20%, 20%);">
-                                <i class="bi bi-people-fill" style="font-size: 6rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
-                            <div class="z-1">
-                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tài liệu (Đã duyệt)</small>
-                                <h3 class="fw-bold mb-1 text-dark">@(ViewBag.ApprovedDocuments ?? 0) <span class="fs-6 text-muted fw-normal">/ @(Model?.TotalDocuments ?? ViewBag.TotalDocuments ?? 0)</span></h3>
-                            </div>
-                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
-                                <i class="bi bi-file-earmark-check-fill fs-3"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
-                            <div class="z-1">
-                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Tài liệu chờ duyệt</small>
-                                <h3 class="fw-bold mb-1 text-dark">@(Model?.PendingDocuments ?? ViewBag.PendingDocuments ?? 0)</h3>
-                            </div>
-                            <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
-                                <i class="bi bi-hourglass-split fs-3"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div class="card-body p-4 d-flex align-items-center justify-content-between position-relative">
-                            <div class="z-1">
-                                <small class="text-muted text-uppercase fw-bold mb-1 d-block" style="font-size: 0.75rem;">Thảo luận (Hỏi/Đáp)</small>
-                                <h3 class="fw-bold mb-1 text-dark">@(Model?.TotalQuestions ?? ViewBag.TotalQuestions ?? 0) <span class="fs-6 text-muted fw-normal">/ @(ViewBag.TotalAnswers ?? 0)</span></h3>
-                            </div>
-                            <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center z-1" style="width: 55px; height: 55px;">
-                                <i class="bi bi-chat-dots-fill fs-3"></i>
-                            </div>
-                        </div>
-                    </div>
+        <div class="row g-4">
+            <div class="col-xl-2 col-lg-3">
+                <div class="sticky-top" style="top: 20px;">
+                    @await Html.PartialAsync("_AdminSidebarPartial")
                 </div>
             </div>
 
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
-                        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                            <i class="bi bi-trophy-fill text-warning fs-5 me-2"></i>
-                            <h6 class="m-0 fw-bold text-dark">Top 5 Thành viên Năng nổ</h6>
+            <div class="col-xl-10 col-lg-9">
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card stat-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 position-relative">
+                                <div class="text-primary text-uppercase fw-bold small mb-2 ls-1">Người dùng</div>
+                                <div class="h2 mb-2 fw-black">@Model.TotalUsers</div>
+                                <div class="d-flex align-items-center text-danger small">
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill me-2 px-2">
+                                        <i class="bi bi-lock-fill"></i> @Model.BannedUsers khóa
+                                    </span>
+                                </div>
+                                <i class="bi bi-people-fill stat-icon text-primary opacity-10"></i>
+                            </div>
+                            <div class="progress rounded-0" style="height: 4px;">
+                                <div class="progress-bar bg-primary" style="width: 100%"></div>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light text-muted">
-                                        <tr>
-                                            <th class="ps-4">Thành viên</th>
-                                            <th class="text-end pe-4">Điểm</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (ViewBag.TopUsers != null)
-                                        {
-                                            foreach (var user in ViewBag.TopUsers)
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card stat-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 position-relative">
+                                <div class="text-success text-uppercase fw-bold small mb-2 ls-1">Tài liệu đã duyệt</div>
+                                <div class="h2 mb-2 fw-black">@Model.ApprovedDocuments</div>
+                                <div class="text-muted small">Tổng cộng: @Model.TotalDocuments</div>
+                                <i class="bi bi-file-earmark-check-fill stat-icon text-success opacity-10"></i>
+                            </div>
+                            <div class="progress rounded-0" style="height: 4px;">
+                                <div class="progress-bar bg-success" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card stat-card border-0 shadow-sm rounded-4 h-100 overflow-hidden border-warning-custom">
+                            <div class="card-body p-4 position-relative">
+                                <div class="text-warning text-uppercase fw-bold small mb-2 ls-1">Đang chờ duyệt</div>
+                                <div class="h2 mb-2 fw-black">@Model.PendingDocuments</div>
+                                <a asp-controller="Document" asp-action="Index" class="text-warning text-decoration-none small fw-bold">
+                                    Xử lý ngay <i class="bi bi-arrow-right"></i>
+                                </a>
+                                <i class="bi bi-hourglass-split stat-icon text-warning opacity-10"></i>
+                            </div>
+                            <div class="progress rounded-0" style="height: 4px;">
+                                <div class="progress-bar bg-warning" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card stat-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 position-relative">
+                                <div class="text-info text-uppercase fw-bold small mb-2 ls-1">Hỏi & Đáp</div>
+                                <div class="h2 mb-2 fw-black">@Model.TotalQuestions</div>
+                                <div class="text-muted small">@Model.TotalAnswers câu trả lời</div>
+                                <i class="bi bi-chat-left-dots-fill stat-icon text-info opacity-10"></i>
+                            </div>
+                            <div class="progress rounded-0" style="height: 4px;">
+                                <div class="progress-bar bg-info" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-xl-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 px-4 border-0 d-flex align-items-center justify-content-between mt-2">
+                                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-star-fill text-warning me-2"></i>Thành viên tiêu biểu</h6>
+                                <a asp-controller="User" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3">Tất cả</a>
+                            </div>
+                            <div class="card-body px-0 pt-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle custom-table">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th class="ps-4 border-0">Thành viên</th>
+                                                <th class="text-center border-0">Điểm</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var user in Model.TopUsers)
                                             {
                                                 <tr>
                                                     <td class="ps-4">
-                                                        <div class="fw-bold text-dark">@user.FullName</div>
-                                                        <small class="text-muted">@user.Email</small>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar-circle me-3 bg-primary-subtle text-primary fw-bold">
+                                                                @user.FullName.Substring(0, 1).ToUpper()
+                                                            </div>
+                                                            <div>
+                                                                <div class="fw-bold text-dark">@user.FullName</div>
+                                                                <div class="text-muted small">@user.Email</div>
+                                                            </div>
+                                                        </div>
                                                     </td>
-                                                    <td class="text-end pe-4">
-                                                        <span class="badge bg-warning-subtle text-warning border border-warning px-3 py-2 rounded-pill">
-                                                            <i class="bi bi-coin me-1"></i> @user.Points
+                                                    <td class="text-center">
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2">
+                                                            @user.Points.ToString("N0")
                                                         </span>
                                                     </td>
                                                 </tr>
                                             }
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="2" class="text-center py-4 text-muted border-0">Chưa có dữ liệu thành viên.</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
-                        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                            <i class="bi bi-clock-history text-danger fs-5 me-2"></i>
-                            <h6 class="m-0 fw-bold text-dark">Cần duyệt gấp (5 mới nhất)</h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light text-muted">
-                                        <tr>
-                                            <th class="ps-4">Tài liệu</th>
-                                            <th class="text-end pe-4">Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (ViewBag.RecentPendingDocs != null && ViewBag.RecentPendingDocs.Count > 0)
-                                        {
-                                            foreach (var doc in ViewBag.RecentPendingDocs)
-                                            {
+                    <div class="col-xl-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 px-4 border-0 d-flex align-items-center justify-content-between mt-2">
+                                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Duyệt tài liệu mới</h6>
+                                <span class="badge bg-danger rounded-pill">@Model.PendingDocuments việc cần làm</span>
+                            </div>
+                            <div class="card-body px-0 pt-0">
+                                <div class="table-responsive">
+                                    @if (Model.RecentPendingDocs.Any())
+                                    {
+                                        <table class="table table-hover align-middle custom-table">
+                                            <thead class="bg-light">
                                                 <tr>
-                                                    <td class="ps-4">
-                                                        <div class="fw-bold text-dark text-truncate" style="max-width: 200px;" title="@doc.Title">@doc.Title</div>
-                                                        <small class="text-muted"><i class="bi bi-person me-1"></i> @doc.User?.FullName</small>
-                                                    </td>
-                                                    <td class="text-end pe-4">
-                                                        <a asp-area="Admin" asp-controller="Document" asp-action="Review" asp-route-id="@doc.Id" 
-                                                           class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm fw-bold">
-                                                            <i class="bi bi-search me-1"></i> Xem
-                                                        </a>                                       
-                                                    </td>
+                                                    <th class="ps-4 border-0">Tên tài liệu</th>
+                                                    <th class="text-end pe-4 border-0">Hành động</th>
                                                 </tr>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="2" class="text-center py-5 text-muted border-0">
-                                                    <i class="bi bi-check-circle text-success fs-2 d-block mb-2"></i>
-                                                    Không có tài liệu nào chờ duyệt. Tuyệt vời!
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var doc in Model.RecentPendingDocs)
+                                                {
+                                                    <tr>
+                                                        <td class="ps-4">
+                                                            <div class="fw-bold text-dark text-truncate" style="max-width: 280px;">@doc.Title</div>
+                                                            <div class="text-muted small"><i class="bi bi-person"></i> @doc.AuthorName</div>
+                                                        </td>
+                                                        <td class="text-end pe-4">
+                                                            <a asp-area="Admin" asp-controller="Document" asp-action="Review" asp-route-id="@doc.Id" 
+                                                               class="btn btn-sm btn-primary rounded-pill px-4 shadow-sm">
+                                                                Duyệt
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-5">
+                                            <div class="mb-3"><i class="bi bi-emoji-smile fs-1 text-success"></i></div>
+                                            <p class="text-muted">Không còn tài liệu nào cần phê duyệt!</p>
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -177,3 +187,67 @@
         </div>
     </div>
 </div>
+
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --success-color: #1cc88a;
+    }
+
+    .ls-1 { letter-spacing: 0.5px; }
+    .fw-black { font-weight: 900; }
+
+    /* Fix Grid Balance */
+    .admin-dashboard-wrapper .col-xl-2 { width: 16.66667%; }
+    .admin-dashboard-wrapper .col-xl-10 { width: 83.33333%; }
+
+    /* Card Styling */
+    .stat-card {
+        transition: transform 0.2s ease, shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .stat-icon {
+        position: absolute;
+        right: 20px;
+        top: 25px;
+        font-size: 3rem;
+    }
+
+    /* Table Styling */
+    .custom-table thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #858796;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    .custom-table tbody td {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    /* Avatar Circle */
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 992px) {
+        .admin-dashboard-wrapper .col-xl-2, 
+        .admin-dashboard-wrapper .col-xl-10 {
+            width: 100%;
+        }
+    }
+</style>

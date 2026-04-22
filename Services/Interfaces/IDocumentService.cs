@@ -25,5 +25,7 @@ namespace StudyShare.Services.Interfaces
         Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync();
         Task<DocumentResponse?> GetDocumentDetailsAsync(int id);
         Task<bool>DeleteByAdminAsync(int id);
+        Task<IEnumerable<DocumentResponse>> GetPendingDocumentsAsync();
+
     }
 }

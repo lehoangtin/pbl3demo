@@ -79,9 +79,6 @@
                                                         <i class="bi @(user.IsBanned ? "bi-unlock-fill" : "bi-lock-fill")"></i>
                                                     </button>
                                                 </form>
-                                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3 shadow-sm me-1" title="Sửa">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </a>
                                                 <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm fw-bold" title="Chi tiết">
                                                     <i class="bi bi-eye"></i>
                                                 </a>

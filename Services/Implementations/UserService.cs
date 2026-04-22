@@ -5,6 +5,8 @@ using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
 using StudyShare.Repositories.Interfaces; // Add Repository
+using StudyShare.ViewModels;
+using StudyShare.Repositories.Implementations; // Add Repository
 
 namespace StudyShare.Services.Implementations
 {

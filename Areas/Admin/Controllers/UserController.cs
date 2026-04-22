@@ -26,16 +26,19 @@ namespace StudyShare.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var usersDto = await _userService.GetAllUsersAsync();
-            var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(usersDto);
+            var users = await _userService.GetAllUsersAsync();
+            // Map danh sách Entity sang danh sách ViewModel
+            var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
             return View(viewModels);
         }
 
         public async Task<IActionResult> Details(string id)
         {
-            var userDto = await _userService.GetUserProfileAsync(id);
-            if (userDto == null) return NotFound();
-            return View(_mapper.Map<UserViewModel>(userDto));
+          var user = await _userService.GetUserProfileAsync(id);
+            if (user == null) return NotFound();
+
+            var viewModel = _mapper.Map<UserViewModel>(user);
+            return View(viewModel);;
         }
 
         [HttpPost]

@@ -34,41 +34,48 @@ namespace StudyShare.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CategoryCreateRequest request)
+        public async Task<IActionResult> Create(CategoryCreateViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
+                var request = _mapper.Map<CategoryCreateRequest>(viewModel);
                 await _categoryService.CreateAsync(request);
-                TempData["Success"] = "Thêm danh mục mới thành công!"; // Thêm dòng này
+                TempData["Success"] = "Thêm danh mục mới thành công!"; 
                 return RedirectToAction(nameof(Index));
-            }
-            return View(request);
+           }
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _categoryService.GetForUpdateAsync(id);
-            if (category == null) return NotFound();
-            return View(category);
+            var categoryDto = await _categoryService.GetForUpdateAsync(id);
+            if (categoryDto == null) return NotFound();
+            
+            // Map từ DTO ra ViewModel để hiển thị lên Form
+            var viewModel = _mapper.Map<CategoryEditViewModel>(categoryDto);
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CategoryUpdateRequest request)
+        public async Task<IActionResult> Edit(CategoryEditViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
+                var request = _mapper.Map<CategoryUpdateRequest>(viewModel);
                 await _categoryService.UpdateAsync(request);
+                TempData["Success"] = "Cập nhật danh mục thành công!";
                 return RedirectToAction(nameof(Index));
             }
-            return View(request);
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _categoryService.GetByIdAsync(id);
             if (category == null) return NotFound();
-            return View(category);
+            var viewModel = _mapper.Map<CategoryViewModel>(category);
+            return View(viewModel);
         }
 
         [HttpPost, ActionName("Delete")]

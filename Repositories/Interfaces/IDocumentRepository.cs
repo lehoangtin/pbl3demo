@@ -18,5 +18,7 @@ namespace StudyShare.Repositories.Interfaces
         Task<bool> DeleteByUserAsync(Document document);
         Task<IEnumerable<Document>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId);
         Task<Document?> GetDocumentDetailsAsync(int id);
+        Task<IEnumerable<Document>> GetPendingDocumentsAsync();
+
     }
 }

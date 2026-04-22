@@ -127,5 +127,15 @@ namespace StudyShare.Repositories.Implementations
                 .Include(d => d.Category)
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
+        public async Task<IEnumerable<Document>> GetPendingDocumentsAsync()
+        {
+            return await _context.Documents
+                .Include(d => d.User)      // Để lấy tên tác giả
+                .Include(d => d.Category)  // Để lấy tên danh mục
+                .Where(d => d.IsApproved == false)
+                .OrderByDescending(d => d.UploadDate)
+                .ToListAsync();
+        }
+
     }
 }

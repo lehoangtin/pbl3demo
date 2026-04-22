@@ -9,6 +9,7 @@ using System.Security.Claims;
 using AutoMapper;
 using System.Collections.Generic;
 using System.Linq;
+using StudyShare.DTOs.Requests; // Thêm dòng này
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -47,22 +48,18 @@ namespace StudyShare.Areas.User.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            // Lấy thông tin qua Service
-            var userDto = await _userService.GetUserProfileAsync(userId);
-            if (userDto == null) return NotFound();
+           var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account", new { area = "" });
 
-            ViewBag.TotalDocs = userDto.Documents?.Count ?? 0;
-            ViewBag.TotalQuestions = userDto.Questions?.Count ?? 0;
-            ViewBag.TotalSaved = userDto.SavedDocuments?.Count ?? 0;
+            // SỬA: Dùng GetUserProfileAsync thay vì GetByIdAsync
+            var user = await _userService.GetUserProfileAsync(userId);
+            if (user == null) return NotFound();
 
-            // Map qua ViewModel để đồng bộ với View
-            var viewModel = _mapper.Map<UserViewModel>(userDto);
+            // Map Entity sang ViewModel
+            var viewModel = _mapper.Map<UserViewModel>(user);
             
             if (string.IsNullOrEmpty(viewModel.FullName)) {
-                viewModel.FullName = userDto.UserName;
+                viewModel.FullName = user.UserName;
             }
 
             return View(viewModel);
@@ -71,22 +68,43 @@ namespace StudyShare.Areas.User.Controllers
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            var user = await _userManager.FindByIdAsync(userId); 
-            return View(user); // File Edit.cshtml của bạn đang dùng AppUser nên ta truyền thẳng
+           var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account", new { area = "" });
+
+            // SỬA: Dùng GetUserProfileAsync thay vì GetByIdAsync
+            var user = await _userService.GetUserProfileAsync(userId);
+            if (user == null) return NotFound();
+
+            // Map Entity sang EditViewModel để đưa lên Form
+            var viewModel = _mapper.Map<UserEditViewModel>(user);
+            return View(viewModel);
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Edit(AppUser model, IFormFile? avatarFile)
+        public async Task<IActionResult> Edit(UserEditViewModel viewModel)
         {
+            if (!ModelState.IsValid) return View(viewModel);
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            // Map sang AppUser vì hàm UpdateUserProfileAsync của bạn nhận AppUser
+            var appUserUpdate = new AppUser 
+            { 
+                FullName = viewModel.FullName            };
+
+            // Gọi đúng hàm xử lý cập nhật và upload file (AvatarFile) trong Service của bạn
+            var success = await _userService.UpdateUserProfileAsync(userId, appUserUpdate, viewModel.AvatarFile);
             
-            await _userService.UpdateUserProfileAsync(userId, model, avatarFile);
-            return RedirectToAction("Profile", new { id = userId });
+            if (success)
+            {
+                TempData["Success"] = "Cập nhật thông tin thành công!";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật.");
+            return View(viewModel);
         }
 
         [Authorize]

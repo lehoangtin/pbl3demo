@@ -69,10 +69,12 @@ namespace StudyShare.Areas.User.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(QuestionCreateRequest request)
+        public async Task<IActionResult> Create(QuestionCreateViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(request);
+            if (!ModelState.IsValid) return View(viewModel);
             
+            // Map ViewModel -> DTO
+            var request = _mapper.Map<QuestionCreateRequest>(viewModel);
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
             // KIỂM DUYỆT AI
@@ -81,17 +83,17 @@ namespace StudyShare.Areas.User.Controllers
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
                 TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
-                return View(request);
+                return View(viewModel);
             }
 
             // TẠO CÂU HỎI
             await _questionService.CreateAsync(request, currentUserId);
 
-            // 🔥 CỘNG ĐIỂM (Logic từ bản cũ)
+            // 🔥 CỘNG ĐIỂM
             var user = await _userManager.FindByIdAsync(currentUserId);
             if (user != null) 
             {
-                user.Points += 5; // Lưu ý: Nếu Model AppUser của bạn là Points (có s) thì sửa lại nhé
+                user.Points += 5; 
                 await _userManager.UpdateAsync(user);
             }
 
@@ -109,16 +111,17 @@ namespace StudyShare.Areas.User.Controllers
             if (question.UserId != currentUserId && !User.IsInRole("Admin"))
                 return Unauthorized("Bạn không có quyền sửa câu hỏi này.");
 
-            var request = new QuestionUpdateRequest { Id = question.Id, Content = question.Content };
-            return View(request);
+            var viewModel = new QuestionEditViewModel { Id = question.Id, Content = question.Content };
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(QuestionUpdateRequest request)
+        public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(request);
+            if (!ModelState.IsValid) return View(viewModel);
 
+            var request = _mapper.Map<QuestionUpdateRequest>(viewModel);
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
@@ -126,7 +129,7 @@ namespace StudyShare.Areas.User.Controllers
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
                 TempData["Error"] = $"Vi phạm khi sửa: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
-                return View(request);
+                return View(viewModel);
             }
 
             bool isAdmin = User.IsInRole("Admin");
@@ -150,10 +153,12 @@ namespace StudyShare.Areas.User.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostAnswer(AnswerCreateRequest request)
+        public async Task<IActionResult> PostAnswer(AnswerCreateViewModel viewModel)
         {
-            if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+            if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = viewModel.QuestionId });
 
+            // Map ViewModel -> DTO
+            var request = _mapper.Map<AnswerCreateRequest>(viewModel);
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
             // KIỂM DUYỆT AI CHO CÂU TRẢ LỜI
@@ -168,11 +173,11 @@ namespace StudyShare.Areas.User.Controllers
             var success = await _answerService.CreateAsync(request, currentUserId);
             if (success) 
             {
-                // 🔥 CỘNG ĐIỂM (Logic từ bản cũ)
+                // 🔥 CỘNG ĐIỂM
                 var user = await _userManager.FindByIdAsync(currentUserId);
                 if (user != null) 
                 {
-                    user.Points+= 3;
+                    user.Points += 3;
                     await _userManager.UpdateAsync(user);
                 }
                 TempData["Success"] = "Đã đăng câu trả lời! Bạn được cộng 3 điểm."; 
@@ -181,7 +186,6 @@ namespace StudyShare.Areas.User.Controllers
             return RedirectToAction(nameof(Details), new { id = request.QuestionId });
         }
 
-        // 🔥 PHỤC HỒI CHỨC NĂNG REPORT TỪ BẢN CŨ
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)

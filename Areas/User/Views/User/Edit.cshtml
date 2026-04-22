@@ -1,4 +1,4 @@
-@model StudyShare.Models.AppUser
+@model StudyShare.ViewModels.UserEditViewModel
 @{ ViewData["Title"] = "Chỉnh sửa hồ sơ"; }
 
 <div class="container mt-4 mb-5">
@@ -29,12 +29,6 @@
                             <input asp-for="Email" class="form-control form-control-lg rounded-3 bg-secondary bg-opacity-10 text-muted border-0 shadow-sm" readonly />
                             <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Email là định danh đăng nhập nên không thể thay đổi.</small>
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-dark">Số điện thoại</label>
-                            <input asp-for="PhoneNumber" class="form-control form-control-lg rounded-3 bg-light border-0 shadow-sm" placeholder="Nhập số điện thoại..." />
-                        </div>
-
                         <div class="mb-4 p-4 bg-light rounded-4 border text-center">
                             <label class="form-label fw-bold text-dark d-block mb-3"><i class="bi bi-image me-2 text-primary"></i>Ảnh đại diện mới</label>
                             <input type="file" name="avatarFile" class="form-control form-control-lg rounded-pill shadow-sm" accept="image/*" />
