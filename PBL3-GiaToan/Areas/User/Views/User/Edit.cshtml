@@ -1,0 +1,83 @@
+@model StudyShare.Models.AppUser
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 border p-4 shadow-sm rounded-4 bg-white">
+            <h3 class="mb-4">Chỉnh sửa thông tin</h3>
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Họ và tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" readonly />
+                    <small class="text-muted">Email không thể thay đổi để đảm bảo định danh.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tải ảnh đại diện mới</label>
+                    <input type="file" name="avatarFile" id="avatarFile" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Hoặc chọn từ thư viện có sẵn:</label>
+                    
+                    <input type="hidden" name="SelectedAvatar" id="SelectedAvatar" />
+
+                    <div class="avatar-picker-container shadow-sm border rounded p-2 bg-light">
+                        @for (int i = 1; i <= 30; i++)
+                        {
+                            <img src="~/avatar/@(i).png" 
+                                 class="avatar-choice" 
+                                 onclick="selectAvatar('@(i).png', this)" 
+                                 alt="Avatar @i" />
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">Lưu thay đổi</button>
+                    <a asp-action="Index" class="btn btn-link">Hủy bỏ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-picker-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .avatar-choice {
+        width: 100%;
+        cursor: pointer;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        transition: 0.2s;
+    }
+    .avatar-choice:hover {
+        transform: scale(1.1);
+    }
+    .avatar-choice.active {
+        border-color: #198754; /* Màu xanh của nút Lưu */
+        box-shadow: 0 0 5px rgba(25, 135, 84, 0.5);
+    }
+</style>
+
+<script>
+    function selectAvatar(fileName, element) {
+        // Gán giá trị tên file vào input ẩn
+        document.getElementById('SelectedAvatar').value = fileName;
+
+        // Xử lý hiển thị viền xanh cho ảnh được chọn
+        document.querySelectorAll('.avatar-choice').forEach(img => img.classList.remove('active'));
+        element.classList.add('active');
+
+        // Nếu đã chọn ảnh thư viện thì xóa file đang chờ ở input file (nếu có)
+        document.getElementById('avatarFile').value = "";
+    }
+</script>

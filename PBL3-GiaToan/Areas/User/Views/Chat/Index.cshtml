@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Trợ lý AI";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow border-0" style="border-radius: 15px;">
+            <div class="card-header bg-primary text-white text-center py-3" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                <h4 class="mb-0"><i class="bi bi-robot"></i> Trợ lý Ảo</h4>
+                <small>Luôn sẵn sàng giải đáp thắc mắc</small>
+            </div>
+            
+            <div class="card-body bg-light" id="chatBox" style="height: 400px; overflow-y: auto;">
+                <div class="mb-3">
+                    <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
+                    <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
+                        Chào bạn! Mình là trợ lý ảo. Bạn muốn hỏi gì nào?
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white border-0 py-3" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                <div class="input-group">
+                    <input type="text" id="userInput" class="form-control" placeholder="Nhập câu hỏi của bạn..." onkeypress="handleEnter(event)">
+                    <button class="btn btn-primary" onclick="sendMessage()"><i class="bi bi-send-fill"></i> Gửi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm xử lý khi bấm nút Gửi
+    function sendMessage() {
+        var input = document.getElementById("userInput");
+        var message = input.value.trim();
+        if (message === "") return;
+
+        var chatBox = document.getElementById("chatBox");
+
+        // 1. In tin nhắn của người dùng lên màn hình
+        chatBox.innerHTML += `
+            <div class="mb-3 text-end">
+                <span class="badge bg-primary p-2 fs-6 rounded-pill">Bạn <i class="bi bi-person"></i></span>
+                <div class="bg-primary text-white p-3 mt-1 shadow-sm d-inline-block text-start" style="border-radius: 15px 0 15px 15px;">
+                    ${message}
+                </div>
+            </div>`;
+        
+        input.value = ""; // Xóa trắng ô nhập
+        chatBox.scrollTop = chatBox.scrollHeight; // Cuộn xuống dưới cùng
+
+        // 2. Gửi tin nhắn ngầm (AJAX) xuống C# Controller
+        fetch('@Url.Action("SendMessage", "Chat", new { area = "User" })', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 3. Nhận câu trả lời và in ra màn hình
+            chatBox.innerHTML += `
+            <div class="mb-3">
+                <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
+                <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
+                    ${data.reply}
+                </div>
+            </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    }
+
+    // Hàm cho phép nhấn phím Enter để gửi
+    function handleEnter(e) {
+        if (e.keyCode === 13) {
+            sendMessage();
+        }
+    }
+</script>
