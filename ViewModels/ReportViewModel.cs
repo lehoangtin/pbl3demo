@@ -15,7 +15,7 @@ namespace StudyShare.ViewModels
         public string TargetType { get; set; } = string.Empty; 
         
         // Thông tin chi tiết của đối tượng bị báo cáo (để hiển thị tiêu đề hoặc tên)
-        public string TargetName { get; set; } = string.Empty; 
+        // public string TargetName { get; set; } = string.Empty; 
         
         // Các ID liên kết (để Admin có thể bấm vào xem chi tiết)
         public int? DocumentId { get; set; }
@@ -26,5 +26,6 @@ namespace StudyShare.ViewModels
         // Trạng thái xử lý
         public bool IsResolved { get; set; }
         public string? ActionTaken { get; set; }
+        public string TargetUserName { get; set; } = string.Empty;
     }
 }

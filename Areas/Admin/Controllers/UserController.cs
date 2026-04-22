@@ -63,6 +63,7 @@ namespace StudyShare.Areas.Admin.Controllers
         }
         // Trong Areas/Admin/Controllers/UserController.cs
 // Trang này sẽ liệt kê MỌI báo cáo mới nhất từ MỌI người dùng
+// 1. Trang danh sách tập trung mọi báo cáo
 public async Task<IActionResult> PendingReports()
 {
     var reportsDto = await _reportService.GetAllPendingReportsAsync();
@@ -70,17 +71,29 @@ public async Task<IActionResult> PendingReports()
     return View(viewModels);
 }
 
-// Thêm Action để Admin bấm nút xử phạt trực tiếp
+// 2. Action Xử phạt: Chỉ chạy khi Admin xác nhận
 [HttpPost]
+[ValidateAntiForgeryToken]
 public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
 {
-    // Gọi UserService để trừ điểm và tăng WarningCount
-    await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
+    // Thực hiện trừ điểm và tăng WarningCount qua UserService
+    var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
     
-    // Đánh dấu báo cáo này đã được giải quyết
-    await _reportService.ResolveReportAsync(reportId);
+    if (success)
+    {
+        // Cập nhật trạng thái báo cáo là đã giải quyết
+        await _reportService.ResolveWithActionAsync(reportId, $"Admin đã phạt trừ {pointsDeducted} điểm.");
+        TempData["Success"] = "Đã xử phạt và trừ điểm thành công.";
+    }
     
-    TempData["Success"] = "Đã thực hiện xử phạt.";
+    return RedirectToAction(nameof(PendingReports));
+}
+
+// 3. Action Bỏ qua: Nếu báo cáo sai, không phạt
+[HttpPost]
+public async Task<IActionResult> DismissReport(int reportId)
+{
+    await _reportService.ResolveWithActionAsync(reportId, "Admin đã bỏ qua báo cáo này.");
     return RedirectToAction(nameof(PendingReports));
 }
     }

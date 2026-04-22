@@ -37,7 +37,7 @@ namespace StudyShare.Models
 
         [ForeignKey("AnswerId")]
         public virtual Answer Answer { get; set; }   
-        public bool IsResolved { get; set; }= false; // Đánh dấu đã xử lý chưa
+        public bool IsResolved { get; set; } = false; // Đánh dấu đã xử lý chưa
         public string? ActionTaken { get; set; } // Ghi chú kết quả: Đã khóa, Đã cảnh cáo, Bỏ qua...  
     }
 }

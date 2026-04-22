@@ -1,6 +1,6 @@
 @model IEnumerable<StudyShare.ViewModels.ReportViewModel>
 @{
-    ViewData["Title"] = "Danh sách báo cáo chờ xử lý";
+    ViewData["Title"] = "Trung tâm xử lý vi phạm";
 }
 
 <div class="container-fluid mt-4">
@@ -11,36 +11,39 @@
         <div class="col-md-10">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold text-primary">Tất cả báo cáo vi phạm mới</h5>
+                    <h5 class="mb-0 fw-bold text-primary">Danh sách báo cáo mới chờ xử lý</h5>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>Thời gian</th>
-                                <th>Người gửi</th>
+                                <th>Người báo cáo</th>
                                 <th>Người bị báo cáo</th>
                                 <th>Lý do</th>
-                                <th>Thao tác</th>
+                                <th class="text-end">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model) {
-                                <tr>
-                                    <td class="small">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td>@item.ReporterName</td>
-                                    <td><span class="text-danger fw-bold">@item.TargetName</span></td>
-                                    <td>@item.Reason</td>
-                                    <td class="text-end">
-                                        <form asp-action="Penalize" method="post" class="d-inline">
-                                            <input type="hidden" name="userId" value="@item.TargetUserId" />
-                                            <input type="hidden" name="reportId" value="@item.Id" />
-                                            <input type="hidden" name="pointsDeducted" value="10" />
-                                            <button type="submit" class="btn btn-sm btn-danger">Phạt nhanh</button>
-                                        </form>
-                                        <a asp-action="ViewReports" asp-route-userId="@item.TargetUserId" class="btn btn-sm btn-primary">Xem chi tiết</a>
-                                    </td>
-                                </tr>
+                            @if (Model != null && Model.Any()) {
+                                @foreach (var item in Model) {
+                                    <tr>
+                                        <td>@item.CreatedAt.ToString("dd/MM HH:mm")</td>
+                                        <td>@item.ReporterName</td>
+                                        <td><strong class="text-danger">@item.TargetUserName</strong></td>
+                                        <td>@item.Reason</td>
+                                        <td class="text-end">
+                                            <form asp-action="Penalize" method="post" class="d-inline">
+                                                <input type="hidden" name="userId" value="@item.TargetUserId" />
+                                                <input type="hidden" name="reportId" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-danger">Phạt</button>
+                                            </form>
+                                            <a asp-action="ViewReports" asp-route-userId="@item.TargetUserId" class="btn btn-sm btn-link">Chi tiết</a>
+                                        </td>
+                                    </tr>
+                                }
+                            } else {
+                                <tr><td colspan="5" class="text-center py-4">Hệ thống hiện không có báo cáo nào chưa xử lý.</td></tr>
                             }
                         </tbody>
                     </table>

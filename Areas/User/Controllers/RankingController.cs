@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudyShare.Areas.User.Controllers
 {
     [Area("User")]
+    [Authorize]
     public class RankingController : Controller
     {
         private readonly IUserService _userService;

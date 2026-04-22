@@ -39,7 +39,7 @@ namespace StudyShare.Repositories.Implementations
         public async Task<IEnumerable<Report>> GetAllPendingReportsAsync()
         {
             return await _context.Reports
-                .Where(r => !r.IsResolved)
+                // .Where(r => !r.IsResolved)
                 .Include(r => r.Reporter)
                 .Include(r => r.Target)
                 .OrderByDescending(r => r.CreatedAt)

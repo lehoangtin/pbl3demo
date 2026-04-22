@@ -64,11 +64,15 @@ namespace StudyShare.Mappings
             CreateMap<CategoryResponse, CategoryViewModel>();
 
             //REPORT 
+            CreateMap<ReportResponse, ReportViewModel>();
             CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "Ẩn danh"));
             CreateMap<UserResponse, UserViewModel>();   
-            CreateMap<ReportResponse, ReportViewModel>();
+            CreateMap<Report, ReportViewModel>()
+                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter.UserName))
+                // Cấu hình ánh xạ duy nhất cho tên người bị báo cáo
+                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target.UserName));
         }
     }
 }
