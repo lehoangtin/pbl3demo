@@ -2,6 +2,16 @@
     ViewData["Title"] = "Trợ lý AI";
 }
 
+<div id="violation-alert" class="alert alert-danger d-none shadow-sm mb-3" style="border-radius: 12px; border-left: 5px solid #dc3545;">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-octagon-fill fs-3 me-3 text-danger"></i>
+        <div>
+            <h6 class="alert-heading fw-bold mb-1">Vi phạm tiêu chuẩn!</h6>
+            <p class="mb-0" id="violation-message">Tin nhắn chứa từ ngữ khiếm nhã.</p>
+        </div>
+    </div>
+</div>
+
 <div class="row justify-content-center mt-4">
     <div class="col-md-6">
         <div class="card shadow border-0" style="border-radius: 15px;">
@@ -52,21 +62,50 @@
 
         // 2. Gửi tin nhắn ngầm (AJAX) xuống C# Controller
         fetch('@Url.Action("SendMessage", "Chat", new { area = "User" })', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: message })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: message }) // Gửi object chứa thuộc tính "text"
         })
         .then(response => response.json())
         .then(data => {
-            // 3. Nhận câu trả lời và in ra màn hình
-            chatBox.innerHTML += `
-            <div class="mb-3">
-                <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
-                <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
-                    ${data.reply}
-                </div>
-            </div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            // KIỂM TRA NẾU CÓ VI PHẠM TỪ CẤM
+            if (data.isViolation) {
+                // a. Hiển thị thanh cảnh báo đỏ ở trên cùng
+                var alertBox = document.getElementById("violation-alert");
+                var alertMsg = document.getElementById("violation-message");
+                
+                alertMsg.innerText = data.message;
+                alertBox.classList.remove("d-none");
+
+                // Tự động ẩn cảnh báo sau 5 giây
+                setTimeout(() => { 
+                    alertBox.classList.add("d-none"); 
+                }, 5000);
+
+                // b. In thông báo hệ thống màu đỏ ngay trong khung chat
+                chatBox.innerHTML += `
+                <div class="mb-3">
+                    <span class="badge bg-danger p-2 fs-6 rounded-pill"><i class="bi bi-exclamation-triangle-fill"></i> Hệ Thống</span>
+                    <div class="bg-danger text-white p-3 mt-1 shadow-sm d-inline-block" style="border-radius: 0 15px 15px 15px; border: 1px solid #f5c2c7;">
+                        <strong>CẢNH BÁO:</strong> ${data.message}
+                    </div>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } 
+            else {
+                // NẾU BÌNH THƯỜNG: Nhận câu trả lời từ AI và in ra màn hình
+                chatBox.innerHTML += `
+                <div class="mb-3">
+                    <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
+                    <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
+                        ${data.reply}
+                    </div>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi gọi API:', error);
         });
     }
 

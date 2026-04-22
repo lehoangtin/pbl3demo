@@ -10796,3 +10796,102 @@ header.masthead .post-heading .meta a {
     font-size: 2.25rem;
   }
 }
+/* =========================================
+   CUSTOM STYLES FOR STUDYSHARE (GIAO DIỆN HIỆN ĐẠI)
+   ========================================= */
+
+/* 1. Nền trang web */
+body {
+    background-color: #f4f7f6 !important;
+}
+
+/* 2. Thanh điều hướng (Navbar) - Thêm Gradient và Shadow */
+.navbar-custom, #mainNav {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    border-bottom: none !important;
+}
+.navbar-custom .navbar-brand, #mainNav .navbar-brand {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+}
+.navbar-custom .nav-link, #mainNav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 600 !important;
+    transition: color 0.3s ease;
+}
+.navbar-custom .nav-link:hover, #mainNav .nav-link:hover {
+    color: #ffc107 !important; /* Màu vàng khi trỏ chuột */
+}
+
+/* 3. Card & Box (Bo góc tròn, đổ bóng mềm mại) */
+.card, .custom-box {
+    border: none !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* 4. Input & Form (Viền tinh tế, bo góc) */
+.form-control, .form-select {
+    border-radius: 10px !important;
+    padding: 0.75rem 1.25rem !important;
+    border: 1px solid #dee2e6 !important;
+    background-color: #fcfcfc !important;
+}
+.form-control:focus, .form-select:focus {
+    background-color: #ffffff !important;
+    border-color: #2a5298 !important;
+    box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1) !important;
+}
+
+/* 5. Nút bấm (Button) */
+.btn {
+    border-radius: 10px !important;
+    padding: 0.5rem 1.25rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+.btn-primary {
+    background-color: #2a5298 !important;
+    border-color: #2a5298 !important;
+    color: #fff !important;
+}
+.btn-primary:hover {
+    background-color: #1e3c72 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(42, 82, 152, 0.3) !important;
+}
+
+/* 6. Bảng dữ liệu (Table) cho Admin/Trang quản lý */
+.table-container {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+.table thead th {
+    background-color: #f8f9fa !important;
+    border-bottom: 2px solid #edf2f7 !important;
+    color: #495057 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+/* 7. Thông báo (Alerts) */
+.alert {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}

@@ -1,42 +1,45 @@
 @using Microsoft.AspNetCore.Identity
-@inject SignInManager<StudyShare.Models.AppUser> SignInManager
+@using StudyShare.Models
+@inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
-<ul class="navbar-nav ms-auto"> @* ms-auto để đẩy menu sang bên phải *@
 
-    @if (SignInManager.IsSignedIn(User))
-    {
-        var user = await UserManager.GetUserAsync(User);
-        <li class="nav-item d-flex align-items-center me-3">
-            @* Hiển thị điểm với icon xu/ngôi sao *@
-            <span class="badge rounded-pill bg-warning text-dark me-2">
-                <i class="bi bi-coin"></i> @(user?.Points ?? 0)đ
-            </span>
-            <span class="navbar-text text-light">
-                👋 Chào, <strong>@User.Identity.Name</strong>
-            </span>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" asp-area="User" asp-controller="Profile" asp-action="Index">
-                <i class="bi bi-person"></i> Profile
-            </a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link border-0" style="cursor:pointer">
-                    Logout
-                </button>
-            </form>
-        </li>
-    }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link btn btn-primary text-white ms-lg-2" asp-controller="Account" asp-action="Register">Register</a>
-        </li>
-    }
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white d-flex align-items-center fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="~/avatar/1.png" alt="Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 35px; height: 35px; object-fit: cover;">
+            <span>@User.Identity?.Name</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-2" aria-labelledby="userDropdown" style="border-radius: 12px; min-width: 200px;">
+            <li>
+                <a class="dropdown-item py-2" asp-area="User" asp-controller="Profile" asp-action="Index">
+                    <i class="bi bi-person me-2 text-primary"></i>Hồ sơ của tôi
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item py-2" asp-area="User" asp-controller="User" asp-action="SavedDocuments">
+                    <i class="bi bi-bookmark-heart me-2 text-danger"></i>Tài liệu đã lưu
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item text-danger py-2 fw-bold">
+                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item d-flex align-items-center me-2">
+        <a class="btn btn-outline-light px-4 rounded-pill btn-sm" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+    </li>
+    <li class="nav-item d-flex align-items-center">
+        <a class="btn btn-warning px-4 rounded-pill btn-sm fw-bold" asp-area="" asp-controller="Account" asp-action="Register">Đăng ký</a>
+    </li>
+}
 </ul>
