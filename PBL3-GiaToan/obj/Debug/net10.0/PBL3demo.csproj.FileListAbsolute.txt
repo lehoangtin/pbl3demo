@@ -1286,4 +1286,4 @@ D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\PBL3demo.pdb
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\PBL3demo.genruntimeconfig.cache
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\ref\PBL3demo.dll
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\PBL3demo.sourcelink.json
-D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\dbmrx8ag0w-{0}-gcn4x0r9v3-gcn4x0r9v3.gz
+D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\dbmrx8ag0w-{0}-c0kql6jl2l-c0kql6jl2l.gz

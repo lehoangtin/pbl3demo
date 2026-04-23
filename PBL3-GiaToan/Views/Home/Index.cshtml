@@ -5,7 +5,19 @@
     int? currentCatId = ViewBag.CurrentCategory as int?;
 }
 
-<div class="container">
+<div id="rocket-intro" style="display: none;">
+    <div id="starfield"></div> <div id="white-flash"></div> <div class="intro-content" id="ui-content">
+        <h1 class="intro-title">Sẵn Sàng Khám Phá?</h1>
+        <p class="intro-desc">Bắt đầu hành trình chinh phục tri thức của bạn cùng StudyShare.</p>
+        <button class="btn-launch" onclick="launchRocket()">
+            <i class="bi bi-rocket-takeoff-fill me-2"></i> PHÓNG TÊN LỬA
+        </button>
+    </div>
+
+    <div id="rocket">👨‍🚀🚀</div> 
+</div>
+
+<div class="container mt-4" id="main-library-content">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary">Thư viện tài liệu học tập</h1>
     </div>
@@ -77,3 +89,138 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Ẩn thanh cuộn khi đang ở màn hình Intro */
+    body.no-scroll { overflow: hidden; }
+
+    #rocket-intro {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        z-index: 99999; /* Đảm bảo che mọi thứ, kể cả navbar */
+        color: white; background: #070b19;
+        transition: opacity 0.5s;
+    }
+
+    #starfield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
+    .intro-star {
+        position: absolute; background: white; border-radius: 50%;
+        animation: moveStars 20s linear infinite; 
+    }
+
+    .intro-content { z-index: 2; text-align: center; transition: opacity 0.5s; }
+    .intro-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .intro-desc { color:#94a3b8; margin-bottom: 30px; font-size: 1.2rem; }
+
+    .btn-launch {
+        padding: 15px 40px; font-size: 1.2rem; font-weight: bold; color: #fff;
+        background: linear-gradient(45deg, #f59e0b, #ef4444); border: none; border-radius: 50px;
+        cursor: pointer; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4);
+        transition: transform 0.3s;
+    }
+    .btn-launch:hover { transform: scale(1.05); }
+
+    #rocket {
+        font-size: 5rem; z-index: 3; margin-top: 40px;
+        filter: drop-shadow(0 10px 10px rgba(255, 100, 0, 0.5));
+    }
+
+    /* 🔥 ĐÃ FIX LỖI RAZOR: Thêm @@ vào trước keyframes */
+    
+    /* Hiệu ứng Rung lắc */
+    .anim-shake { animation: shake 0.5s infinite; }
+    @@keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        25% { transform: translate(-1px, -2px) rotate(-1deg); }
+        50% { transform: translate(-3px, 0px) rotate(1deg); }
+        75% { transform: translate(3px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -1px) rotate(-1deg); }
+    }
+
+    /* Hiệu ứng Phóng lên */
+    .anim-launch { animation: shootUp 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards; }
+    @@keyframes shootUp {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-1500px); }
+    }
+
+    /* Tốc độ ánh sáng (Warp Speed) */
+    .anim-warp-speed { animation: warpSpeed 0.4s linear infinite !important; height: 60px !important; border-radius: 0 !important; opacity: 0.8; background: #60a5fa !important;}
+    @@keyframes moveStars { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
+    @@keyframes warpSpeed { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
+
+    /* Chớp sáng trắng */
+    #white-flash {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: white; z-index: 10; opacity: 0; pointer-events: none;
+        transition: opacity 0.5s;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Kiểm tra xem người dùng đã xem Intro chưa
+        const hasSeenIntro = sessionStorage.getItem("hasSeenStudyShareIntro");
+
+        if (!hasSeenIntro) {
+            // Nếu CHƯA xem: Hiện Intro, khóa cuộn trang
+            document.getElementById("rocket-intro").style.display = "flex";
+            document.body.classList.add("no-scroll");
+            createStars(); // Tạo bầu trời sao
+        } else {
+            // Nếu ĐÃ xem: Gỡ Intro ra khỏi HTML để không tốn tài nguyên
+            const introNode = document.getElementById("rocket-intro");
+            if(introNode) introNode.remove();
+        }
+    });
+
+    function createStars() {
+        const starfield = document.getElementById('starfield');
+        for(let i = 0; i < 100; i++) {
+            let star = document.createElement('div');
+            star.className = 'intro-star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * -100 + 'vh';
+            star.style.animationDuration = (Math.random() * 10 + 5) + 's';
+            starfield.appendChild(star);
+        }
+    }
+
+    function launchRocket() {
+        const ui = document.getElementById('ui-content');
+        const rocket = document.getElementById('rocket');
+        const stars = document.querySelectorAll('.intro-star');
+        const flash = document.getElementById('white-flash');
+        const intro = document.getElementById('rocket-intro');
+
+        // 1. Ẩn chữ và nút
+        ui.style.opacity = '0';
+
+        // 2. Rung lắc tên lửa
+        rocket.classList.add('anim-shake');
+
+        // 3. Khởi hành sau 1s
+        setTimeout(() => {
+            rocket.classList.remove('anim-shake');
+            rocket.classList.add('anim-launch');
+            stars.forEach(s => s.classList.add('anim-warp-speed')); // Kéo sao xuống cực nhanh
+        }, 1000);
+
+        // 4. Màn hình chớp sáng sau 2.2s
+        setTimeout(() => {
+            flash.style.opacity = '1';
+        }, 2200);
+
+        // 5. Xóa Intro, hiện trang Thư viện sau 3s
+        setTimeout(() => {
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.remove(); // Xóa hẳn khỏi HTML
+                document.body.classList.remove("no-scroll"); // Mở lại thanh cuộn dọc
+                sessionStorage.setItem("hasSeenStudyShareIntro", "true"); // Lưu trạng thái
+            }, 500);
+        }, 3000);
+    }
+</script>
