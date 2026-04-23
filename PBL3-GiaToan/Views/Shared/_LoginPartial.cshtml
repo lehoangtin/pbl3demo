@@ -3,12 +3,25 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 
+@{
+    // Lấy thông tin user hiện tại từ Database
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // Giả sử cột lưu tên Avatar trong AppUser của bạn tên là "Avatar" 
+    // (Nếu bạn dùng tên khác như ProfilePicture hay AvatarUrl thì nhớ đổi lại nhé).
+    // Nếu user chưa có avatar, mặc định sẽ là "1.png"
+    var userAvatar = currentUser?.Avatar ?? "1.png"; 
+    
+    // Nếu trong DB bạn chỉ lưu số (ví dụ: 1, 2, 3...) thì dùng dòng dưới đây thay thế dòng trên:
+    // var userAvatar = (currentUser?.Avatar ?? "1") + ".png";
+}
+
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white d-flex align-items-center fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="~/avatar/1.png" alt="Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 35px; height: 35px; object-fit: cover;">
+            <img src="~/avatar/@userAvatar" alt="Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 35px; height: 35px; object-fit: cover;">
             <span>@User.Identity?.Name</span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-2" aria-labelledby="userDropdown" style="border-radius: 12px; min-width: 200px;">

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity; 
 using System.Collections.Generic;
 using System.Linq;
-using StudyShare.Models; // <-- ĐÃ THÊM DÒNG NÀY ĐỂ FIX LỖI
+using StudyShare.Models; 
 
 namespace ai.Controllers
 {
