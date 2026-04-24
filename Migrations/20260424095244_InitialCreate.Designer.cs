@@ -9,11 +9,11 @@ using StudyShare.Models;
 
 #nullable disable
 
-namespace PBL3demo.Migrations
+namespace StudyShare.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415151745_MakeActionTakenNull")]
-    partial class MakeActionTakenNull
+    [Migration("20260424095244_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

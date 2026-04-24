@@ -51,10 +51,22 @@ namespace StudyShare.Repositories.Implementations
         public async Task<bool> UpdateUserAsync(AppUser user)
         {
             var result = await _userManager.UpdateAsync(user);
-            if(result.Succeeded) return true;
+    
+            if (result.Succeeded) 
+            {
+                return true;
+            }
             
-            _context.Update(user);
-            return await _context.SaveChangesAsync() > 0;
+            // Nếu UserManager thất bại vì lý do nào đó (ví dụ: mất tracking), fallback về EF Core thuần
+            try 
+            {
+                _context.Users.Update(user);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch
+            {
+                return false; // Trả về false nếu cả 2 cách đều thất bại
+            }
         }
 
         public async Task<DateTimeOffset?> GetLockoutEndDateAsync(AppUser user)

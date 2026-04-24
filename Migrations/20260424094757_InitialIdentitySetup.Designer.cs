@@ -9,11 +9,11 @@ using StudyShare.Models;
 
 #nullable disable
 
-namespace PBL3demo.Migrations
+namespace StudyShare.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415150813_AddDocumentIdToReport")]
-    partial class AddDocumentIdToReport
+    [Migration("20260424094757_InitialIdentitySetup")]
+    partial class InitialIdentitySetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -392,7 +392,6 @@ namespace PBL3demo.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionTaken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("AnswerId")

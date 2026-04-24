@@ -428,7 +428,6 @@
 /Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.pdb
 /Users/mac/PBL3demo/obj/Debug/net10.0/PBL3demo.genruntimeconfig.cache
 /Users/mac/PBL3demo/obj/Debug/net10.0/ref/PBL3demo.dll
-/Users/mac/Bản sao PBL3demo laỷe/bin/Debug/net10.0/appsettings.Development.json
 /Users/mac/Bản sao PBL3demo laỷe/bin/Debug/net10.0/appsettings.json
 /Users/mac/Bản sao PBL3demo laỷe/bin/Debug/net10.0/PBL3demo.staticwebassets.runtime.json
 /Users/mac/Bản sao PBL3demo laỷe/bin/Debug/net10.0/PBL3demo.staticwebassets.endpoints.json
@@ -859,3 +858,4 @@
 /Users/mac/Bản sao PBL3demo laỷe/obj/Debug/net10.0/PBL3demo.pdb
 /Users/mac/Bản sao PBL3demo laỷe/obj/Debug/net10.0/PBL3demo.genruntimeconfig.cache
 /Users/mac/Bản sao PBL3demo laỷe/obj/Debug/net10.0/ref/PBL3demo.dll
+/Users/mac/Bản sao PBL3demo laỷe/bin/Debug/net10.0/appsettings.Development.json

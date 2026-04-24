@@ -9,11 +9,11 @@ using StudyShare.Models;
 
 #nullable disable
 
-namespace PBL3demo.Migrations
+namespace StudyShare.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415145353_AddReportHistory1")]
-    partial class AddReportHistory1
+    [Migration("20260424091539_InitialDB")]
+    partial class InitialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -392,7 +392,6 @@ namespace PBL3demo.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionTaken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("AnswerId")
@@ -415,7 +414,6 @@ namespace PBL3demo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReporterUserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TargetUserId")
@@ -588,8 +586,7 @@ namespace PBL3demo.Migrations
                     b.HasOne("StudyShare.Models.AppUser", "Reporter")
                         .WithMany()
                         .HasForeignKey("ReporterUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("StudyShare.Models.AppUser", "Target")
                         .WithMany()

@@ -10,6 +10,7 @@ namespace StudyShare.DTOs.Responses
         public int WarningCount { get; set; }
         public bool LockoutEnabled { get; set; }
         public DateTimeOffset? LockoutEnd { get; set; }
-        public bool IsBanned => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.Now;
+        public bool IsBanned { get; set; }
+        // public bool IsBanned => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.Now;
     }
 }

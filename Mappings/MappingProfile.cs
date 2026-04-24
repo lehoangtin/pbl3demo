@@ -20,7 +20,8 @@ namespace StudyShare.Mappings
             CreateMap<Document, DocumentViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName));
             CreateMap<AppUser, UserResponse>()
-                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points));
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned)); // THÊM DÒNG NÀY
             CreateMap<Document, DocumentViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
@@ -29,7 +30,8 @@ namespace StudyShare.Mappings
             CreateMap<AppUser, UserViewModel>()
                 .ForMember(dest => dest.DocumentCount, opt => opt.MapFrom(src => src.Documents != null ? src.Documents.Count : 0))
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions != null ? src.Questions.Count : 0))
-                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points));
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned)); // THÊM DÒNG NÀY
             // Fix lỗi Question -> QuestionViewModel
             CreateMap<Question, QuestionViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
@@ -85,7 +87,8 @@ namespace StudyShare.Mappings
             CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "Ẩn danh"));
-            CreateMap<UserResponse, UserViewModel>();   
+            CreateMap<UserResponse, UserViewModel>()
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned));
             CreateMap<Report, ReportViewModel>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter.UserName))
                 // Cấu hình ánh xạ duy nhất cho tên người bị báo cáo

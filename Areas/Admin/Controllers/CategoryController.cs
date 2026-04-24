@@ -50,8 +50,6 @@ namespace StudyShare.Areas.Admin.Controllers
         {
             var categoryDto = await _categoryService.GetForUpdateAsync(id);
             if (categoryDto == null) return NotFound();
-            
-            // Map từ DTO ra ViewModel để hiển thị lên Form
             var viewModel = _mapper.Map<CategoryEditViewModel>(categoryDto);
             return View(viewModel);
         }
@@ -83,7 +81,7 @@ namespace StudyShare.Areas.Admin.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var success = await _categoryService.DeleteAsync(id);
-            if (success) TempData["Success"] = "Xóa danh mục thành công!"; // Thêm dòng này
+            if (success) TempData["Success"] = "Xóa danh mục thành công!";
             else TempData["Error"] = "Không thể xóa danh mục này.";
             
             return RedirectToAction(nameof(Index));

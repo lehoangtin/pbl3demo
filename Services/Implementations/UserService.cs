@@ -53,22 +53,26 @@ namespace StudyShare.Services.Implementations
         }
 
         public async Task<bool> ToggleBanUserAsync(string userId)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) return false;
+{
+    var user = await _userRepository.GetByIdAsync(userId);
+    if (user == null) return false;
 
-            var lockoutEndDate = await _userRepository.GetLockoutEndDateAsync(user);
-            if (lockoutEndDate.HasValue && lockoutEndDate > DateTimeOffset.Now)
-            {
-                await _userRepository.SetLockoutEndDateAsync(user, null); // Mở khóa
-            }
-            else
-            {
-                await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); // Khóa
-            }
-            return true;
-        }
+    // 1. Phải đảo ngược giá trị của biến IsBanned trong Model AppUser
+    user.IsBanned = !user.IsBanned;
 
+    // 2. Cập nhật thời gian Lockout của Identity
+    if (user.IsBanned)
+    {
+        await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); 
+    }
+    else
+    {
+        await _userRepository.SetLockoutEndDateAsync(user, null);
+    }
+
+    // 3. QUAN TRỌNG: Gọi Repository để lưu thay đổi IsBanned xuống Database
+    return await _userRepository.UpdateUserAsync(user);
+}
         public async Task<AppUser?> GetUserProfileAsync(string userId)
         {
             return await _userRepository.GetUserProfileWithIncludesAsync(userId);
@@ -81,8 +85,6 @@ namespace StudyShare.Services.Implementations
 
             user.FullName = model.FullName;
             user.Email = model.Email;
-
-            // Nghiệp vụ xử lý file nằm ở lớp Business Logic
             if (avatarFile != null && avatarFile.Length > 0)
             {
                 var ext = Path.GetExtension(avatarFile.FileName);
