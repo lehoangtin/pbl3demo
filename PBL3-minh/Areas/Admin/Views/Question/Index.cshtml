@@ -1,0 +1,54 @@
+@* 🔥 SỬA DÒNG NÀY: Phải là IEnumerable của Question *@
+@model IEnumerable<StudyShare.Models.Question>
+
+@{
+    ViewData["Title"] = "Quản lý câu hỏi & trả lời";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <h1 class="h3 fw-bold mb-4">Quản lý Q&A</h1>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white">
+            <i class="bi bi-chat-left-text me-2"></i> Danh sách câu hỏi trên hệ thống
+        </div>
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Người đăng</th>
+                        <th>Nội dung câu hỏi</th>
+                        <th>Ngày đăng</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                        <tr>
+                            <td>
+                                <strong>@item.User?.FullName</strong><br />
+                                <small class="text-muted">@item.User?.Email</small>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 400px;">
+                                    @item.Content
+                                </div>
+                            </td>
+                            <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Xác nhận xóa câu hỏi này?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

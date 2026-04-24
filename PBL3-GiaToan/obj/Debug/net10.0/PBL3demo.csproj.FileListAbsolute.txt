@@ -1212,7 +1212,6 @@ D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\nezrqnk58p-{0}-muycvpuwrr-muyc
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\v0zgfp0y55-{0}-87fc7y1x7t-87fc7y1x7t.gz
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\yfc7ypekbg-{0}-mlv21k5csn-mlv21k5csn.gz
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\y3x7f539c6-{0}-61n19gt1b8-61n19gt1b8.gz
-D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\c9qzb80arv-{0}-ow7vr36ags-ow7vr36ags.gz
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\py34env9ux-{0}-bqjiyaj88i-bqjiyaj88i.gz
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\abogpc8imx-{0}-c2jlpeoesf-c2jlpeoesf.gz
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\jfcuim2tay-{0}-erw9l3u2r3-erw9l3u2r3.gz
@@ -1287,3 +1286,4 @@ D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\PBL3demo.genruntimeconfig.cache
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\ref\PBL3demo.dll
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\PBL3demo.sourcelink.json
 D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\dbmrx8ag0w-{0}-c0kql6jl2l-c0kql6jl2l.gz
+D:\PBL3\PBL3-GiaToan\obj\Debug\net10.0\compressed\c9qzb80arv-{0}-zht6d0zy0i-zht6d0zy0i.gz

@@ -1,23 +1,25 @@
 @model IEnumerable<StudyShare.Models.Document>
 @{
-    ViewData["Title"] = "Thư viện chung";
+    ViewData["Title"] = "StudyShare - Mạng Lưới Tri Thức";
     var categories = ViewBag.Categories as List<StudyShare.Models.Category>;
     int? currentCatId = ViewBag.CurrentCategory as int?;
 }
 
-<div id="rocket-intro" style="display: none;">
-    <div id="starfield"></div> <div id="white-flash"></div> <div class="intro-content" id="ui-content">
-        <h1 class="intro-title">Sẵn Sàng Khám Phá?</h1>
-        <p class="intro-desc">Bắt đầu hành trình chinh phục tri thức của bạn cùng StudyShare.</p>
-        <button class="btn-launch" onclick="launchRocket()">
-            <i class="bi bi-rocket-takeoff-fill me-2"></i> PHÓNG TÊN LỬA
+<div id="neural-intro">
+    <canvas id="network-canvas"></canvas>
+    
+    <div id="white-flash"></div>
+
+    <div class="intro-ui" id="ui-content">
+        <h1 class="cyber-title">STUDYSHARE</h1>
+        <p class="cyber-subtitle">Mạng lưới chia sẻ tri thức đang chờ đồng bộ...</p>
+        <button class="btn-cyber" onclick="activateNetwork()">
+            [ KÍCH HOẠT KẾT NỐI ]
         </button>
     </div>
-
-    <div id="rocket">👨‍🚀🚀</div> 
 </div>
 
-<div class="container mt-4" id="main-library-content">
+<div class="container mt-4" id="main-library-content" style="opacity: 0; transition: opacity 2s ease;">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary">Thư viện tài liệu học tập</h1>
     </div>
@@ -26,18 +28,14 @@
         <div class="col-md-3 mb-4">
             <h5 class="fw-bold mb-3"><i class="bi bi-filter-left"></i> Lọc theo danh mục</h5>
             <div class="list-group shadow-sm">
-                <a asp-action="Index" 
-                   class="list-group-item list-group-item-action @(currentCatId == null ? "active" : "")">
+                <a asp-action="Index" class="list-group-item list-group-item-action @(currentCatId == null ? "active" : "")">
                    Tất cả tài liệu
                 </a>
-
                 @if (categories != null)
                 {
                     @foreach (var cat in categories)
                     {
-                        <a asp-action="Index" 
-                           asp-route-categoryId="@cat.Id" 
-                           asp-route-searchTerm="@ViewBag.SearchTerm"
+                        <a asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-searchTerm="@ViewBag.SearchTerm"
                            class="list-group-item list-group-item-action @(currentCatId == cat.Id ? "active" : "")">
                             @cat.Name
                         </a>
@@ -53,9 +51,7 @@
                         <input type="hidden" name="categoryId" value="@currentCatId" />
                         <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
                                class="form-control border-0 me-2" placeholder="Tìm trong danh mục này..." />
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill">
-                            Tìm kiếm
-                        </button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Tìm kiếm</button>
                     </form>
                 </div>
             </div>
@@ -81,9 +77,7 @@
                 }
                 else
                 {
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted">Không tìm thấy tài liệu nào trong danh mục này.</p>
-                    </div>
+                    <div class="col-12 text-center py-5"><p class="text-muted">Không tìm thấy tài liệu nào.</p></div>
                 }
             </div>
         </div>
@@ -91,136 +85,195 @@
 </div>
 
 <style>
-    /* Ẩn thanh cuộn khi đang ở màn hình Intro */
-    body.no-scroll { overflow: hidden; }
+    body.no-scroll { overflow: hidden; background: #020204; }
 
-    #rocket-intro {
+    #neural-intro {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: 99999; background: #020204;
+        transition: opacity 1s ease-in-out;
+    }
+
+    #network-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+    .intro-ui {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 99999; /* Đảm bảo che mọi thứ, kể cả navbar */
-        color: white; background: #070b19;
-        transition: opacity 0.5s;
+        z-index: 5; pointer-events: none; transition: opacity 0.5s;
     }
 
-    #starfield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
-    .intro-star {
-        position: absolute; background: white; border-radius: 50%;
-        animation: moveStars 20s linear infinite; 
+    .cyber-title {
+        font-size: 5rem; font-weight: 900; letter-spacing: 15px; color: #fff;
+        text-shadow: 0 0 20px #00e5ff, 0 0 40px #00e5ff;
+        margin-bottom: 10px; font-family: monospace;
     }
 
-    .intro-content { z-index: 2; text-align: center; transition: opacity 0.5s; }
-    .intro-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .intro-desc { color:#94a3b8; margin-bottom: 30px; font-size: 1.2rem; }
-
-    .btn-launch {
-        padding: 15px 40px; font-size: 1.2rem; font-weight: bold; color: #fff;
-        background: linear-gradient(45deg, #f59e0b, #ef4444); border: none; border-radius: 50px;
-        cursor: pointer; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4);
-        transition: transform 0.3s;
+    .cyber-subtitle { 
+        color: #e8f0fe; /* Đổi sang màu trắng ngả xanh sáng hơn để dễ đọc */
+        font-size: 1.5rem; /* Tăng kích thước chữ */
+        font-weight: 900; /* Làm chữ cực kỳ đậm */
+        letter-spacing: 4px; /* Tăng khoảng cách giữa các chữ để nhìn thoáng và ngầu hơn */
+        font-family: monospace; 
+        margin-bottom: 50px; 
+        /* Thêm hiệu ứng phát sáng (Glow) quanh viền chữ để tách biệt hoàn toàn khỏi nền */
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.8), 0 0 20px rgba(0, 229, 255, 0.4); 
     }
-    .btn-launch:hover { transform: scale(1.05); }
-
-    #rocket {
-        font-size: 5rem; z-index: 3; margin-top: 40px;
-        filter: drop-shadow(0 10px 10px rgba(255, 100, 0, 0.5));
+    .btn-cyber {
+        pointer-events: auto; padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
+        background: rgba(0, 229, 255, 0.05); color: #00e5ff;
+        border: 2px solid #00e5ff; border-radius: 4px; cursor: pointer;
+        transition: all 0.3s ease; font-family: monospace; letter-spacing: 2px;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
     }
-
-    /* 🔥 ĐÃ FIX LỖI RAZOR: Thêm @@ vào trước keyframes */
-    
-    /* Hiệu ứng Rung lắc */
-    .anim-shake { animation: shake 0.5s infinite; }
-    @@keyframes shake {
-        0% { transform: translate(1px, 1px) rotate(0deg); }
-        25% { transform: translate(-1px, -2px) rotate(-1deg); }
-        50% { transform: translate(-3px, 0px) rotate(1deg); }
-        75% { transform: translate(3px, 2px) rotate(0deg); }
-        100% { transform: translate(1px, -1px) rotate(-1deg); }
+    .btn-cyber:hover {
+        background: #00e5ff; color: #000; box-shadow: 0 0 30px #00e5ff, inset 0 0 10px #fff;
     }
 
-    /* Hiệu ứng Phóng lên */
-    .anim-launch { animation: shootUp 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards; }
-    @@keyframes shootUp {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-1500px); }
-    }
-
-    /* Tốc độ ánh sáng (Warp Speed) */
-    .anim-warp-speed { animation: warpSpeed 0.4s linear infinite !important; height: 60px !important; border-radius: 0 !important; opacity: 0.8; background: #60a5fa !important;}
-    @@keyframes moveStars { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
-    @@keyframes warpSpeed { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
-
-    /* Chớp sáng trắng */
     #white-flash {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         background: white; z-index: 10; opacity: 0; pointer-events: none;
-        transition: opacity 0.5s;
+        transition: opacity 1s;
     }
 </style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Kiểm tra xem người dùng đã xem Intro chưa
-        const hasSeenIntro = sessionStorage.getItem("hasSeenStudyShareIntro");
+        const hasSeenIntro = sessionStorage.getItem("hasSeenStudyShareNetwork");
 
         if (!hasSeenIntro) {
-            // Nếu CHƯA xem: Hiện Intro, khóa cuộn trang
-            document.getElementById("rocket-intro").style.display = "flex";
             document.body.classList.add("no-scroll");
-            createStars(); // Tạo bầu trời sao
+            initCanvas(); // Chạy đồ họa hạt
         } else {
-            // Nếu ĐÃ xem: Gỡ Intro ra khỏi HTML để không tốn tài nguyên
-            const introNode = document.getElementById("rocket-intro");
-            if(introNode) introNode.remove();
+            document.getElementById("neural-intro").remove();
+            document.getElementById("main-library-content").style.opacity = "1";
         }
     });
 
-    function createStars() {
-        const starfield = document.getElementById('starfield');
-        for(let i = 0; i < 100; i++) {
-            let star = document.createElement('div');
-            star.className = 'intro-star';
-            star.style.width = Math.random() * 3 + 'px';
-            star.style.height = star.style.width;
-            star.style.left = Math.random() * 100 + 'vw';
-            star.style.top = Math.random() * -100 + 'vh';
-            star.style.animationDuration = (Math.random() * 10 + 5) + 's';
-            starfield.appendChild(star);
+    let canvas, ctx, particlesArray, mouse, isExploding = false;
+
+    function initCanvas() {
+        canvas = document.getElementById("network-canvas");
+        ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        particlesArray = [];
+        mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        class Particle {
+            constructor(x, y, vx, vy, size) {
+                this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy;
+                this.size = size;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = '#00e5ff';
+                ctx.fill();
+            }
+            update() {
+                if(isExploding) {
+                    // Gia tốc khi nổ
+                    this.x += this.vx * 15;
+                    this.y += this.vy * 15;
+                } else {
+                    // Chuyển động bình thường
+                    if(this.x > canvas.width || this.x < 0) this.vx = -this.vx;
+                    if(this.y > canvas.height || this.y < 0) this.vy = -this.vy;
+                    
+                    // Tránh né chuột
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx*dx + dy*dy);
+                    if(distance < mouse.radius) {
+                        this.x -= dx/20;
+                        this.y -= dy/20;
+                    }
+                    this.x += this.vx;
+                    this.y += this.vy;
+                }
+                this.draw();
+            }
+        }
+
+        // Tạo 150 hạt ban đầu
+        for(let i = 0; i < 150; i++) {
+            let size = Math.random() * 2 + 1;
+            let x = Math.random() * innerWidth;
+            let y = Math.random() * innerHeight;
+            let vx = (Math.random() - 0.5) * 1.5;
+            let vy = (Math.random() - 0.5) * 1.5;
+            particlesArray.push(new Particle(x, y, vx, vy, size));
+        }
+
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+        for(let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+        }
+        connect();
+    }
+
+    // Vẽ đường nối các hạt (Neural Network)
+    function connect() {
+        if(isExploding) return; // Khi nổ thì tắt nối dây cho ngầu
+        for(let a = 0; a < particlesArray.length; a++) {
+            for(let b = a; b < particlesArray.length; b++) {
+                let dx = particlesArray[a].x - particlesArray[b].x;
+                let dy = particlesArray[a].y - particlesArray[b].y;
+                let distance = dx * dx + dy * dy;
+
+                if(distance < 15000) {
+                    let opacity = 1 - (distance/15000);
+                    ctx.strokeStyle = 'rgba(0, 229, 255, ' + opacity + ')';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                    ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                    ctx.stroke();
+                }
+            }
         }
     }
 
-    function launchRocket() {
-        const ui = document.getElementById('ui-content');
-        const rocket = document.getElementById('rocket');
-        const stars = document.querySelectorAll('.intro-star');
-        const flash = document.getElementById('white-flash');
-        const intro = document.getElementById('rocket-intro');
+    // Kích hoạt hiệu ứng Nổ (Warp Speed)
+    function activateNetwork() {
+        document.getElementById('ui-content').style.opacity = '0'; // Ẩn giao diện
+        
+        // Điều hướng các hạt bay ra từ tâm màn hình
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        particlesArray.forEach(p => {
+            p.vx = (p.x - cx) * 0.02;
+            p.vy = (p.y - cy) * 0.02;
+        });
 
-        // 1. Ẩn chữ và nút
-        ui.style.opacity = '0';
+        isExploding = true; // Bật cờ nổ
 
-        // 2. Rung lắc tên lửa
-        rocket.classList.add('anim-shake');
-
-        // 3. Khởi hành sau 1s
+        // Chớp sáng sau 0.8 giây
         setTimeout(() => {
-            rocket.classList.remove('anim-shake');
-            rocket.classList.add('anim-launch');
-            stars.forEach(s => s.classList.add('anim-warp-speed')); // Kéo sao xuống cực nhanh
-        }, 1000);
+            document.getElementById('white-flash').style.opacity = '1';
+        }, 800);
 
-        // 4. Màn hình chớp sáng sau 2.2s
+        // Vô trang chủ sau 1.5 giây
         setTimeout(() => {
-            flash.style.opacity = '1';
-        }, 2200);
-
-        // 5. Xóa Intro, hiện trang Thư viện sau 3s
-        setTimeout(() => {
-            intro.style.opacity = '0';
+            document.getElementById('neural-intro').style.opacity = '0';
             setTimeout(() => {
-                intro.remove(); // Xóa hẳn khỏi HTML
-                document.body.classList.remove("no-scroll"); // Mở lại thanh cuộn dọc
-                sessionStorage.setItem("hasSeenStudyShareIntro", "true"); // Lưu trạng thái
-            }, 500);
-        }, 3000);
+                document.getElementById('neural-intro').remove();
+                document.body.classList.remove("no-scroll");
+                document.getElementById("main-library-content").style.opacity = "1";
+                sessionStorage.setItem("hasSeenStudyShareNetwork", "true");
+            }, 1000);
+        }, 1500);
     }
 </script>

@@ -1,0 +1,55 @@
+@model IEnumerable<StudyShare.Models.Document>
+@{ ViewData["Title"] = "Tài liệu của tôi"; }
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            </div>
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0">Tài liệu đã đăng</h4>
+                <a href="/User/Document/Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-plus-lg"></i> Đăng tài liệu mới
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="table-responsive p-3">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Ngày đăng</th>
+                                <th>Lượt xem</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model) {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">@item.Title</div>
+                                    <small class="text-muted">@item.Category?.Name</small>
+                                </td>
+                                <td>@item.UploadDate.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge bg-light text-dark">@item.Views</span></td>
+                                <td class="text-center">
+                                    <a href="/User/Document/Details/@item.Id" class="btn btn-sm btn-outline-info rounded-circle me-1">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form asp-action="DeleteDocument" asp-route-id="@item.Id" method="post" class="d-inline" 
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài liệu này?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
