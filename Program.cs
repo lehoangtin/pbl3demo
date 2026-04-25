@@ -72,16 +72,24 @@ builder.Services.AddTransient<EmailSender>();
 var app = builder.Build();
 
 // 🔥 Seeder (dùng bản mới của bạn)
+// 🔥 Seeder (dùng bản mới của bạn)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
+        // 1. Lấy AppDbContext từ ServiceProvider
+        var context = services.GetRequiredService<AppDbContext>();
+        
+        // 2. Tự động áp dụng các Migration chưa chạy (Tạo DB và Bảng nếu chưa có)
+        await context.Database.MigrateAsync();
+
+        // 3. Chạy Seeder
         await DataSeeder.SeedAllAsync(services);
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Lỗi Seeding: " + ex.Message);
+        Console.WriteLine("Lỗi Seeding hoặc Migration: " + ex.Message);
     }
 }
 

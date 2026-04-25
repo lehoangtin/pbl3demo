@@ -51,27 +51,37 @@ namespace StudyShare.Services.Implementations
             user.FullName = request.FullName;
             return await _userRepository.UpdateUserAsync(user);
         }
-
-        public async Task<bool> ToggleBanUserAsync(string userId)
+public async Task<bool> ToggleBanUserAsync(string userId)
 {
     var user = await _userRepository.GetByIdAsync(userId);
     if (user == null) return false;
 
-    // 1. Phải đảo ngược giá trị của biến IsBanned trong Model AppUser
+    // 1. Đảo ngược giá trị của biến IsBanned
     user.IsBanned = !user.IsBanned;
 
-    // 2. Cập nhật thời gian Lockout của Identity
-    if (user.IsBanned)
+    // 2. Phải bật LockoutEnabled thì Identity mới cho phép thiết lập thời gian khóa
+    if (!user.LockoutEnabled)
     {
-        await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); 
-    }
-    else
-    {
-        await _userRepository.SetLockoutEndDateAsync(user, null);
+        user.LockoutEnabled = true;
     }
 
-    // 3. QUAN TRỌNG: Gọi Repository để lưu thay đổi IsBanned xuống Database
-    return await _userRepository.UpdateUserAsync(user);
+    // 3. QUAN TRỌNG: Lưu cập nhật IsBanned (và LockoutEnabled) xuống Database TRƯỚC
+    var updateResult = await _userRepository.UpdateUserAsync(user);
+
+    // 4. Nếu lưu DB thành công, tiến hành gọi Identity để khóa/mở khóa thời gian
+    if (updateResult)
+    {
+        if (user.IsBanned)
+        {
+            await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); 
+        }
+        else
+        {
+            await _userRepository.SetLockoutEndDateAsync(user, null);
+        }
+    }
+
+    return updateResult;
 }
         public async Task<AppUser?> GetUserProfileAsync(string userId)
         {
@@ -155,18 +165,40 @@ namespace StudyShare.Services.Implementations
             return _mapper.Map<IEnumerable<UserResponse>>(reportedUsers);
         }
         // Trong file Services/Implementations/UserService.cs
-        public async Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement)
+public async Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement)
+{
+    var user = await _userRepository.GetByIdAsync(userId);
+    if (user == null) return false;
+
+    // Trừ điểm và tăng số lần cảnh báo
+    user.Points -= pointsToDeduct;
+    user.WarningCount += warningIncrement;
+
+    // ==========================================
+    // LOGIC TỰ ĐỘNG KHÓA NẾU VI PHẠM TỪ 3 LẦN
+    // ==========================================
+    bool justBanned = false;
+    if (user.WarningCount >= 3 && !user.IsBanned)
+    {
+        user.IsBanned = true;
+        justBanned = true; // Đánh dấu là vừa bị khóa để set Lockout
+        
+        if (!user.LockoutEnabled)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) return false;
+            user.LockoutEnabled = true;
+        }
+    }
 
-            // Bỏ Math.Max để cho phép điểm trừ thẳng xuống số âm
-            user.Points -= pointsToDeduct;
-            
-            // Tăng số lần cảnh báo
-            user.WarningCount += warningIncrement;
+    // 1. Cập nhật thông tin User xuống Database trước
+    var updateResult = await _userRepository.UpdateUserAsync(user);
 
-            return await _userRepository.UpdateUserAsync(user);
+    // 2. Nếu update thành công và user VỪA BỊ KHÓA do đủ 3 gậy, thì gọi Identity để khóa thời gian
+    if (updateResult && justBanned)
+    {
+        await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+    }
+
+    return updateResult;
 }
         public async Task<bool> AddPointsAsync(string userId, int points)
         {

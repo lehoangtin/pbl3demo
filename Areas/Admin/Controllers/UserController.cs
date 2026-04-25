@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
+using System.Linq; // BẮT BUỘC THÊM DÒNG NÀY
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -24,11 +25,23 @@ namespace StudyShare.Areas.Admin.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
+            ViewData["CurrentFilter"] = searchString; // Trả về view để giữ lại từ khóa trên ô tìm kiếm
+
             var users = await _userService.GetAllUsersAsync();
-            // Map danh sách Entity sang danh sách ViewModel
             var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
+
+            // Xử lý tìm kiếm
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                viewModels = viewModels.Where(u => 
+                    (!string.IsNullOrEmpty(u.FullName) && u.FullName.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower().Contains(searchString))
+                );
+            }
+
             return View(viewModels);
         }
 
@@ -41,14 +54,23 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(viewModel);;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ToggleBan(string id)
-        {
-            var result = await _userService.ToggleBanUserAsync(id);
-            // Giả sử service trả về trạng thái mới để báo cho Admin
-            TempData["Success"] = "Đã cập nhật trạng thái hoạt động của tài khoản.";
-            return RedirectToAction(nameof(Index));
-        }
+[HttpPost]
+public async Task<IActionResult> ToggleBan(string id)
+{
+    var result = await _userService.ToggleBanUserAsync(id);
+    
+    // Đã kiểm tra result
+    if (result)
+    {
+        TempData["Success"] = "Đã cập nhật trạng thái hoạt động của tài khoản.";
+    }
+    else
+    {
+        TempData["Error"] = "Cập nhật trạng thái thất bại. Vui lòng thử lại.";
+    }
+    
+    return RedirectToAction(nameof(Index));
+}
 
         public async Task<IActionResult> ReportedUsers()
         {
@@ -74,19 +96,25 @@ public async Task<IActionResult> PendingReports()
     return View(viewModels);
 }
 
-// 2. Action Xử phạt: Chỉ chạy khi Admin xác nhận
+// 2. Action Xử phạt: Tăng cảnh cáo và tự động khóa khi đủ 3 lần
+// Action Xử phạt: Khóa luôn tài khoản khi có vi phạm
 [HttpPost]
 [ValidateAntiForgeryToken]
-public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
+public async Task<IActionResult> Penalize(string userId, int reportId)
 {
-    // Thực hiện trừ điểm và tăng WarningCount qua UserService
-    var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
+    // 1. Gọi thẳng hàm ToggleBanUserAsync (hàm khóa tài khoản mà chúng ta đã sửa lỗi ở trên)
+    // Nếu họ đang hoạt động -> Gọi hàm này sẽ khóa họ lại (IsBanned = true)
+    var success = await _userService.ToggleBanUserAsync(userId);
     
     if (success)
     {
-        // Cập nhật trạng thái báo cáo là đã giải quyết
-        await _reportService.ResolveWithActionAsync(reportId, $"Admin đã phạt trừ {pointsDeducted} điểm.");
-        TempData["Success"] = "Đã xử phạt và trừ điểm thành công.";
+        // 2. Cập nhật trạng thái báo cáo là đã giải quyết
+        await _reportService.ResolveWithActionAsync(reportId, "Admin đã xử lý vi phạm và KHÓA tài khoản này.");
+        TempData["Success"] = "Đã khóa tài khoản vi phạm thành công.";
+    }
+    else
+    {
+        TempData["Error"] = "Có lỗi xảy ra khi khóa tài khoản.";
     }
     
     return RedirectToAction(nameof(PendingReports));

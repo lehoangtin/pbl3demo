@@ -44,10 +44,22 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         // 🔥 Mở cho khách vãng lai xem danh sách
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
+            ViewData["CurrentFilter"] = searchString; // Không có tìm kiếm ở đây, nhưng vẫn giữ lại để tránh lỗi nếu view có dùng
+
             var data = await _questionService.GetAllAsync();
             var viewModel = _mapper.Map<IEnumerable<QuestionViewModel>>(data);
+            if(!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower(); 
+                viewModel = viewModel.Where(q => 
+                    (!string.IsNullOrEmpty(q.Title) && q.Title.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(q.Content) && q.Content.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(q.AuthorName) && q.AuthorName.ToLower().Contains(searchString))
+                );
+                
+            }
             return View(viewModel);
         }
 

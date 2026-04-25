@@ -41,6 +41,7 @@
     <Compile Include="ViewModels/**/*.cs" />
     <Compile Include="Repositories/**/*.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Migrations/**/*.cs" />
   </ItemGroup>
 
-</Project>
+</Project> 

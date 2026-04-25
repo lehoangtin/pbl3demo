@@ -10,6 +10,6 @@ namespace StudyShare.ViewModels
         public bool IsBanned { get; set; }
         public int WarningCount { get; set; }
         public int DocumentCount { get; set; }
-        public int QuestionCount { get; set; }
+        public int QuestionCount     { get; set; }
     }
 }

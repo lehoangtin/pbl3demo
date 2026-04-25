@@ -21,10 +21,23 @@ namespace StudyShare.Areas.Admin.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
+            ViewData["CurrentFilter"] = searchString;
+
             var dtoList = await _documentService.GetAllAsync();
             var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                viewModels = viewModels.Where(d => 
+                    (!string.IsNullOrEmpty(d.Title) && d.Title.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(d.Description) && d.Description.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(d.AuthorName) && d.AuthorName.ToLower().Contains(searchString))
+                );
+            }
+
             return View(viewModels);
         }
 

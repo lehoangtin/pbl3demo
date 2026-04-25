@@ -89,6 +89,7 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "Ẩn danh"));
             CreateMap<UserResponse, UserViewModel>()
                 .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned));
+
             CreateMap<Report, ReportViewModel>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter.UserName))
                 // Cấu hình ánh xạ duy nhất cho tên người bị báo cáo

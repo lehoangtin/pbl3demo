@@ -27,44 +27,41 @@ namespace StudyShare.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null) 
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null) 
+{
+    ViewData["ReturnUrl"] = returnUrl;
+    if (ModelState.IsValid)
+    {
+        var user = await _authService.GetUserByEmailAsync(model.Email); 
+        
+        // ĐÃ SỬA: Bao gồm cả trường hợp Admin bấm khóa thủ công (user.IsBanned)
+        if (user != null && (user.WarningCount >= 3 || user.IsBanned))
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
-            {
-                // 🔥 KIỂM TRA SỐ LẦN VI PHẠM TRƯỚC KHI ĐĂNG NHẬP
-                // Lưu ý: Nếu trong LoginViewModel của bạn dùng trường UserName thay vì Email để đăng nhập, 
-                // thì bạn đổi model.Email thành model.UserName nhé.
-                var user = await _authService.GetUserByEmailAsync(model.Email); 
-                
-                if (user != null && user.WarningCount >= 3)
-                {
-                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm quy định cộng đồng từ 3 lần trở lên.");
-                    return View(model);
-                }
-
-                // Nếu an toàn (chưa tới 3 lần) thì cho phép đăng nhập bình thường
-                var result = await _authService.LoginAsync(model);
-                
-                if (result.Succeeded)
-                {
-                    return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) 
-                        ? Redirect(returnUrl) 
-                        : RedirectToAction("Index", "Home");
-                }
-                
-                // Kiểm tra khóa tài khoản (Lockout) do nhập sai pass nhiều lần
-                if (result.IsLockedOut)
-                {
-                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa tạm thời do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
-                    return View(model);
-                }
-                
-                ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu không đúng.");
-            }
+            ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa do vi phạm quy định cộng đồng.");
             return View(model);
         }
+
+        var result = await _authService.LoginAsync(model);
+        
+        if (result.Succeeded)
+        {
+            return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) 
+                ? Redirect(returnUrl) 
+                : RedirectToAction("Index", "Home");
+        }
+        
+        // Khối lệnh này giờ chỉ thuần túy báo lỗi nhập sai pass nhiều lần
+        if (result.IsLockedOut)
+        {
+            ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị tạm khóa do nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau.");
+            return View(model);
+        }
+        
+        ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu không đúng.");
+    }
+    return View(model);
+}
                 [HttpGet]
         public IActionResult Register()
         {

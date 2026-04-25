@@ -39,10 +39,25 @@ namespace StudyShare.Areas.User.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return RedirectToAction("Profile", new { id = userId });
+            // Lưu lại từ khóa để hiển thị trên ô input của View
+            ViewData["CurrentFilter"] = searchString;
+
+            var data = await _questionService.GetAllAsync();
+            var viewModel = _mapper.Map<IEnumerable<QuestionViewModel>>(data);
+
+            // Xử lý tìm kiếm bằng LINQ
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                viewModel = viewModel.Where(q => 
+                    (!string.IsNullOrEmpty(q.Content) && q.Content.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(q.AuthorName) && q.AuthorName.ToLower().Contains(searchString))
+                );
+            }
+
+            return View(viewModel);
         }
 
         [Authorize]
