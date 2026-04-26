@@ -16,8 +16,9 @@
                 <div>
                     <h4 class="fw-bold text-dark mb-0">Hồ sơ chi tiết người dùng</h4>
                 </div>
-                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium shadow-sm">
                     <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
             </div>
 
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
@@ -26,7 +27,7 @@
                         <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default-avatar.png" : Model.Avatar)" 
                              class="rounded-circle border border-4 border-white shadow-lg mb-3 mb-md-0 z-1" 
                              style="width: 140px; height: 140px; object-fit: cover;">
-                        @if (!Model.IsBanned) {
+                        @if (!Model.IsBanned && Model.WarningCount < 3) {
                             <span class="position-absolute bottom-0 end-0 bg-success border border-white border-3 rounded-circle p-2 shadow-sm" title="Đang hoạt động"></span>
                         }
                     </div>
@@ -35,7 +36,7 @@
                         <p class="mb-3 opacity-75 fs-5">@@@Model.FullName • @Model.Email</p>
                         <div class="d-flex gap-2 justify-content-center justify-content-md-start">
                             <span class="badge bg-white text-primary rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-coin me-1"></i> @Model.Points điểm</span>
-                            @if (Model.IsBanned) {
+                            @if (Model.IsBanned || Model.WarningCount >= 3) {
                                 <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-lock-fill me-1"></i> Đã khóa</span>
                             } else {
                                 <span class="badge bg-light text-success rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-shield-check me-1"></i> Tài khoản sạch</span>
@@ -48,21 +49,21 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 stat-card">
                         <div class="text-primary fs-1 mb-2"><i class="bi bi-file-earmark-text"></i></div>
                         <h3 class="fw-bold mb-0">@Model.DocumentCount</h3>
                         <div class="text-muted small text-uppercase fw-bold ls-1">Tài liệu đã đăng</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 stat-card">
                         <div class="text-success fs-1 mb-2"><i class="bi bi-question-circle"></i></div>
                         <h3 class="fw-bold mb-0">@Model.QuestionCount</h3>
                         <div class="text-muted small text-uppercase fw-bold ls-1">Câu hỏi thảo luận</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 border-start border-danger border-4">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 border-start border-danger border-4 stat-card">
                         <div class="text-danger fs-1 mb-2"><i class="bi bi-exclamation-octagon"></i></div>
                         <h3 class="fw-bold mb-0 text-danger">@Model.WarningCount</h3>
                         <div class="text-muted small text-uppercase fw-bold ls-1">Số gậy cảnh cáo</div>
@@ -70,26 +71,32 @@
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 mb-4">
                 <div class="col-lg-7">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-header bg-white py-3 px-4 border-bottom">
-                            <h6 class="m-0 fw-bold text-dark">Thông tin tài khoản</h6>
+                            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Thông tin tài khoản</h6>
                         </div>
                         <div class="card-body p-0">
                             <table class="table mb-0 table-borderless">
                                 <tbody class="align-middle">
                                     <tr class="border-bottom">
-                                        <td class="ps-4 py-3 text-muted">Tên đăng nhập</td>
-                                        <td class="fw-bold">@Model.FullName</td>
-                                    </tr>
-                                    <tr class="border-bottom">
                                         <td class="ps-4 py-3 text-muted">Họ và tên</td>
-                                        <td>@Model.FullName</td>
+                                        <td class="fw-bold text-dark">@Model.FullName</td>
                                     </tr>
                                     <tr class="border-bottom">
                                         <td class="ps-4 py-3 text-muted">Email liên lạc</td>
-                                        <td><a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a></td>
+                                        <td><a href="mailto:@Model.Email" class="text-decoration-none fw-medium">@Model.Email</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4 py-3 text-muted">Trạng thái hệ thống</td>
+                                        <td>
+                                            @if (Model.IsBanned || Model.WarningCount >= 3) {
+                                                <span class="text-danger fw-bold"><i class="bi bi-shield-slash-fill me-1"></i> Bị đình chỉ</span>
+                                            } else {
+                                                <span class="text-success fw-bold"><i class="bi bi-shield-check me-1"></i> Đang hoạt động</span>
+                                            }
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -102,53 +109,134 @@
                         <div class="card-header bg-white py-3 px-4 border-bottom">
                             <h6 class="m-0 fw-bold text-danger"><i class="bi bi-shield-lock me-2"></i>Khu vực kiểm soát</h6>
                         </div>
-                        <div class="card-body p-4 text-center">
-                            <p class="text-muted small mb-4">Việc khóa tài khoản sẽ ngăn người dùng đăng nhập, tải tài liệu và tham gia cộng đồng cho đến khi được mở khóa lại.</p>
+                        <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
+                            <p class="text-muted small mb-4">Việc khóa tài khoản sẽ ngăn người dùng đăng nhập, tải tài liệu và tham gia cộng đồng.</p>
                             
-                            <form asp-action="ToggleBan" asp-route-id="@Model.Id" method="post" class="d-grid">
-                                @if (Model.IsBanned) {
-                                    <div class="alert alert-danger rounded-4 py-2 small mb-4">
-                                        <i class="bi bi-info-circle me-1"></i> Tài khoản này hiện đang bị đình chỉ.
-                                    </div>
+                            <form asp-action="ToggleBan" asp-route-id="@Model.Id" method="post" class="d-grid mt-auto">
+                                @if (Model.IsBanned || Model.WarningCount >= 3) {
                                     <button type="submit" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold">
                                         <i class="bi bi-unlock-fill me-2"></i>Gỡ bỏ lệnh cấm
                                     </button>
                                 } else {
-                                    <button type="submit" class="btn btn-outline-danger btn-lg rounded-pill shadow-sm py-3" 
-                                            onclick="return confirm('Bạn có chắc muốn khóa người dùng này? Người dùng sẽ không thể truy cập hệ thống.');">
+                                    <button type="submit" class="btn btn-outline-danger btn-lg rounded-pill shadow-sm py-3 fw-bold" 
+                                            onclick="return confirm('Bạn có chắc muốn khóa người dùng này?');">
                                         <i class="bi bi-lock-fill me-2"></i>Ban người dùng
                                     </button>
                                 }
                             </form>
-                            
-                            <hr class="my-4">
-                            
-                            <div class="d-flex justify-content-between text-muted small">
-                                <span>Trạng thái hệ thống:</span>
-                                <span class="@(Model.IsBanned ? "text-danger" : "text-success") fw-bold">
-                                    @(Model.IsBanned ? "Ngưng kết nối" : "Sẵn sàng")
-                                </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white py-3 px-4 border-bottom">
+                            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-collection-fill me-2 text-primary"></i>Nội dung đã đóng góp</h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a asp-area="Admin" asp-controller="Document" asp-action="Index" asp-route-searchString="@Model.FullName" 
+                                       class="text-decoration-none d-block p-3 border rounded-4 bg-light text-dark h-100 hover-card transition-all">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded p-3 me-3"><i class="bi bi-file-earmark-text fs-4"></i></div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1">Tài liệu đã đăng</h6>
+                                                <small class="text-muted d-block">Lọc danh sách tài liệu</small>
+                                            </div>
+                                            <i class="bi bi-box-arrow-up-right ms-auto text-primary"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a asp-area="Admin" asp-controller="Question" asp-action="Index" asp-route-searchString="@Model.FullName" 
+                                       class="text-decoration-none d-block p-3 border rounded-4 bg-light text-dark h-100 hover-card transition-all">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-info text-white rounded p-3 me-3"><i class="bi bi-chat-square-text fs-4"></i></div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1">Câu hỏi thảo luận</h6>
+                                                <small class="text-muted d-block">Lọc danh sách câu hỏi</small>
+                                            </div>
+                                            <i class="bi bi-box-arrow-up-right ms-auto text-info"></i>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 border-top border-warning border-4">
+                        <div class="card-header bg-white py-3 px-4 border-bottom">
+                            <h6 class="m-0 fw-bold text-danger"><i class="bi bi-clipboard-x-fill me-2"></i>Lịch sử vi phạm & Xử lý</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3 text-muted small">THỜI GIAN</th>
+                                            <th class="text-muted small" style="width: 45%;">LÝ DO / NỘI DUNG VI PHẠM</th>
+                                            <th class="text-muted small">HÌNH THỨC XỬ PHẠT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (ViewBag.Violations != null && ((IEnumerable<StudyShare.ViewModels.ReportViewModel>)ViewBag.Violations).Any()) {
+                                            foreach (var v in (IEnumerable<StudyShare.ViewModels.ReportViewModel>)ViewBag.Violations) {
+                                                <tr>
+                                                    <td class="ps-4 py-3 small fw-medium">@v.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td>
+                                                        <span class="d-block text-truncate fw-bold text-dark" style="max-width: 350px;" title="@v.Reason">@v.Reason</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                                                            @v.ActionTaken
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        } else {
+                                            <tr>
+                                                <td colspan="3" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-check-circle text-success fs-2 d-block mb-2 opacity-50"></i>
+                                                    Người dùng chưa có ghi nhận vi phạm nào trên hệ thống.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <style>
     .fw-black { font-weight: 900; }
-    .ls-1 { letter-spacing: 1px; }
-    .fw-mono { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
     .ls-1 { letter-spacing: 0.5px; }
+    .transition-all { transition: all 0.2s ease-in-out; }
     
-    .card { transition: all 0.2s ease; }
     .table td { font-size: 0.95rem; }
     
-    /* Stats animations */
-    .row.g-3 .card:hover {
+    /* Hover hiệu ứng cho thẻ Thống kê */
+    .stat-card:hover {
         transform: translateY(-5px);
         background-color: #fff;
+    }
+
+    /* Hover hiệu ứng cho nút Xem Nội dung */
+    .hover-card:hover {
+        background-color: #fff !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
 </style>

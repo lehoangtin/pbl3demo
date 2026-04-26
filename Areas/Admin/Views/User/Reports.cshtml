@@ -1,0 +1,168 @@
+@model StudyShare.ViewModels.ReportDashboardViewModel
+@{
+    ViewData["Title"] = "Quản lý báo cáo vi phạm";
+}
+
+<div class="container-fluid mt-4 mb-5 px-4">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 animate__animated animate__fadeIn">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="m-0 fw-bold text-primary">
+                            <i class="bi bi-flag-fill me-2"></i>Quản lý báo cáo vi phạm
+                        </h4>
+                    </div>
+
+                    <ul class="nav nav-tabs border-bottom" id="reportTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold text-dark px-4 py-3 border-0 border-bottom border-3 border-primary" 
+                                    id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab">
+                                Chờ xử lý 
+                                @if (Model.PendingReports.Any()) {
+                                    <span class="badge bg-danger rounded-pill ms-2">@Model.PendingReports.Count()</span>
+                                }
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold text-muted px-4 py-3 border-0 border-bottom border-3 border-transparent" 
+                                    id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved-pane" type="button" role="tab">
+                                Đã giải quyết
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="tab-content" id="reportTabsContent">
+                        
+                        <div class="tab-pane fade show active" id="pending-pane" role="tabpanel" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3 text-muted fw-semibold">NGƯỜI BỊ BÁO CÁO</th>
+                                            <th class="text-muted fw-semibold">NGƯỜI BÁO CÁO</th>
+                                            <th class="text-muted fw-semibold" style="width: 35%;">LÝ DO</th>
+                                            <th class="text-end pe-4 text-muted fw-semibold">THAO TÁC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.PendingReports != null && Model.PendingReports.Any())
+                                        {
+                                            foreach (var item in Model.PendingReports)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4 py-3 fw-bold text-danger">@item.TargetUserName</td>
+                                                    <td class="text-dark fw-medium">@item.ReporterName</td>
+                                                    <td>
+                                                        <span class="text-muted d-block text-truncate" style="max-width: 300px;" title="@item.Reason">@item.Reason</span>
+                                                        <small class="text-black-50"><i class="bi bi-clock me-1"></i>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <form asp-action="Penalize" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn KHÓA tài khoản này?');">
+                                                            <input type="hidden" name="userId" value="@item.TargetUserId" />
+                                                            <input type="hidden" name="reportId" value="@item.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm me-1 fw-bold">
+                                                                <i class="bi bi-gavel"></i> Khóa
+                                                            </button>
+                                                        </form>
+                                                        <form asp-action="DismissReport" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn BỎ QUA báo cáo này?');">
+                                                            <input type="hidden" name="reportId" value="@item.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-light border rounded-pill px-3 shadow-sm fw-bold">
+                                                                <i class="bi bi-x-circle text-muted"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-shield-check display-4 opacity-25 d-block mb-3"></i>
+                                                    Tuyệt vời! Không có báo cáo nào đang chờ xử lý.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+<div class="tab-pane fade" id="resolved-pane" role="tabpanel">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3 text-muted small">NGƯỜI VI PHẠM</th>
+                    <th class="text-muted small">NGUỒN PHÁT HIỆN</th> <th class="text-muted small">LÝ DO & XỬ LÝ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ResolvedReports) {
+                    <tr>
+                        <td class="ps-4 py-3 fw-bold text-dark">@item.TargetUserName</td>
+                        <td>
+                            <span class="badge @(item.ReporterName == "Hệ thống (AI)" ? "bg-info-subtle text-info" : "bg-light text-dark") border px-2 py-1">
+                                <i class="bi @(item.ReporterName == "Hệ thống (AI)" ? "bi-robot" : "bi-person") me-1"></i>
+                                @item.ReporterName
+                            </span>
+                        </td>
+                        <td>
+                            <div class="fw-medium text-dark small">@item.Reason</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-gavel me-1"></i>@item.ActionTaken</div>
+                            <small class="text-muted d-block mt-1">Ngày: @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CSS Tùy chỉnh cho Tab Bootstrap */
+    .nav-tabs .nav-link { color: #6c757d; border-color: transparent; }
+    .nav-tabs .nav-link:hover { color: #0d6efd; border-color: transparent; }
+    .nav-tabs .nav-link.active { color: #212529 !important; border-bottom-color: #0d6efd !important; background-color: transparent; }
+    .border-transparent { border-color: transparent !important; }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
+        tabLinks.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                // Xóa style active cũ
+                tabLinks.forEach(t => {
+                    t.classList.remove('text-dark', 'border-primary');
+                    t.classList.add('text-muted', 'border-transparent');
+                });
+                // Thêm style active mới
+                this.classList.remove('text-muted', 'border-transparent');
+                this.classList.add('text-dark', 'border-primary');
+            });
+        });
+    });
+</script>

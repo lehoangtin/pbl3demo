@@ -9,7 +9,8 @@ using System.Security.Claims;
 using AutoMapper;
 using System.Collections.Generic;
 using System.Linq;
-using StudyShare.DTOs.Requests; // Thêm dòng này
+using StudyShare.DTOs.Requests;
+using StudyShare.Services.Implementations; // Thêm dòng này
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -21,6 +22,7 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IQuestionService _questionService;
         private readonly IAnswerService _answerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IReportService _reportService;
         private readonly IMapper _mapper;
 
         public UserController(
@@ -29,6 +31,7 @@ namespace StudyShare.Areas.User.Controllers
             IQuestionService questionService,
             IAnswerService answerService,
             UserManager<AppUser> userManager,
+            IReportService reportService,
             IMapper mapper)
         {
             _userService = userService;
@@ -36,9 +39,10 @@ namespace StudyShare.Areas.User.Controllers
             _questionService = questionService;
             _answerService = answerService;
             _userManager = userManager;
+            _reportService = reportService;
             _mapper = mapper;
         }
-
+            
         public IActionResult Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -249,6 +253,15 @@ namespace StudyShare.Areas.User.Controllers
 
             string returnUrl = Request.Headers["Referer"].ToString();
             return string.IsNullOrEmpty(returnUrl) ? RedirectToAction("Index", "Home") : Redirect(returnUrl);
+        }
+        [Authorize]
+        public async Task<IActionResult> MyViolations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var reportsDto = await _reportService.GetReportsForUserAsync(userId);
+            var viewModel = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
+            
+            return View(viewModel);
         }
     }
 }

@@ -45,5 +45,20 @@ namespace StudyShare.Repositories.Implementations
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Report>> GetAllResolvedReportsAsync()
+        {
+            return await _context.Reports
+                .Where(r => r.IsResolved) // Lọc các báo cáo ĐÃ xử lý
+                .Include(r => r.Reporter)
+                .Include(r => r.Target)
+                .OrderByDescending(r => r.CreatedAt) 
+                .ToListAsync();
+        }
+        public async Task<Report> CreateAsync(Report report)
+        {
+            await _context.Reports.AddAsync(report);
+            await _context.SaveChangesAsync();
+            return report; // Trả về để lấy được ID của report sau khi lưu
+        }
     }
 }

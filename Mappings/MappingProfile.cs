@@ -82,9 +82,11 @@ namespace StudyShare.Mappings
 
             //REPORT 
             CreateMap<ReportResponse, ReportViewModel>();
-            CreateMap<Report, ReportResponse>()
-                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Ẩn danh"))
-                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "Ẩn danh"));
+           CreateMap<Report, ReportResponse>()
+                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => 
+                    src.Reporter != null ? src.Reporter.FullName : "Hệ thống (AI)"))
+                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => 
+                    src.Target != null ? src.Target.FullName : "N/A"));
             CreateMap<UserResponse, UserViewModel>();   
             CreateMap<Report, ReportViewModel>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter.UserName))

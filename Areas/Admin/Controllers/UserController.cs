@@ -23,7 +23,20 @@ namespace StudyShare.Areas.Admin.Controllers
             _reportService = reportService;
             _mapper = mapper;
         }
+        public async Task<IActionResult> Reports()
+        {
+            var pendingReportsDto = await _reportService.GetAllPendingReportsAsync(); 
+            var resolvedReportsDto = await _reportService.GetResolvedReportsAsync();
 
+            var viewModel = new ReportDashboardViewModel
+            {
+                // Đã thêm _mapper.Map ở đây để fix lỗi CS0266
+                PendingReports = _mapper.Map<IEnumerable<ReportViewModel>>(pendingReportsDto),
+                ResolvedReports = _mapper.Map<IEnumerable<ReportViewModel>>(resolvedReportsDto)
+            };
+
+            return View(viewModel);
+        }
         public async Task<IActionResult> Index()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -32,15 +45,19 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(viewModels);
         }
 
-        public async Task<IActionResult> Details(string id)
-        {
-          var user = await _userService.GetUserProfileAsync(id);
-            if (user == null) return NotFound();
+public async Task<IActionResult> Details(string id)
+{
+    var user = await _userService.GetUserProfileAsync(id);
+    if (user == null) return NotFound();
 
-            var viewModel = _mapper.Map<UserViewModel>(user);
-            return View(viewModel);;
-        }
+    var viewModel = _mapper.Map<UserViewModel>(user);
+    
+    // Lấy thêm danh sách vi phạm của người dùng này
+    var reportsDto = await _reportService.GetReportsForUserAsync(id);
+    ViewBag.Violations = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
 
+    return View(viewModel);
+}
         [HttpPost]
         public async Task<IActionResult> ToggleBan(string id)
         {
@@ -49,47 +66,22 @@ namespace StudyShare.Areas.Admin.Controllers
             TempData["Success"] = "Đã cập nhật trạng thái hoạt động của tài khoản.";
             return RedirectToAction(nameof(Index));
         }
-
-        public async Task<IActionResult> ReportedUsers()
-        {
-            var usersDto = await _userService.GetReportedUsersAsync();
-            var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(usersDto);
-            return View(viewModels);
-        }
-
-        public async Task<IActionResult> ViewReports(string userId)
-        {
-            var reportsDto = await _reportService.GetReportsForUserAsync(userId);
-            var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
-            ViewBag.TargetUserId = userId;
-            return View(viewModels);
-        }
-        // Trong Areas/Admin/Controllers/UserController.cs
-// Trang này sẽ liệt kê MỌI báo cáo mới nhất từ MỌI người dùng
-// 1. Trang danh sách tập trung mọi báo cáo
-public async Task<IActionResult> PendingReports()
-{
-    var reportsDto = await _reportService.GetAllPendingReportsAsync();
-    var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
-    return View(viewModels);
-}
-
+    
 // 2. Action Xử phạt: Chỉ chạy khi Admin xác nhận
 [HttpPost]
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
 {
-    // Thực hiện trừ điểm và tăng WarningCount qua UserService
     var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
     
     if (success)
     {
-        // Cập nhật trạng thái báo cáo là đã giải quyết
         await _reportService.ResolveWithActionAsync(reportId, $"Admin đã phạt trừ {pointsDeducted} điểm.");
         TempData["Success"] = "Đã xử phạt và trừ điểm thành công.";
     }
     
-    return RedirectToAction(nameof(PendingReports));
+    // ĐÃ SỬA: Chuyển hướng về trang Reports mới
+    return RedirectToAction(nameof(Reports));
 }
 
 // 3. Action Bỏ qua: Nếu báo cáo sai, không phạt
@@ -97,7 +89,7 @@ public async Task<IActionResult> Penalize(string userId, int reportId, int point
 public async Task<IActionResult> DismissReport(int reportId)
 {
     await _reportService.ResolveWithActionAsync(reportId, "Admin đã bỏ qua báo cáo này.");
-    return RedirectToAction(nameof(PendingReports));
+        return RedirectToAction(nameof(Reports));
 }
     }
 }

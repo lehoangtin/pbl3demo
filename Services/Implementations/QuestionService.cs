@@ -12,13 +12,21 @@ namespace StudyShare.Services.Implementations
     {
         private readonly IQuestionRepository _questionRepository;
         private readonly IAnswerRepository _answerRepository; // Add AnswerRepository for admin delete answer function
+        private readonly IUserService _userService;
+        private readonly IAIService _aiService;
+        private readonly IReportService _reportService;
         private readonly IMapper _mapper;
 
-        public QuestionService(IQuestionRepository questionRepository, IAnswerRepository answerRepository, IMapper mapper)
+        public QuestionService(IQuestionRepository questionRepository, IAnswerRepository answerRepository, IMapper mapper,IUserService userService,       // Inject UserService
+            IAIService aiService,           // Inject AIService
+            IReportService reportService)
         {
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
             _mapper = mapper;
+            _userService = userService;
+            _aiService = aiService;
+            _reportService = reportService;
         }
 
         public async Task<IEnumerable<QuestionResponse>> GetAllAsync()
@@ -40,14 +48,35 @@ namespace StudyShare.Services.Implementations
             return question == null ? null : _mapper.Map<QuestionUpdateRequest>(question);
         }
 
-        public async Task<bool> CreateAsync(QuestionCreateRequest request, string userId)
-        {
-            var question = _mapper.Map<Question>(request);
-            question.UserId = userId; // Gán ID người đăng
-            question.CreatedAt = DateTime.Now;
+public async Task<bool> CreateAsync(QuestionCreateRequest request, string userId)
+{
+    // 1. AI KIỂM TRA NỘI DUNG
+    var contentToCheck = request.Content + " " + request.Content;
+    var aiResult = await _aiService.CheckContentAsync(contentToCheck);
 
-            return await _questionRepository.CreateAsync(question);
-        }
+    if (aiResult.isFlagged) 
+    {
+        // 2. PHẠT NGƯỜI DÙNG (Trừ 20 điểm, tăng 1 gậy)
+        await _userService.PenalizeUserAsync(userId, 10, 1); 
+
+        // 3. LƯU VÀO LỊCH SỬ VI PHẠM (Để Admin và User cùng thấy)
+        await _reportService.CreateAutoReportAsync(
+            userId, 
+            $"Nội dung vi phạm: {request.Content}. (Lý do AI: {aiResult.reason})", 
+            "Hệ thống (AI) tự động phạt trừ 10 điểm và tăng 1 gậy cảnh cáo.",
+            null, 
+            null
+        );
+        
+        return false; // Trả về false để Controller báo lỗi ra màn hình
+    }
+
+    // Nếu không vi phạm thì mới thực hiện lưu câu hỏi như bình thường...
+    var question = _mapper.Map<Question>(request);
+    question.UserId = userId; 
+    question.CreatedAt = DateTime.Now;
+    return await _questionRepository.CreateAsync(question);
+}
 
         public async Task<bool> UpdateAsync(QuestionUpdateRequest request, string currentUserId, bool isAdmin)
         {
