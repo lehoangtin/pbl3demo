@@ -1,3 +1,8 @@
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+}
+
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
     <div class="card-header bg-dark text-white p-4 text-center border-0">
         <div class="mb-2">
@@ -8,37 +13,55 @@
     </div>
 
     <div class="list-group list-group-flush pb-3 bg-white">
-        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-speedometer2 me-3 text-primary fs-5 align-middle"></i> Bảng điều khiển
-        </a>
-        
-        <a asp-area="Admin" asp-controller="Document" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-file-earmark-check me-3 text-success fs-5 align-middle"></i> Duyệt tài liệu
-        </a>
-        
-        <a asp-area="Admin" asp-controller="User" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-people me-3 text-info fs-5 align-middle"></i> Quản lý người dùng
-        </a>
-        
-        <a asp-area="Admin" asp-controller="User" asp-action="Reports" class="list-group-item list-group-item-action border-0 py-3 @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active rounded-3 mb-1 shadow-sm" : "")">
-            <i class="bi bi-flag me-2"></i> Báo cáo vi phạm
-        </a>
-        
-        <a asp-area="Admin" asp-controller="Question" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-chat-square-text me-3 text-secondary fs-5 align-middle"></i> Quản lý thảo luận
+
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentController == "Home" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-speedometer2 me-3 text-primary fs-5"></i> Bảng điều khiển
         </a>
 
-        <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-tags me-3 text-warning fs-5 align-middle"></i> Danh mục hệ thống
+        <a asp-area="Admin" asp-controller="Document" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentController == "Document" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-file-earmark-check me-3 text-success fs-5"></i> Duyệt tài liệu
         </a>
 
-        <a asp-area="Admin" asp-controller="Question" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium">
-            <i class="bi bi-chat-square-text me-3 text-secondary fs-5 align-middle"></i> Quản lý thảo luận
+        <a asp-area="Admin" asp-controller="User" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentController == "User" && currentAction == "Index" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-people me-3 text-info fs-5"></i> Quản lý người dùng
         </a>
-            <hr class="mx-4 my-2 text-muted opacity-25">
 
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action border-0 px-4 py-3 fw-bold text-primary bg-light mt-2">
-            <i class="bi bi-box-arrow-left me-2 fs-5 align-middle"></i> Về trang người dùng
+        <a asp-area="Admin" asp-controller="User" asp-action="PendingReports"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-bold text-danger
+           @(currentAction == "PendingReports" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-shield-exclamation me-3 fs-5"></i> Trung tâm xử lý vi phạm
         </a>
+
+        <a asp-area="User" asp-controller="User" asp-action="Ranking"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentAction == "Ranking" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-exclamation-triangle me-3 text-warning fs-5"></i> Bảng xếp hạng 
+        </a>
+
+        <a asp-area="Admin" asp-controller="Question" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentController == "Question" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-chat-square-text me-3 text-secondary fs-5"></i> Quản lý thảo luận
+        </a>
+
+        <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+           @(currentController == "Category" ? "active rounded-3 mb-1 shadow-sm" : "")">
+            <i class="bi bi-tags me-3 text-warning fs-5"></i> Danh mục hệ thống
+        </a>
+
+        <hr class="mx-4 my-2 text-muted opacity-25">
+
+        <a asp-area="" asp-controller="Home" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-4 py-3 fw-bold text-primary bg-light mt-2">
+            <i class="bi bi-box-arrow-left me-2 fs-5"></i> Về trang người dùng
+        </a>
+
     </div>
 </div>

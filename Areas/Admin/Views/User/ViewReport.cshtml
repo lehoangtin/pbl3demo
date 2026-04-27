@@ -1,0 +1,115 @@
+@model IEnumerable<StudyShare.ViewModels.ReportViewModel>
+@{
+    ViewData["Title"] = "Hồ sơ vi phạm cá nhân";
+    // Lấy tên người dùng từ báo cáo hoặc từ ViewBag để tránh bị trống
+    var targetUserName = Model.FirstOrDefault()?.TargetUserName ?? ViewBag.TargetUser ?? ViewBag.TargetUserName ?? "Người dùng";
+}
+
+<div class="container-fluid mt-4 mb-5 px-4">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            <div class="mb-3">
+                <a asp-action="PendingReports" class="btn btn-light border rounded-pill shadow-sm fw-bold text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4 mb-4 border-danger border-start border-4">
+                <div class="card-body p-4">
+                    <h4 class="m-0 text-dark">Hồ sơ vi phạm của: <span class="text-danger fw-bold">@targetUserName</span></h4>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any()) {
+                <div class="row g-4">
+                    @foreach (var r in Model.OrderByDescending(x => x.CreatedAt)) {
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                                <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center border-bottom">
+                                    <h5 class="mb-0 fw-bold text-danger">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Lý do: @r.Reason
+                                    </h5>
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                
+                                <div class="card-body p-4 bg-light">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <small class="text-muted d-block fw-bold mb-2">Nguồn báo cáo:</small>
+                                            @if (r.Reason.Contains("[HỆ THỐNG AI")) {
+                                                <span class="badge bg-info-subtle text-info border border-info px-3 py-2 rounded-pill fs-6">
+                                                    <i class="bi bi-robot me-1"></i> Hệ thống AI
+                                                </span>
+                                            } else {
+                                                <span class="badge bg-secondary px-3 py-2 rounded-pill fs-6">
+                                                    <i class="bi bi-person-fill me-1"></i> @r.ReporterName
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block fw-bold mb-2">Nội dung liên quan:</small>
+                                            @if (r.DocumentId.HasValue) { 
+                                                <span class="badge bg-white text-primary border px-3 py-2 rounded-pill fs-6">
+                                                    <i class="bi bi-file-earmark-text me-1"></i> Tài liệu #@r.DocumentId
+                                                </span> 
+                                            }
+                                            else if (r.QuestionId.HasValue) { 
+                                                <span class="badge bg-white text-primary border px-3 py-2 rounded-pill fs-6">
+                                                    <i class="bi bi-chat-square-text me-1"></i> Câu hỏi/Bình luận #@r.QuestionId
+                                                </span> 
+                                            }
+                                            else { 
+                                                <span class="badge bg-white text-muted border px-3 py-2 rounded-pill fs-6">
+                                                    <i class="bi bi-link-45deg me-1"></i> Không có liên kết
+                                                </span> 
+                                            }
+                                        </div>
+                                    </div>
+
+                                    @if (!r.IsResolved) {
+                                        <div class="d-flex justify-content-end pt-3 border-top mt-3">
+                                            
+                                            <form asp-area="Admin" asp-controller="User" asp-action="Penalize" method="post" class="me-2">
+                                                <input type="hidden" name="userId" value="@r.TargetUserId" />
+                                                <input type="hidden" name="reportId" value="@r.Id" />
+                                                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onclick="return confirm('Bạn chắc chắn muốn XỬ PHẠT (Trừ 10 điểm, +1 gậy) vi phạm này?');">
+                                                    <i class="bi bi-hammer me-1"></i> Xử phạt
+                                                </button>
+                                            </form>
+
+                                            <form asp-area="Admin" asp-controller="User" asp-action="DismissReport" method="post">
+                                                <input type="hidden" name="reportId" value="@r.Id" />
+                                                <button type="submit" class="btn btn-light border rounded-pill px-4 fw-bold shadow-sm text-muted" onclick="return confirm('Bạn chắc chắn muốn BỎ QUA báo cáo này?');">
+                                                    <i class="bi bi-x-circle me-1"></i> Bỏ qua
+                                                </button>
+                                            </form>
+                                        </div>
+                                    } 
+                                    else {
+                                        <div class="alert alert-info mb-0 mt-3 py-3 border-0 shadow-sm rounded-3 d-flex align-items-center">
+                                            <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
+                                            <div>
+                                                <strong class="d-block mb-1 text-dark">Trạng thái: Đã giải quyết</strong>
+                                                <span class="text-muted">Kết quả: @(r.ActionTaken ?? "Hệ thống đã xử lý")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            } else {
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0">
+                    <i class="bi bi-shield-check display-1 text-success opacity-50 d-block mb-3"></i>
+                    <h4 class="text-dark fw-bold">Hồ sơ trong sạch</h4>
+                    <p class="text-muted mb-0">Tài khoản này chưa có lịch sử vi phạm hoặc báo cáo nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

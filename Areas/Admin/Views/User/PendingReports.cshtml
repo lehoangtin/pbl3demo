@@ -1,0 +1,189 @@
+@model StudyShare.ViewModels.ReportDashboardViewModel
+@{
+    ViewData["Title"] = "Quản lý báo cáo vi phạm";
+}
+
+<div class="container-fluid mt-4 mb-5 px-4">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 animate__animated animate__fadeIn">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                    <h4 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Trung tâm xử lý vi phạm
+                    </h4>
+
+                    <ul class="nav nav-tabs border-bottom" id="reportTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active fw-bold px-4 py-3 border-0 border-bottom border-3 border-primary" 
+                                    id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab">
+                                Chờ xử lý 
+                                @if (Model.PendingReports.Any()) {
+                                    <span class="badge bg-danger rounded-pill ms-2">@Model.PendingReports.Count()</span>
+                                }
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold text-muted px-4 py-3 border-0 border-bottom border-3 border-transparent" 
+                                    id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved-pane" type="button" role="tab">
+                                Đã giải quyết (Lịch sử)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="tab-content" id="reportTabsContent">
+                        
+                        <div class="tab-pane fade show active" id="pending-pane" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3 text-muted fw-semibold">NGƯỜI BỊ BÁO CÁO</th>
+                                            <th class="text-muted fw-semibold">NGƯỜI BÁO CÁO</th>
+                                            <th class="text-muted fw-semibold" style="width: 30%;">LÝ DO VI PHẠM</th>
+                                            <th class="text-end pe-4 text-muted fw-semibold">THAO TÁC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.PendingReports.Any())
+                                        {
+                                            foreach (var item in Model.PendingReports)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4 py-3 fw-bold text-danger">@item.TargetUserName</td>
+                                                    <td class="text-dark">@item.ReporterName</td>
+                                                    <td>
+                                                        <span class="d-block text-truncate" style="max-width: 250px;" title="@item.Reason">@item.Reason</span>
+                                                        <small class="text-muted"><i class="bi bi-clock me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        
+                                                        <form asp-area="Admin" asp-controller="User" asp-action="Penalize" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn XỬ PHẠT (Trừ 10 điểm, +1 gậy cảnh cáo) tài khoản này?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="userId" value="@item.TargetUserId" />
+                                                            <input type="hidden" name="reportId" value="@item.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm me-1 fw-bold">
+                                                                <i class="bi bi-hammer"></i> Phạt
+                                                            </button>
+                                                        </form>
+                                                        
+                                                        <form asp-area="Admin" asp-controller="User" asp-action="DismissReport" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn BỎ QUA báo cáo này?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="reportId" value="@item.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-light border rounded-pill px-3 shadow-sm me-1 fw-bold">
+                                                                <i class="bi bi-x-circle text-muted"></i> Bỏ qua
+                                                            </button>
+                                                        </form>
+
+                                                        <a asp-area="Admin" asp-controller="User" asp-action="ViewReports" asp-route-id="@item.TargetUserId" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm fw-bold">
+                                                            <i class="bi bi-eye"></i> Chi tiết
+                                                        </a>
+
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-check2-all display-4 d-block mb-3 opacity-25"></i>
+                                                    Không có báo cáo nào đang chờ xử lý.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="resolved-pane" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3 text-muted small fw-semibold">NGƯỜI VI PHẠM</th>
+                                            <th class="text-muted small fw-semibold">PHÁT HIỆN BỞI</th>
+                                            <th class="text-muted small fw-semibold">NỘI DUNG & HÌNH PHẠT</th>
+                                            <th class="text-end pe-4 text-muted small fw-semibold">THỜI GIAN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.ResolvedReports.Any())
+                                        {
+                                            @foreach (var item in Model.ResolvedReports)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4 py-3 fw-bold text-dark">@item.TargetUserName</td>
+                                                    <td>
+                                                        @if (item.Reason.Contains("[HỆ THỐNG AI"))
+                                                        {
+                                                            <span class="badge bg-info-subtle text-info border border-info rounded-pill px-2">
+                                                                <i class="bi bi-robot me-1"></i> Hệ thống AI
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-light text-dark border rounded-pill px-2">
+                                                                <i class="bi bi-person me-1"></i> @item.ReporterName
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="small fw-medium text-dark">@item.Reason</div>
+                                                        <div class="small text-danger mt-1">
+                                                            <i class="bi bi-info-circle me-1"></i><strong>Kết quả:</strong> @item.ActionTaken
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-end pe-4 text-muted small">
+                                                        @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-archive display-4 d-block mb-3 opacity-25"></i>
+                                                    Chưa có lịch sử xử lý vi phạm nào.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-tabs .nav-link { color: #6c757d; border-radius: 0; }
+    .nav-tabs .nav-link.active { color: #0d6efd !important; border-bottom-color: #0d6efd !important; background: transparent; }
+    .border-transparent { border-color: transparent !important; }
+</style>

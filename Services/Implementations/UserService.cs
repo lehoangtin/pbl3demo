@@ -57,16 +57,38 @@ namespace StudyShare.Services.Implementations
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            var lockoutEndDate = await _userRepository.GetLockoutEndDateAsync(user);
-            if (lockoutEndDate.HasValue && lockoutEndDate > DateTimeOffset.Now)
+            // 1. Đảo ngược giá trị của biến IsBanned
+            user.IsBanned = !user.IsBanned;
+
+            // 🔥 THÊM ĐOẠN NÀY: NẾU ADMIN MỞ KHÓA THÌ RESET SỐ LẦN CẢNH CÁO VỀ 0 ĐỂ CHO HỌ CƠ HỘI LÀM LẠI
+            if (!user.IsBanned)
             {
-                await _userRepository.SetLockoutEndDateAsync(user, null); // Mở khóa
+                user.WarningCount = 0;
             }
-            else
+
+            // 2. Phải bật LockoutEnabled thì Identity mới cho phép thiết lập thời gian khóa
+            if (!user.LockoutEnabled)
             {
-                await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); // Khóa
+                user.LockoutEnabled = true;
             }
-            return true;
+
+            // 3. Lưu cập nhật IsBanned (và LockoutEnabled, WarningCount) xuống Database TRƯỚC
+            var updateResult = await _userRepository.UpdateUserAsync(user);
+
+            // 4. Nếu lưu DB thành công, tiến hành gọi Identity để khóa/mở khóa thời gian
+            if (updateResult)
+            {
+                if (user.IsBanned)
+                {
+                    await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); 
+                }
+                else
+                {
+                    await _userRepository.SetLockoutEndDateAsync(user, null);
+                }
+            }
+
+            return updateResult;
         }
 
         public async Task<AppUser?> GetUserProfileAsync(string userId)

@@ -7,7 +7,7 @@ using StudyShare.Services.Interfaces;
 using System.Security.Claims;
 using AutoMapper;
 using StudyShare.ViewModels;
-using StudyShare.Models; // Thêm để dùng AppUser, Report
+using StudyShare.Models;
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -21,7 +21,6 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IAIService _aiService; 
         private readonly IUserService _userService;
         
-        // 🔥 Bổ sung thêm Context và UserManager để xử lý Cộng điểm & Report giống bản cũ
         private readonly AppDbContext _context;
         private readonly UserManager<AppUser> _userManager;
 
@@ -43,15 +42,24 @@ namespace StudyShare.Areas.User.Controllers
             _userManager = userManager;
         }
 
-        // 🔥 Mở cho khách vãng lai xem danh sách
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
+            ViewData["CurrentFilter"] = searchString; 
+
             var data = await _questionService.GetAllAsync();
             var viewModel = _mapper.Map<IEnumerable<QuestionViewModel>>(data);
+            if(!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower(); 
+                viewModel = viewModel.Where(q => 
+                    (!string.IsNullOrEmpty(q.Title) && q.Title.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(q.Content) && q.Content.ToLower().Contains(searchString)) ||
+                    (!string.IsNullOrEmpty(q.AuthorName) && q.AuthorName.ToLower().Contains(searchString))
+                );
+            }
             return View(viewModel);
         }
 
-        // 🔥 Mở cho khách vãng lai xem chi tiết
         public async Task<IActionResult> Details(int id)
         {
             var questionDto = await _questionService.GetByIdAsync(id);
@@ -73,7 +81,6 @@ namespace StudyShare.Areas.User.Controllers
         {
             if (!ModelState.IsValid) return View(viewModel);
             
-            // Map ViewModel -> DTO
             var request = _mapper.Map<QuestionCreateRequest>(viewModel);
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
@@ -81,7 +88,21 @@ namespace StudyShare.Areas.User.Controllers
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
+                // Xử phạt user
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId, 
+                    TargetUserId = currentUserId,
+                    Reason = $"[HỆ THỐNG AI CHẶN TỰ ĐỘNG] Lý do: {aiCheck.reason}. Nội dung gốc: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
                 TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
                 return View(viewModel);
             }
@@ -89,7 +110,7 @@ namespace StudyShare.Areas.User.Controllers
             // TẠO CÂU HỎI
             await _questionService.CreateAsync(request, currentUserId);
 
-            // 🔥 CỘNG ĐIỂM
+            // CỘNG ĐIỂM
             var user = await _userManager.FindByIdAsync(currentUserId);
             if (user != null) 
             {
@@ -128,6 +149,20 @@ namespace StudyShare.Areas.User.Controllers
             if (aiCheck.isFlagged)
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId,
+                    TargetUserId = currentUserId,
+                    QuestionId = request.Id,
+                    Reason = $"[HỆ THỐNG AI CHẶN SỬA] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
                 TempData["Error"] = $"Vi phạm khi sửa: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
                 return View(viewModel);
             }
@@ -157,7 +192,6 @@ namespace StudyShare.Areas.User.Controllers
         {
             if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = viewModel.QuestionId });
 
-            // Map ViewModel -> DTO
             var request = _mapper.Map<AnswerCreateRequest>(viewModel);
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
@@ -166,6 +200,20 @@ namespace StudyShare.Areas.User.Controllers
             if (aiCheck.isFlagged)
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId,
+                    TargetUserId = currentUserId,
+                    QuestionId = request.QuestionId,
+                    Reason = $"[HỆ THỐNG AI CHẶN TRẢ LỜI] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
                 TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
                 return RedirectToAction(nameof(Details), new { id = request.QuestionId });
             }
@@ -173,7 +221,6 @@ namespace StudyShare.Areas.User.Controllers
             var success = await _answerService.CreateAsync(request, currentUserId);
             if (success) 
             {
-                // 🔥 CỘNG ĐIỂM
                 var user = await _userManager.FindByIdAsync(currentUserId);
                 if (user != null) 
                 {
