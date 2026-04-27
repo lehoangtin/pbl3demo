@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StudyShare.Models;
+using StudyShare.DTOs.Requests;
+using StudyShare.Services.Interfaces;
 using System.Security.Claims;
-using ai.Services;
-using System;
-using System.Threading.Tasks;
+using AutoMapper;
+using StudyShare.ViewModels;
+using StudyShare.Models;
 
 namespace StudyShare.Areas.User.Controllers
 {
@@ -14,251 +15,254 @@ namespace StudyShare.Areas.User.Controllers
     [Authorize]
     public class QuestionController : Controller
     {
+        private readonly IQuestionService _questionService;
+        private readonly IAnswerService _answerService; 
+        private readonly IMapper _mapper;
+        private readonly IAIService _aiService; 
+        private readonly IUserService _userService;
+        
         private readonly AppDbContext _context;
-        private readonly AIService _aiService;
         private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
 
-        public QuestionController(AppDbContext context, AIService aiService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public QuestionController(
+            IQuestionService questionService, 
+            IAnswerService answerService, 
+            IMapper mapper, 
+            IAIService aiService, 
+            IUserService userService,
+            AppDbContext context,
+            UserManager<AppUser> userManager)
         {
-            _context = context;
+            _questionService = questionService;
+            _answerService = answerService;
+            _mapper = mapper;
             _aiService = aiService;
+            _userService = userService;
+            _context = context;
             _userManager = userManager;
-            _signInManager = signInManager;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var questions = await _context.Questions
-                .Include(q => q.User)
-                .Include(q => q.Answers)
-                .OrderByDescending(q => q.CreatedAt)
-                .ToListAsync();
-            return View(questions);
-        }
+        public async Task<IActionResult> Index(string searchString)
+{
+    // Lưu lại từ khóa tìm kiếm để hiển thị lại trên ô input sau khi tải trang
+    ViewData["CurrentFilter"] = searchString;
 
-        public IActionResult Create() => View();
+    var questionsDto = await _questionService.GetAllAsync();
+    var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(questionsDto);
 
-        // ================= CREATE =================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Question model)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return NotFound();
+    // Thực hiện lọc nếu có từ khóa
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        searchString = searchString.ToLower();
+        viewModels = viewModels.Where(q => 
+            (q.Title != null && q.Title.ToLower().Contains(searchString)) || 
+            (q.Content != null && q.Content.ToLower().Contains(searchString))
+        );
+    }
 
-            // 1. GỌI AI KIỂM TRA NỘI DUNG TRƯỚC KHI LƯU
-            var aiResult = await _aiService.CheckContentAsync(model.Content);
+    // Sắp xếp câu hỏi mới nhất lên đầu
+    viewModels = viewModels.OrderByDescending(q => q.CreatedAt);
 
-            // 2. NẾU AI PHÁT HIỆN VI PHẠM
-            if (aiResult.isFlagged)
-            {
-                user.Points -= 10;
-                user.WarningCount += 1;
+    return View(viewModels);
+}
 
-                // Lưu thẳng báo cáo vào Lịch sử xử lý
-                var newReport = new Report
-                {
-                    TargetUserId = userId,
-                    ReporterUserId = null, // Logo AI
-                    Reason = $"AI Quét tự động (Tạo câu hỏi): {aiResult.reason}",
-                    CreatedAt = DateTime.Now,
-                    IsResolved = true, 
-                    ActionTaken = "Hệ thống AI chặn bài & Phạt 10đ" 
-                };
-                _context.Reports.Add(newReport);
-
-                // Khóa tài khoản nếu vi phạm nhiều
-                if (user.WarningCount >= 3 || user.Points < 0)
-                {
-                    user.IsBanned = true;
-                    await _context.SaveChangesAsync();
-                    
-                    await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá 3 lần hoặc điểm âm!";
-                    return RedirectToAction("Login", "Account", new { area = "" });
-                }
-
-                await _context.SaveChangesAsync();
-
-                ModelState.AddModelError("", $"Nội dung vi phạm: {aiResult.reason} (-10 điểm, +1 cảnh cáo)");
-                return View(model); 
-            }
-
-            // 3. NẾU AN TOÀN THÌ LƯU CÂU HỎI
-            model.UserId = userId;
-            model.CreatedAt = DateTime.Now;
-            
-            _context.Questions.Add(model);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Đăng câu hỏi thành công!";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ================= EDIT =================
-        public async Task<IActionResult> Edit(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var question = await _context.Questions
-                .FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
-
-            if (question == null) return NotFound();
-
-            return View(question);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Question updatedQuestion)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var existingQuestion = await _context.Questions
-                .FirstOrDefaultAsync(q => q.Id == id && q.UserId == userId);
-
-            if (existingQuestion == null) return NotFound();
-
-            ModelState.Remove("UserId");
-            ModelState.Remove("User");
-            ModelState.Remove("Answers");
-
-            if (!ModelState.IsValid) return View(updatedQuestion);
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return NotFound();
-
-            // 🔥 AI CHECK
-            var aiResult = await _aiService.CheckContentAsync(updatedQuestion.Content);
-
-            if (aiResult.isFlagged)
-            {
-                user.Points -= 10;
-                user.WarningCount += 1;
-
-                // Lưu thẳng báo cáo vào Lịch sử xử lý
-                var newReport = new Report
-                {
-                    TargetUserId = userId,
-                    ReporterUserId = null,
-                    QuestionId = id,
-                    Reason = $"AI Quét tự động (Sửa câu hỏi): {aiResult.reason}",
-                    CreatedAt = DateTime.Now,
-                    IsResolved = true,
-                    ActionTaken = "Hệ thống AI chặn sửa bài & Phạt 10đ"
-                };
-                _context.Reports.Add(newReport);
-
-                if (user.WarningCount >= 3 || user.Points < 0)
-                {
-                    user.IsBanned = true;
-                    await _context.SaveChangesAsync();
-                    
-                    await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá nhiều!";
-                    return RedirectToAction("Login", "Account", new { area = "" });
-                }
-
-                await _context.SaveChangesAsync();
-                ViewBag.Error = $"Bị AI chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
-                return View(updatedQuestion);
-            }
-
-            existingQuestion.Content = updatedQuestion.Content;
-
-            _context.Update(existingQuestion);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Cập nhật câu hỏi thành công!";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ================= ANSWER =================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostAnswer(int questionId, string content)
-        {
-            if (string.IsNullOrWhiteSpace(content))
-                return RedirectToAction("Details", new { id = questionId });
-
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Challenge();
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return NotFound();
-
-            // 🔥 AI CHECK
-            var aiResult = await _aiService.CheckContentAsync(content);
-
-            if (aiResult.isFlagged)
-            {
-                user.Points -= 10;
-                user.WarningCount += 1;
-
-                // Lưu thẳng báo cáo vào Lịch sử xử lý
-                var newReport = new Report
-                {
-                    TargetUserId = userId,
-                    ReporterUserId = null,
-                    QuestionId = questionId,
-                    Reason = $"AI Quét tự động (Bình luận): {aiResult.reason}",
-                    CreatedAt = DateTime.Now,
-                    IsResolved = true,
-                    ActionTaken = "Hệ thống AI chặn bình luận & Phạt 10đ"
-                };
-                _context.Reports.Add(newReport);
-
-                if (user.WarningCount >= 3 || user.Points < 0)
-                {
-                    user.IsBanned = true;
-                    await _context.SaveChangesAsync();
-
-                    await _signInManager.SignOutAsync();
-                    TempData["Error"] = "Tài khoản của bạn đã bị khóa do vi phạm quá 3 lần!";
-                    return RedirectToAction("Login", "Account", new { area = "" });
-                }
-
-                await _context.SaveChangesAsync();
-
-                TempData["Error"] = $"Câu trả lời bị chặn: {aiResult.reason} (-10 điểm, +1 cảnh cáo)";
-                return RedirectToAction("Details", new { id = questionId });
-            }
-
-            var answer = new Answer
-            {
-                Content = content,
-                QuestionId = questionId,
-                UserId = userId,
-                CreatedAt = DateTime.Now
-            };
-
-            user.Points += 3;
-
-            _context.Answers.Add(answer);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Đã gửi câu trả lời và được cộng 3 điểm!";
-            return RedirectToAction("Details", new { id = questionId });
-        }
-
-        // ================= DETAILS =================
         public async Task<IActionResult> Details(int id)
         {
-            var question = await _context.Questions
-                .Include(q => q.User)
-                .Include(q => q.Answers).ThenInclude(a => a.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var questionDto = await _questionService.GetByIdAsync(id);
+            if (questionDto == null) return NotFound();
 
-            if (question == null) return NotFound();
+            var viewModel = _mapper.Map<QuestionViewModel>(questionDto);
+            var answers = await _answerService.GetByQuestionIdAsync(id);
+            viewModel.Answers = _mapper.Map<IEnumerable<AnswerViewModel>>(answers).ToList();
 
-            return View(question);
+            return View(viewModel);
         }
 
-        // ================= REPORT (USER BÁO CÁO NHAU) =================
+        [HttpGet]
+        public IActionResult Create() => View();
+
         [HttpPost]
-        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(QuestionCreateViewModel viewModel)
+        {
+            if (!ModelState.IsValid) return View(viewModel);
+            
+            var request = _mapper.Map<QuestionCreateRequest>(viewModel);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+            // KIỂM DUYỆT AI
+            var aiCheck = await _aiService.CheckContentAsync(request.Content);
+            if (aiCheck.isFlagged)
+            {
+                // Xử phạt user
+                await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId, 
+                    TargetUserId = currentUserId,
+                    Reason = $"[HỆ THỐNG AI CHẶN TỰ ĐỘNG] Lý do: {aiCheck.reason}. Nội dung gốc: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
+                TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
+                return View(viewModel);
+            }
+
+            // TẠO CÂU HỎI
+            await _questionService.CreateAsync(request, currentUserId);
+
+            // CỘNG ĐIỂM
+            var user = await _userManager.FindByIdAsync(currentUserId);
+            if (user != null) 
+            {
+                user.Points += 5; 
+                await _userManager.UpdateAsync(user);
+            }
+
+            TempData["Success"] = "Đăng câu hỏi thành công! Bạn được cộng 5 điểm.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var question = await _questionService.GetByIdAsync(id);
+            if (question == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (question.UserId != currentUserId && !User.IsInRole("Admin"))
+                return Unauthorized("Bạn không có quyền sửa câu hỏi này.");
+
+            var viewModel = new QuestionEditViewModel { Id = question.Id, Content = question.Content };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
+        {
+            if (!ModelState.IsValid) return View(viewModel);
+
+            var request = _mapper.Map<QuestionUpdateRequest>(viewModel);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+            var aiCheck = await _aiService.CheckContentAsync(request.Content);
+            if (aiCheck.isFlagged)
+            {
+                await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId,
+                    TargetUserId = currentUserId,
+                    QuestionId = request.Id,
+                    Reason = $"[HỆ THỐNG AI CHẶN SỬA] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
+                TempData["Error"] = $"Vi phạm khi sửa: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
+                return View(viewModel);
+            }
+
+            bool isAdmin = User.IsInRole("Admin");
+            var success = await _questionService.UpdateAsync(request, currentUserId, isAdmin);
+            if (!success) return Unauthorized();
+
+            TempData["Success"] = "Cập nhật thành công!";
+            return RedirectToAction(nameof(Details), new { id = request.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            bool isAdmin = User.IsInRole("Admin");
+
+            await _questionService.DeleteAsync(id, currentUserId, isAdmin);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostAnswer(AnswerCreateViewModel viewModel)
+        {
+            if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = viewModel.QuestionId });
+
+            var request = _mapper.Map<AnswerCreateRequest>(viewModel);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+            // KIỂM DUYỆT AI CHO CÂU TRẢ LỜI
+            var aiCheck = await _aiService.CheckContentAsync(request.Content);
+            if (aiCheck.isFlagged)
+            {
+                await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId,
+                    TargetUserId = currentUserId,
+                    QuestionId = request.QuestionId,
+                    Reason = $"[HỆ THỐNG AI CHẶN TRẢ LỜI] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
+                TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
+                return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+            }
+
+            var success = await _answerService.CreateAsync(request, currentUserId);
+            if (success) 
+            {
+                var user = await _userManager.FindByIdAsync(currentUserId);
+                if (user != null) 
+                {
+                    user.Points += 3;
+                    await _userManager.UpdateAsync(user);
+                }
+                TempData["Success"] = "Đã đăng câu trả lời! Bạn được cộng 3 điểm."; 
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+        }
+        [HttpPost]
+[ValidateAntiForgeryToken]
+// Cần truyền vào 2 tham số: ID của câu trả lời muốn xóa, và ID của câu hỏi để quay về
+public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
+{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    bool isAdmin = User.IsInRole("Admin");
+
+    // Tận dụng hàm DeleteAsync trong AnswerService (nó đã tự check quyền chủ sở hữu hoặc Admin)
+    var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
+    
+    if (success)
+    {
+        TempData["Success"] = "Đã xóa câu trả lời thành công.";
+    }
+    else
+    {
+        TempData["Error"] = "Bạn không có quyền xóa câu trả lời này hoặc có lỗi xảy ra.";
+    }
+
+    // Xóa xong thì chuyển hướng người dùng về lại đúng trang chi tiết của Câu hỏi đó
+    return RedirectToAction(nameof(Details), new { id = questionId });
+}
+
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)
         {
@@ -279,29 +283,25 @@ namespace StudyShare.Areas.User.Controllers
             if (string.IsNullOrEmpty(targetUserId) || reporterId == targetUserId)
             {
                 TempData["Error"] = "Thao tác không hợp lệ.";
-                return RedirectToAction("Index");
+                int returnId = questionId ?? (answerId.HasValue ? _context.Answers.Find(answerId)?.QuestionId ?? 0 : 0);
+                return RedirectToAction("Details", new { id = returnId });
             }
 
             var report = new Report
             {
-                ReporterUserId = reporterId!,
+                ReporterUserId = reporterId,
                 TargetUserId = targetUserId,
                 QuestionId = questionId,
                 AnswerId = answerId,
-                Reason = reason,
-                CreatedAt = DateTime.Now,
-                // Báo cáo do User gửi thì Admin vẫn phải duyệt (chưa giải quyết)
-                IsResolved = false,
-                ActionTaken = null 
+                Reason = reason
             };
 
             _context.Reports.Add(report);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = "Đã gửi báo cáo vi phạm thành công! Quản trị viên sẽ xem xét.";
-
-            int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId))?.QuestionId ?? 0;
-
+            TempData["Success"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
+            
+            int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId)).QuestionId;
             return RedirectToAction("Details", new { id = redirectId });
         }
     }

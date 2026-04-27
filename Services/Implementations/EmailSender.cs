@@ -2,10 +2,11 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using StudyShare.Services.Interfaces;
 
 namespace StudyShare.Services
 {
-    public class EmailSender
+    public class EmailSender : IEmailSender
     {
         private readonly MailSettings _mailSettings;
 

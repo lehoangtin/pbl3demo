@@ -1,59 +1,54 @@
-using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using StudyShare.Models;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using StudyShare.Services.Interfaces;
+using StudyShare.ViewModels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity; // CẦN THÊM DÒNG NÀY
-
+using StudyShare.DTOs.Responses;
+using StudyShare.Services.Implementations;
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<AppUser> _userManager; // Khai báo thêm UserManager
+        private readonly IDashboardService   _dashboardService;
+        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
+        private readonly IDocumentService _documentService;
 
-        // Tiêm UserManager vào Constructor
-        public HomeController(AppDbContext context, UserManager<AppUser> userManager)
+        public HomeController(IDashboardService dashboardService, IMapper mapper, IUserService userService, IDocumentService documentService)
         {
-            _context = context;
-            _userManager = userManager;
+            _dashboardService = dashboardService;
+            _mapper = mapper;
+            _userService = userService;
+            _documentService = documentService;
         }
 
         public async Task<IActionResult> Index()
         {
-            // 1. Thống kê người dùng
-            ViewBag.TotalUsers = await _context.Users.CountAsync();
-            ViewBag.BannedUsers = await _context.Users.CountAsync(u => u.IsBanned);
-            
-            // 2. Thống kê tài liệu
-            ViewBag.TotalDocuments = await _context.Documents.CountAsync();
-            ViewBag.ApprovedDocuments = await _context.Documents.CountAsync(d => d.IsApproved);
-            ViewBag.PendingDocuments = await _context.Documents.CountAsync(d => !d.IsApproved);
-            
-            // 3. Thống kê hỏi đáp & danh mục
-            ViewBag.TotalQuestions = await _context.Questions.CountAsync();
-            ViewBag.TotalAnswers = await _context.Answers.CountAsync();
-            ViewBag.TotalCategories = await _context.Categories.CountAsync();
+            var stats = await _dashboardService.GetAdminDashboardStatsAsync();
+    
+            // Giả sử service của bạn cũng cung cấp TopUsers và PendingDocs
+            // Nếu chưa có, bạn hãy gọi thêm hàm từ UserService/DocumentService để lấy
+            var topUsersDto = await _userService.GetTopRankingAsync(5); // Giả sử lấy top 5
+            var pendingDocsDto = await _documentService.GetPendingDocumentsAsync();
+            var viewModel = new AdminDashboardViewModel 
+            {
+                TotalUsers = stats.TotalUsers,
+                BannedUsers = stats.BannedUsers,
+                TotalDocuments = stats.TotalDocuments,
+                ApprovedDocuments = stats.ApprovedDocuments,
+                PendingDocuments = stats.PendingDocuments,
+                TotalQuestions = stats.TotalQuestions,
+                TotalAnswers = stats.TotalAnswers,
+                TotalCategories = stats.TotalCategories,
+                
+                // Gán dữ liệu danh sách vào ViewModel
+            TopUsers = _mapper.Map<List<UserViewModel>>(topUsersDto),
+            RecentPendingDocs = _mapper.Map<List<DocumentViewModel>>(pendingDocsDto)            };
 
-            // 4. Lấy danh sách Top 5 người dùng điểm cao nhất (🔥 ĐÃ SỬA: CHỈ LẤY ROLE "USER")
-            var normalUsers = await _userManager.GetUsersInRoleAsync("User");
-            ViewBag.TopUsers = normalUsers
-                .OrderByDescending(u => u.Points)
-                .Take(5)
-                .ToList();
-
-            // 5. Lấy 5 tài liệu mới nhất đang chờ duyệt
-            ViewBag.RecentPendingDocs = await _context.Documents
-                .Include(d => d.User)
-                .Where(d => !d.IsApproved)
-                .OrderByDescending(d => d.UploadDate)
-                .Take(5)
-                .ToListAsync();
-
-            return View();
+            return View(viewModel);
         }
     }
 }

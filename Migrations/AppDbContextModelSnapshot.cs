@@ -8,7 +8,7 @@ using StudyShare.Models;
 
 #nullable disable
 
-namespace PBL3demo.Migrations
+namespace StudyShare.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot

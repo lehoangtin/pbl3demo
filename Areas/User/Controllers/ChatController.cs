@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using ai.Services;
+using StudyShare.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization; 
+using StudyShare.Services.Interfaces; // Thêm using cho IAIService
 
-namespace ai.Controllers
+namespace StudyShare.Areas.User.Controllers
 {
+    [Area("User")]
     public class UserMessage
     {
         public string text { get; set; }
@@ -15,9 +17,9 @@ namespace ai.Controllers
     // [Authorize] 
     public class ChatController : Controller
     {
-        private readonly AIService _aiService;
+        private readonly IAIService _aiService;
 
-        public ChatController(AIService aiService)
+        public ChatController(IAIService aiService)
         {
             _aiService = aiService;
         }

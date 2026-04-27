@@ -1,88 +1,58 @@
-@* @model StudyShare.Models.Document
-
-<h2>Upload tài liệu</h2>
-
-<form asp-area="User" asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label>Title</label>
-        <input asp-for="Title" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label>Description</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-    </div>
-<div class="mb-3">
-    <label class="form-label fw-bold">Chọn danh mục tài liệu</label>
-    <select asp-for="CategoryId" class="form-select rounded-3" asp-items="ViewBag.CategoryId">
-        <option value="">-- Vui lòng chọn danh mục --</option>
-    </select>
-    <span asp-validation-for="CategoryId" class="text-danger"></span>
-</div>
-    <div class="mb-3">
-        <label>Chọn file</label>
-        <input type="file" name="file" class="form-control" />
-    </div>
-
-    <button class="btn btn-success">Upload</button>
-
-</form>
-
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="text-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <p>@error.ErrorMessage</p>
-        }
-    </div>
-} *@
-@model StudyShare.Models.Document
+@model StudyShare.ViewModels.DocumentCreateViewModel
 @{
-    ViewData["Title"] = "Tải lên tài liệu";
+    ViewData["Title"] = "Tải lên tài liệu mới";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mb-3">
+                <a asp-action="Index" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại tài liệu của tôi
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-cloud-arrow-up-fill me-2"></i> Chia sẻ tài liệu mới</h5>
                 </div>
-                <div class="card-body p-4">
-                    <form asp-area="User" asp-controller="Document" asp-action="Create" method="post" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+                <div class="card-body p-4 p-md-5 bg-light">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" class="bg-white p-4 rounded-4 shadow-sm border">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
 
-                        <div class="mb-3">
-                            <label asp-for="Title" class="form-label fw-bold">Tiêu đề tài liệu</label>
-                            <input asp-for="Title" class="form-control rounded-3" placeholder="Ví dụ: Đồ án PBL3 - Quản lý thư viện" />
-                            <span asp-validation-for="Title" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="CategoryId" class="form-label fw-bold">Danh mục tài liệu</label>
-                            <select asp-for="CategoryId" class="form-select rounded-3" asp-items="ViewBag.CategoryId">
-                                <option value="">-- Chọn chuyên mục phù hợp --</option>
-                            </select>
-                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label fw-bold">Mô tả ngắn gọn</label>
-                            <textarea asp-for="Description" class="form-control rounded-3" rows="3" placeholder="Chia sẻ một chút về nội dung tài liệu này..."></textarea>
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-bold text-dark">Tiêu đề tài liệu <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control form-control-lg rounded-3 bg-light border-0 shadow-sm" placeholder="Nhập tiêu đề rõ ràng, ngắn gọn..." />
+                            <span asp-validation-for="Title" class="text-danger small mt-1"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Chọn tệp tin</label>
-                            <input type="file" name="file" id="fileInput" class="form-control rounded-3" accept=".pdf,.docx,.pptx,.xlsx,.txt,.png,.jpg" required />
-                            <div class="form-text mt-2 text-muted">
-                                <i class="bi bi-info-circle me-1"></i> Chấp nhận PDF, Word, Excel, PowerPoint, Ảnh (Tối đa 20MB).
+                            <label asp-for="CategoryId" class="form-label fw-bold text-dark">Chuyên mục <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryId" class="form-select form-select-lg rounded-3 bg-light border-0 shadow-sm" asp-items="ViewBag.CategoryId">
+                                <option value="">-- Chọn chuyên mục phù hợp --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold text-dark">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control rounded-3 bg-light border-0 shadow-sm" rows="4" placeholder="Giới thiệu sơ lược về nội dung tài liệu này..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4 p-4 bg-light border border-2 border-dashed rounded-4 text-center">
+                            <label asp-for="File" class="form-label fw-bold d-block mb-3 fs-5 text-primary">Chọn tệp tin đính kèm <span class="text-danger">*</span></label>
+                            <input asp-for="File" type="file" id="fileInput" class="form-control form-control-lg rounded-pill shadow-sm" accept=".pdf,.docx,.pptx,.xlsx,.txt,.zip,.rar,.png,.jpg" />
+                            <span asp-validation-for="File" class="text-danger small d-block mt-2"></span>
+                            <div class="form-text mt-3 text-muted">
+                                <i class="bi bi-info-circle me-1 text-primary"></i> Hỗ trợ PDF, Word, Excel, PowerPoint, ZIP, Ảnh (Tối đa 20MB).
                             </div>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold py-2">
-                                <i class="bi bi-upload me-2"></i> Tải lên ngay
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top mt-4">
+                            <a asp-action="Index" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                                <i class="bi bi-upload me-2"></i> Tải lên
                             </button>
                         </div>
                     </form>
@@ -93,17 +63,13 @@
 </div>
 
 @section Scripts {
-    @* 🔥 Nhúng các thư viện Validation đã có trong project của bạn *@
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
-    
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        // Hỗ trợ kiểm tra kích thước file ngay khi người dùng chọn
-        document.getElementById('fileInput').onchange = function() {
-            if(this.files[0].size > 20 * 1024 * 1024) {
-               alert("Tệp tin quá lớn! Vui lòng chọn tệp dưới 20MB.");
-               this.value = "";
-            };
-        };
+        document.getElementById('fileInput').addEventListener('change', function () {
+            if (this.files[0] && this.files[0].size > 20 * 1024 * 1024) {
+                alert('Tệp tin quá lớn! Vui lòng chọn tệp dưới 20MB.');
+                this.value = ''; 
+            }
+        });
     </script>
 }

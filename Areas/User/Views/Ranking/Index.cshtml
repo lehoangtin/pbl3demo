@@ -1,75 +1,105 @@
-@using StudyShare.Models
-@model IEnumerable<StudyShare.Models.AppUser>
-
+@model IEnumerable<StudyShare.DTOs.Responses.UserResponse>
 @{
     ViewData["Title"] = "Bảng Vàng Thành Tích";
     int rank = 1; // Khởi tạo biến đếm thứ hạng
 }
 
-<div class="row justify-content-center mt-4 mb-5">
-    <div class="col-md-8 text-center">
-        <h2 class="display-5 fw-bold text-warning mb-3"><i class="bi bi-trophy-fill"></i> Bảng Vàng Thành Tích</h2>
-        <p class="text-muted fs-5">Vinh danh những thành viên đóng góp tích cực nhất cho Hệ sinh thái Học tập.</p>
-    </div>
-</div>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-dark m-0"><i class="bi bi-trophy-fill text-warning me-2"></i> Bảng Vàng Thành Tích</h3>
+            </div>
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow border-0" style="border-radius: 15px;">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-muted">
-                            <tr>
-                                <th class="text-center" style="width: 15%">Hạng</th>
-                                <th style="width: 50%">Thành viên</th>
-                                <th class="text-center" style="width: 35%">Điểm tích lũy</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in Model)
-                            {
-                                <tr class="@(rank <= 3 ? "fw-bold" : "")">
-                                    <td class="text-center fs-4">
-                                        @if (rank == 1)
-                                        {
-                                            <i class="bi bi-award-fill text-warning" title="Huy chương Vàng"></i>
-                                        }
-                                        else if (rank == 2)
-                                        {
-                                            <i class="bi bi-award-fill text-secondary" title="Huy chương Bạc"></i>
-                                        }
-                                        else if (rank == 3)
-                                        {
-                                            <i class="bi bi-award-fill" style="color: #cd7f32;" title="Huy chương Đồng"></i>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted fs-5">#@rank</span>
-                                        }
-                                    </td>
-                                    
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=@user.UserName&background=random" class="rounded-circle me-3 shadow-sm" width="45" alt="Avatar">
-                                            <div>
-                                                <h5 class="mb-0 text-primary">@user.UserName</h5>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    
-                                    <td class="text-center">
-                                        <span class="badge rounded-pill @(rank <= 3 ? "bg-success" : "bg-secondary") fs-6 px-3 py-2">
-                                            <i class="bi bi-coin"></i> @user.Points Điểm
-                                        </span>
-                                    </td>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-warning py-4 text-center border-0 position-relative overflow-hidden">
+                    <div class="position-relative z-1">
+                        <h4 class="mb-1 fw-bold text-dark">Vinh danh Đóng góp</h4>
+                        <p class="mb-0 text-dark opacity-75">Cảm ơn những thành viên đã tích cực xây dựng cộng đồng học tập.</p>
+                    </div>
+                    <i class="bi bi-star-fill position-absolute text-white opacity-25" style="font-size: 8rem; right: -20px; top: -30px;"></i>
+                </div>
+                
+                <div class="card-body p-0 bg-white">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th class="text-center py-3" style="width: 15%">Hạng</th>
+                                    <th style="width: 50%">Thành viên</th>
+                                    <th class="text-center pe-4" style="width: 35%">Điểm tích lũy</th>
                                 </tr>
-                                rank++;
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var user in Model.OrderByDescending(u => u.Points)) // Đảm bảo luôn sort theo điểm giảm dần
+                                    {
+                                        <tr class="@(rank == 1 ? "bg-warning bg-opacity-10" : rank == 2 ? "bg-secondary bg-opacity-10" : rank == 3 ? "bg-danger bg-opacity-10" : "") transition-hover">
+                                            
+                                            <td class="text-center fs-4 py-3">
+                                                @if (rank == 1)
+                                                {
+                                                    <i class="bi bi-award-fill text-warning" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); font-size: 2rem;" title="Huy chương Vàng"></i>
+                                                }
+                                                else if (rank == 2)
+                                                {
+                                                    <i class="bi bi-award-fill text-secondary" style="font-size: 1.8rem;" title="Huy chương Bạc"></i>
+                                                }
+                                                else if (rank == 3)
+                                                {
+                                                    <i class="bi bi-award-fill" style="color: #cd7f32; font-size: 1.8rem;" title="Huy chương Đồng"></i>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fs-6 fw-bold">#@rank</span>
+                                                }
+                                            </td>
+                                            
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=@user.FullName&background=random&color=fff&bold=true" 
+                                                         class="rounded-circle me-3 shadow-sm border border-2 border-white" width="50" height="50" alt="Avatar">
+                                                    <div>
+                                                        <h6 class="mb-0 text-dark fw-bold fs-5">@user.FullName</h6>
+                                                        @if (rank == 1)
+                                                        {
+                                                            <span class="badge bg-warning text-dark mt-1"><i class="bi bi-fire me-1 text-danger"></i>Thành viên xuất sắc nhất</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="text-center pe-4">
+                                                <span class="badge rounded-pill @(rank <= 3 ? "bg-white text-dark border border-warning shadow-sm" : "bg-light text-secondary border") fs-6 px-4 py-2">
+                                                    <i class="bi bi-coin me-1 @(rank <= 3 ? "text-warning" : "")"></i> @user.Points
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5 text-muted border-0">
+                                            <i class="bi bi-trophy display-4 opacity-25 d-block mb-3"></i>
+                                            Bảng xếp hạng hiện chưa có dữ liệu.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .transition-hover:hover {
+        background-color: #f8f9fa !important;
+        transition: all 0.2s ease;
+    }
+</style>

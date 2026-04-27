@@ -11,12 +11,56 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+    body {
+        /* CỰC KỲ QUAN TRỌNG: Gộp chấm bi và gradient vào chung background-image */
+        /* Thứ tự: Chấm bi viết trước (nằm trên), Gradient viết sau (nằm dưới) */
+        background-image: 
+            radial-gradient(#cfd8dc 1.2px, transparent 1.2px), 
+            linear-gradient(135deg, #d4f1f4 0%, #ffdde1 40%, #fff8e1 100%) !important;
+        
+        /* Size tương ứng: 25px cho chấm bi, 100% cho dải màu nền */
+        background-size: 25px 25px, 100% 100% !important;
+        background-attachment: fixed !important;
+        min-height: 100vh !important;
+        margin: 0;
+    }
+
+    /* Chữ "Thư viện tài liệu" xịn sò kiểu Gradient */
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        background: linear-gradient(to right, #01579b, #0288d1, #26c6da);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+    }
+
+    /* Container trong suốt để không che mất nền */
+    .container, .container-fluid {
+        background-color: transparent !important;
+    }
+
+    /* Card trắng mờ (Glassmorphism nhẹ) để nổi bật trên nền gradient */
+    .card {
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.5) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+    }
+</style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
             <div class="container">
-                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="Home" asp-action="Index">StudyShare</a>
+                <a class="navbar-brand fw-bold text-info" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-book-half me-2"></i>StudyShare
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -44,28 +88,28 @@
                                     <a class="nav-link dropdown-toggle text-warning" href="#" data-bs-toggle="dropdown">
                                         <i class="bi bi-speedometer2 me-1"></i> Quản trị
                                     </a>
-                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg">
                                         <li>
                                             <a class="dropdown-item fw-bold text-info" asp-area="Admin" asp-controller="Home" asp-action="Index">
                                                 <i class="bi bi-house-gear me-2"></i>Dashboard
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="User" asp-action="Index">Người dùng</a></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Document" asp-action="Index">Tài liệu</a></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Question" asp-action="Index">Q&A</a></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">Danh mục</a></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="User" asp-action="ReportedUsers">Vi phạm</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="User" asp-action="Index"><i class="bi bi-people me-2"></i> Người dùng</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Document" asp-action="Index"><i class="bi bi-file-earmark-text me-2"></i> Tài liệu</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Question" asp-action="Index"><i class="bi bi-question-circle me-2"></i> Q&A</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index"><i class="bi bi-tags me-2"></i> Danh mục</a></li>
+                                        <li><a class="dropdown-item text-danger" asp-area="Admin" asp-controller="User" asp-action="PendingReports"><i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm</a></li>
                                     </ul>
                                 </li>
                             }
                             else
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-area="User" asp-controller="Document" asp-action="Create">Tải lên</a>
+                                    <a class="nav-link text-white" asp-area="User" asp-controller="Document" asp-action="Create">Tải lên</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-area="User" asp-controller="Document" asp-action="Index">Tài liệu của tôi</a>
+                                    <a class="nav-link text-white" asp-area="User" asp-controller="Document" asp-action="Index">Tài liệu của tôi</a>
                                 </li>
                             }
                         }
@@ -77,32 +121,30 @@
     </header>
 
     <div class="container mt-4">
-        <main role="main" class="pb-3">
-            
-            @* --- ĐOẠN CODE HIỂN THỊ THÔNG BÁO CHUNG --- *@
+        <main role="main" class="pb-5">
+            @* --- HIỂN THỊ THÔNG BÁO --- *@
             @if (TempData["Success"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-pill px-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-pill px-4" role="alert">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
-            @* ---------------------------------------- *@
 
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-5">
+    <footer class="footer text-muted mt-auto py-3">
         <div class="container text-center">
-            &copy; 2026 - StudyShare
+            <small>&copy; 2026 - <span class="text-primary fw-bold">StudyShare</span> Community</small>
         </div>
     </footer>
 

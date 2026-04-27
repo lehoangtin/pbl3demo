@@ -1,61 +1,42 @@
-@model StudyShare.Models.Question
-@{ ViewData["Title"] = "Đặt câu hỏi mới"; }
+@model StudyShare.ViewModels.QuestionCreateViewModel
+@{
+    ViewData["Title"] = "Đặt câu hỏi mới";
+}
 
-<div class="container mt-5">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h3 class="fw-bold mb-4 text-primary">
-                    <i class="bi bi-pencil-square me-2"></i> Đặt câu hỏi cho cộng đồng
-                </h3>
-                
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Nội dung câu hỏi của bạn</label>
-                        <textarea asp-for="Content" class="form-control rounded-3" rows="5" 
-                                  placeholder="Ví dụ: Làm sao để cài đặt SQL Server trên MacOS?"></textarea>
-                        <span asp-validation-for="Content" class="text-danger small"></span>
-                    </div>
+            <h4 class="fw-bold text-dark mb-4"><i class="bi bi-patch-question text-primary me-2"></i> Đặt câu hỏi thảo luận</h4>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-send me-1"></i> Đăng câu hỏi
-                        </button>
-                        <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">
-                            Hủy bỏ
-                        </a>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="mt-4 p-3 bg-light rounded-3 small text-muted border-start border-4 border-warning">
-                <strong>Lưu ý:</strong> Hãy đặt câu hỏi văn minh, rõ ràng để nhận được câu trả lời tốt nhất từ cộng đồng StudyShare.
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger rounded-3 shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="mb-4">
+                            <label asp-for="Content" class="form-label fw-bold text-secondary">Nội dung câu hỏi của bạn</label>
+                            <textarea asp-for="Content" class="form-control rounded-3" rows="6" placeholder="Mô tả chi tiết thắc mắc của bạn vào đây..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end align-items-center">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 me-3 fw-medium">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                                <i class="bi bi-send me-1"></i> Đăng câu hỏi
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.PartialAsync("_ValidationScriptsPartial");}
-
-    <!-- 🔥 SweetAlert hiển thị lỗi từ AI -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            @if (ViewBag.Error != null)
-            {
-                <text>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Nội dung vi phạm!',
-                    text: '@Html.Raw(ViewBag.Error)',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Đã hiểu'
-                });
-                </text>
-            }
-        });
-    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

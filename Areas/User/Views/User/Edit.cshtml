@@ -1,27 +1,50 @@
-@model StudyShare.Models.AppUser
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 border p-4 shadow-sm rounded-4 bg-white">
-            <h3 class="mb-4">Chỉnh sửa thông tin</h3>
-            <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label class="form-label">Họ và tên</label>
-                    <input asp-for="FullName" class="form-control" />
+@model StudyShare.ViewModels.UserEditViewModel
+@{ ViewData["Title"] = "Chỉnh sửa hồ sơ"; }
+
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_UserSidebarPartial", Model)
+        </div>
+
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-person-lines-fill text-primary me-2"></i>Cập nhật thông tin cá nhân</h4>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input asp-for="Email" class="form-control" readonly />
-                    <small class="text-muted">Email không thể thay đổi để đảm bảo định danh.</small>
+                
+                <div class="card-body p-4 p-md-5 bg-light">
+                    <form asp-area="User" asp-controller="User" asp-action="Edit" method="post" enctype="multipart/form-data" class="bg-white p-4 rounded-4 shadow-sm border">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Avatar" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Họ và tên <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control form-control-lg rounded-3 bg-light border-0 shadow-sm" placeholder="Nhập họ và tên..." />
+                            <span asp-validation-for="FullName" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Email</label>
+                            <input asp-for="Email" class="form-control form-control-lg rounded-3 bg-secondary bg-opacity-10 text-muted border-0 shadow-sm" readonly />
+                            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Email là định danh đăng nhập nên không thể thay đổi.</small>
+                        </div>
+                        <div class="mb-4 p-4 bg-light rounded-4 border text-center">
+                            <label class="form-label fw-bold text-dark d-block mb-3"><i class="bi bi-image me-2 text-primary"></i>Ảnh đại diện mới</label>
+                            <input type="file" name="avatarFile" class="form-control form-control-lg rounded-pill shadow-sm" accept="image/*" />
+                            <small class="text-muted mt-3 d-block fst-italic">Bỏ trống nếu bạn muốn giữ nguyên ảnh cũ.</small>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top mt-4">
+                            <a asp-action="Profile" class="btn btn-light btn-lg px-4 rounded-pill shadow-sm border">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm fw-bold">
+                                <i class="bi bi-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Ảnh đại diện mới</label>
-                    <input type="file" name="avatarFile" class="form-control" accept="image/*" />
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">Lưu thay đổi</button>
-                    <a asp-action="Index" class="btn btn-link">Hủy bỏ</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

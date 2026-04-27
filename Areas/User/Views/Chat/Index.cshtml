@@ -2,28 +2,44 @@
     ViewData["Title"] = "Trợ lý AI";
 }
 
-<div class="row justify-content-center mt-4">
-    <div class="col-md-6">
-        <div class="card shadow border-0" style="border-radius: 15px;">
-            <div class="card-header bg-primary text-white text-center py-3" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
-                <h4 class="mb-0"><i class="bi bi-robot"></i> Trợ lý Ảo</h4>
-                <small>Luôn sẵn sàng giải đáp thắc mắc</small>
-            </div>
-            
-            <div class="card-body bg-light" id="chatBox" style="height: 400px; overflow-y: auto;">
-                <div class="mb-3">
-                    <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
-                    <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
-                        Chào bạn! Mình là trợ lý ảo. Bạn muốn hỏi gì nào?
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12 ">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden h-100">
+                
+                <div class="card-header bg-primary text-white p-4 border-0 d-flex align-items-center">
+                    <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" style="width: 55px; height: 55px;">
+                        <i class="bi bi-robot" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Trợ lý Ảo StudyShare</h4>
+                        <span class="opacity-75 small"><i class="bi bi-circle-fill text-success me-1" style="font-size: 0.6rem;"></i> Luôn sẵn sàng giải đáp thắc mắc</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="card-footer bg-white border-0 py-3" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-                <div class="input-group">
-                    <input type="text" id="userInput" class="form-control" placeholder="Nhập câu hỏi của bạn..." onkeypress="handleEnter(event)">
-                    <button class="btn btn-primary" onclick="sendMessage()"><i class="bi bi-send-fill"></i> Gửi</button>
+                
+                <div class="card-body bg-light p-4" id="chatBox" style="height: 550px; overflow-y: auto; scroll-behavior: smooth;">
+                    <div class="mb-4 d-flex align-items-start">
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; min-width: 45px;">
+                            <i class="bi bi-robot fs-5"></i>
+                        </div>
+                        <div class="bg-white p-3 shadow-sm text-dark fs-6" style="border-radius: 0 20px 20px 20px; max-width: 80%; line-height: 1.6;">
+                            Chào bạn! Mình là Trợ lý AI của hệ thống. Bạn cần mình giúp tìm kiếm tài liệu, giải thích code, hay tóm tắt kiến thức nào?
+                        </div>
+                    </div>
                 </div>
+
+                <div class="card-footer bg-white border-top p-4">
+                    <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
+                        <input type="text" id="userInput" class="form-control border-0 bg-transparent px-4 fs-6" placeholder="Hỏi Trợ lý AI bất cứ điều gì..." onkeypress="handleEnter(event)">
+                        <button class="btn btn-primary px-4 fw-bold" onclick="sendMessage()">
+                            <i class="bi bi-send-fill me-1"></i> Gửi
+                        </button>
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted" style="font-size: 0.75rem;">AI có thể mắc lỗi. Vui lòng kiểm tra lại các thông tin quan trọng.</small>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -38,32 +54,70 @@
 
         var chatBox = document.getElementById("chatBox");
 
-        // 1. In tin nhắn của người dùng lên màn hình
+        // 1. In tin nhắn của người dùng lên màn hình (Căn phải)
         chatBox.innerHTML += `
-            <div class="mb-3 text-end">
-                <span class="badge bg-primary p-2 fs-6 rounded-pill">Bạn <i class="bi bi-person"></i></span>
-                <div class="bg-primary text-white p-3 mt-1 shadow-sm d-inline-block text-start" style="border-radius: 15px 0 15px 15px;">
+            <div class="mb-4 d-flex align-items-start justify-content-end">
+                <div class="bg-primary text-white p-3 shadow-sm fs-6" style="border-radius: 20px 0 20px 20px; max-width: 80%; line-height: 1.6;">
                     ${message}
+                </div>
+                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center ms-3 shadow-sm border border-primary" style="width: 45px; height: 45px; min-width: 45px;">
+                    <i class="bi bi-person-fill fs-5"></i>
                 </div>
             </div>`;
         
         input.value = ""; // Xóa trắng ô nhập
         chatBox.scrollTop = chatBox.scrollHeight; // Cuộn xuống dưới cùng
 
+        // Thêm hiệu ứng "AI đang gõ..." (Tùy chọn cho sinh động)
+        var loadingId = "loading-" + Date.now();
+        chatBox.innerHTML += `
+            <div id="${loadingId}" class="mb-4 d-flex align-items-start">
+                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; min-width: 45px;">
+                    <i class="bi bi-robot fs-5"></i>
+                </div>
+                <div class="bg-white p-3 shadow-sm text-muted fst-italic" style="border-radius: 0 20px 20px 20px;">
+                    <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
+                    <div class="spinner-grow spinner-grow-sm text-primary mx-1" role="status"></div>
+                    <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
+                </div>
+            </div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
         // 2. Gửi tin nhắn ngầm (AJAX) xuống C# Controller
         fetch('@Url.Action("SendMessage", "Chat", new { area = "User" })', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: message })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: message })
         })
         .then(response => response.json())
         .then(data => {
-            // 3. Nhận câu trả lời và in ra màn hình
+            // Xóa hiệu ứng "AI đang gõ..."
+            document.getElementById(loadingId).remove();
+
+            // Thay thế \n bằng <br> để xuống dòng hiển thị đẹp hơn nếu AI trả về đoạn văn dài
+            var formattedReply = data.reply.replace(/\n/g, '<br>');
+
+            // 3. Nhận câu trả lời và in ra màn hình (Căn trái)
             chatBox.innerHTML += `
-            <div class="mb-3">
-                <span class="badge bg-secondary p-2 fs-6 rounded-pill"><i class="bi bi-robot"></i> AI</span>
-                <div class="bg-white p-3 mt-1 shadow-sm text-dark d-inline-block" style="border-radius: 0 15px 15px 15px;">
-                    ${data.reply}
+            <div class="mb-4 d-flex align-items-start">
+                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; min-width: 45px;">
+                    <i class="bi bi-robot fs-5"></i>
+                </div>
+                <div class="bg-white p-3 shadow-sm text-dark fs-6" style="border-radius: 0 20px 20px 20px; max-width: 80%; line-height: 1.6;">
+                    ${formattedReply}
+                </div>
+            </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => {
+            document.getElementById(loadingId).remove();
+            chatBox.innerHTML += `
+            <div class="mb-4 d-flex align-items-start">
+                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; min-width: 45px;">
+                    <i class="bi bi-exclamation-triangle fs-5"></i>
+                </div>
+                <div class="bg-danger-subtle p-3 shadow-sm text-danger fs-6" style="border-radius: 0 20px 20px 20px; max-width: 80%;">
+                    Xin lỗi, đã có lỗi kết nối xảy ra. Vui lòng thử lại sau!
                 </div>
             </div>`;
             chatBox.scrollTop = chatBox.scrollHeight;

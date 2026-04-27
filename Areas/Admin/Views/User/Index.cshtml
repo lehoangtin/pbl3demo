@@ -1,78 +1,104 @@
-@model IEnumerable<StudyShare.Models.AppUser>
+@model IEnumerable<StudyShare.ViewModels.UserViewModel>
 @{ 
     ViewData["Title"] = "Quản lý người dùng";
 }
 
-<div class="card shadow-sm border-0 rounded-3">
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="m-0 fw-bold text-primary">Danh sách người dùng</h5>
-        <form asp-area="Admin" asp-controller="User" asp-action="Index" method="get" class="d-flex w-50">
-            <div class="input-group">
-                <input type="text" name="searchString" class="form-control" 
-                       placeholder="Tìm theo tên hoặc email..." 
-                       value="@ViewData["CurrentFilter"]" />
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-search"></i> Tìm kiếm
-                </button>
-                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
-                {
-                    <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
-                }
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-md-9">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom">
+                    <h4 class="m-0 fw-bold text-primary mb-3 mb-md-0"><i class="bi bi-people-fill me-2"></i>Danh sách tài khoản</h4>
+                    
+                    <form asp-area="Admin" asp-controller="User" asp-action="Index" method="get" class="d-flex w-100 w-md-50">
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                            <input type="text" name="searchString" class="form-control border-0 bg-light" 
+                                   placeholder="Tìm theo tên, email..." value="@ViewData["CurrentFilter"]" />
+                            <button class="btn btn-primary px-4 fw-bold" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                        {
+                            <a asp-action="Index" class="btn btn-outline-secondary ms-2 rounded-pill"><i class="bi bi-x"></i></a>
+                        }
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th class="ps-4 py-3">Người dùng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Cảnh cáo</th>
+                                    <th class="text-end pe-4">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any()) {
+                                    foreach (var user in Model) {
+                                        // THÊM BIẾN NÀY ĐỂ ÉP KHÓA KHI VI PHẠM >= 3
+                                        bool isEffectivelyBanned = user.IsBanned || user.WarningCount >= 3;
+
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <img src="@(string.IsNullOrEmpty(user.Avatar) ? "/images/default-avatar.png" : user.Avatar)" 
+                                                     class="rounded-circle shadow-sm me-3 border" width="45" height="45" style="object-fit: cover;">
+                                                <div>
+                                                    <h6 class="fw-bold mb-0 text-dark">@user.FullName</h6>
+                                                    <small class="text-muted">@user.Email</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (isEffectivelyBanned) {
+                                                <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1"><i class="bi bi-lock-fill me-1"></i> Bị khóa</span>
+                                            } else {
+                                                <span class="badge bg-success-subtle text-success border border-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> Hoạt động</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge @(user.WarningCount >= 3 ? "bg-danger text-white" : "bg-warning text-dark") px-2 py-1">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> @user.WarningCount lần
+                                            </span>
+                                            <small class="d-block text-muted mt-1"><i class="bi bi-coin me-1"></i>@user.Points đ</small>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <div class="btn-group">
+                                                <form asp-area="Admin" asp-controller="User" asp-action="ToggleBan" asp-route-id="@user.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
+                                                    <button type="submit" class="btn btn-sm @(isEffectivelyBanned ? "btn-success" : "btn-outline-danger") rounded-pill px-3 shadow-sm me-1" title="Khóa/Mở khóa">
+                                                        <i class="bi @(isEffectivelyBanned ? "bi-unlock-fill" : "bi-lock-fill")"></i>
+                                                    </button>
+                                                </form>
+                                                <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm fw-bold" title="Chi tiết">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    }
+                                } else {
+                                    <tr><td colspan="4" class="text-center py-5 text-muted border-0">Không tìm thấy người dùng nào.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </form>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Người dùng</th>
-                        <th>Email</th>
-                        <th>Điểm tích lũy</th>
-                        <th>Cảnh cáo</th>
-                        <th>Trạng thái</th>
-                        <th class="text-end">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model) {
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="@(user.Avatar ?? "/images/default-avatar.png")" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
-                                <span class="fw-bold">@user.FullName</span>
-                            </div>
-                        </td>
-                        <td>@user.Email</td>
-                        <td><span class="badge bg-primary">@user.Points đ</span></td>
-                        <td><span class="badge bg-warning text-dark">@user.WarningCount lần</span></td>
-                        <td>
-                            @if (user.IsBanned) {
-                                <span class="badge bg-danger">Bị khóa</span>
-                            } else {
-                                <span class="badge bg-success">Hoạt động</span>
-                            }
-                        </td>
-                        <td class="text-end">
-                            <form asp-area="Admin" asp-controller="User" asp-action="ToggleBan" asp-route-id="@user.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm @(user.IsBanned ? "btn-warning" : "btn-outline-danger")" title="Khóa/Mở khóa">
-                                    <i class="bi @(user.IsBanned ? "bi-unlock" : "bi-lock")"></i>
-                                </button>
-                            </form>
-
-                            @* Thêm nút Sửa cho Admin tại đây *@
-                            <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-warning mx-1" title="Sửa thông tin">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-
-                            <a asp-area="Admin" asp-controller="User" asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info text-white" title="Xem chi tiết">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </a>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
         </div>
     </div>
 </div>

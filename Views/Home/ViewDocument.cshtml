@@ -1,4 +1,4 @@
-@model StudyShare.Models.Document
+@model StudyShare.DTOs.Responses.DocumentResponse
 @using System.Security.Claims
 @{
     ViewData["Title"] = Model.Title;
@@ -8,7 +8,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-action="Index">Thư viện</a></li>
-            <li class="breadcrumb-item active">@Model.Category?.Name</li>
+            <li class="breadcrumb-item active">@Model.CategoryName</li>
         </ol>
     </nav>
 
@@ -19,7 +19,7 @@
                     <h3 class="fw-bold text-primary">@Model.Title</h3>
                     <hr />
                     <p><strong>Mô tả:</strong> @Model.Description</p>
-                    <p><strong>Người đăng:</strong> @(Model.User?.FullName ?? "Thành viên StudyShare")</p>
+                    <p><strong>Người đăng:</strong> @Model.AuthorName</p>
                     <p><strong>Ngày đăng:</strong> @Model.UploadDate.ToString("dd/MM/yyyy")</p>
                     <p><strong>Lượt xem:</strong> <span class="badge bg-secondary">@Model.Views</span></p>
                     
@@ -31,28 +31,32 @@
                         </a>
 
                         @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU (Dùng chung hàm ToggleSave) *@
-                        @if (User.Identity.IsAuthenticated)
+                        @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU *@
+                        @if (User?.Identity?.IsAuthenticated == true)
                         {
-                            <form asp-area="User" asp-controller="Document" asp-action="ToggleSave" method="post">
-                                <input type="hidden" name="documentId" value="@Model.Id" />
-                                
-                                @if (ViewBag.IsSaved == true)
-                                {
+                            @if (ViewBag.IsSaved == true)
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="UnsaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-outline-danger w-100 fw-bold">
                                         <i class="bi bi-bookmark-x-fill me-1"></i> Bỏ lưu tài liệu
                                     </button>
-                                }
-                                else
-                                {
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
+                                    <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-primary w-100 fw-bold">
                                         <i class="bi bi-bookmark-plus me-1"></i> Lưu tài liệu
                                     </button>
-                                }
-                            </form>
+                                </form>
+                            }
                         }
 
+
                         @* 🔥 XOÁ TÀI LIỆU (CỦA CHỦ SỞ HỮU) *@
-                        @if (User.Identity.IsAuthenticated && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        @if (User?.Identity?.IsAuthenticated == true && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
                         {
                             <form asp-area="User" asp-controller="User" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xóa vĩnh viễn tài liệu này?')">
                                 <button type="submit" class="btn btn-danger w-100 mt-2">

@@ -1,59 +1,63 @@
-@model IEnumerable<StudyShare.Models.SavedDocument>
-@{ 
-    ViewData["Title"] = "Tài liệu đã lưu"; 
-    // 🔥 Lấy User từ ViewBag đã được ép kiểu
-    var userObject = ViewBag.CurrentUser as StudyShare.Models.AppUser;
-}
+@model IEnumerable<StudyShare.ViewModels.DocumentViewModel>
+@{ ViewData["Title"] = "Tài liệu đã lưu"; }
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-md-3">
-            @* ✅ Truyền userObject vào tham số thứ 2 để Sidebar nhận đúng Model *@
-            @if (userObject != null)
-            {
-                @await Html.PartialAsync("_UserSidebarPartial", userObject)
-            }
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_UserSidebarPartial", (object)ViewBag.CurrentUser)
         </div>
         <div class="col-md-9">
-            <h4 class="fw-bold mb-4">Tài liệu bạn đã lưu</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                <h3 class="fw-bold text-dark m-0">
+                    <i class="bi bi-bookmark-heart-fill text-danger me-2"></i>Tài liệu bạn đã lưu
+                </h3>
+            </div>
             
             @if (TempData["Success"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show">
-                    @TempData["Success"]
+                <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            <div class="row g-4">
-                @foreach (var item in Model) {
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">@item.Document?.Title</h5>
-                            <p class="text-muted small mb-3">Người đăng: @item.Document?.User?.FullName</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted small">Lưu ngày: @item.SavedDate.ToString("dd/MM/yyyy")</span>
-                                <div class="btn-group">
-                                    <a href="/Home/ViewDocument/@item.DocumentId" class="btn btn-sm btn-primary rounded-pill px-3">Xem ngay</a>
-                                    
-                                    @* Nút bỏ lưu *@
-                                    <form asp-action="UnsaveDocument" method="post" class="d-inline ms-1">
-                                        <input type="hidden" name="docId" value="@item.DocumentId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Bỏ lưu</button>
-                                    </form>
+            @if (!Model.Any()) {
+                <div class="text-center py-5 bg-light rounded-4 border border-dashed">
+                    <i class="bi bi-bookmark-x text-muted display-1 opacity-50"></i>
+                    <p class="text-muted mt-3 fs-5">Bạn chưa lưu tài liệu nào.</p>
+                    <a asp-area="User" asp-controller="Document" asp-action="Index" class="btn btn-primary rounded-pill px-4 mt-2 shadow-sm fw-bold">
+                        <i class="bi bi-search me-1"></i> Khám phá tài liệu ngay
+                    </a>
+                </div>
+            } else {
+                <div class="row g-4">
+                    @foreach (var item in Model) {
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
+                            <div class="card-body p-4">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle mb-2 px-3 py-1 rounded-pill">@item.CategoryName</span>
+                                <h5 class="card-title fw-bold text-truncate" title="@item.Title">@item.Title</h5>
+                                
+                                <div class="text-muted small mt-3">
+                                    <div class="mb-2"><i class="bi bi-person-circle me-1"></i> <strong class="text-dark">@item.AuthorName</strong></div>
+                                    <div><i class="bi bi-calendar-event me-1"></i> @item.UploadDate.ToString("dd/MM/yyyy HH:mm")</div>
                                 </div>
+                            </div>
+                            <div class="card-footer bg-light border-top-0 p-3 d-flex gap-2 align-items-center">
+                                <a asp-area="User" asp-controller="Document" asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill text-white fw-bold flex-grow-1 shadow-sm">
+                                    <i class="bi bi-eye me-1"></i> Xem ngay
+                                </a>
+                                
+                                <form asp-area="User" asp-controller="User" asp-action="UnsaveDocument" method="post" class="m-0" onsubmit="return confirm('Bỏ lưu tài liệu này?');">
+                                    <input type="hidden" name="docId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-sm" style="width: 35px; height: 35px;" title="Bỏ lưu">
+                                        <i class="bi bi-bookmark-x-fill"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
-                </div>
-                }
-            </div>
-            
-            @if (!Model.Any()) {
-                <div class="text-center py-5">
-                    <i class="bi bi-bookmark-x text-muted" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-3">Bạn chưa lưu tài liệu nào.</p>
+                    }
                 </div>
             }
         </div>

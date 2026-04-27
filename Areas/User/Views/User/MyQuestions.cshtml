@@ -1,33 +1,95 @@
-@model IEnumerable<StudyShare.Models.Question>
+@model IEnumerable<StudyShare.ViewModels.QuestionViewModel>
 @{ ViewData["Title"] = "Câu hỏi của tôi"; }
 
-<div class="container mt-4">
-    <h4 class="fw-bold mb-4"><i class="bi bi-chat-dots me-2"></i>Các thảo luận của bạn</h4>
-    
-    @foreach(var q in Model) {
-        <div class="card mb-3 border-0 shadow-sm rounded-3">
-            <div class="card-body">
-                <h6 class="fw-bold">@q.Content</h6>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <small class="text-muted">
-                        <i class="bi bi-clock me-1"></i>@q.CreatedAt.ToString("HH:mm dd/MM/yyyy")
-                    </small>
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-info text-dark rounded-pill me-2">
-                            @q.Answers.Count() câu trả lời
-                        </span>
-                        <a href="/User/Question/Details/@q.Id" class="btn btn-sm btn-outline-secondary rounded-pill me-2">
-                            Xem chi tiết
-                        </a>
-                        <form asp-area="User" asp-controller="User" asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" 
-                              onsubmit="return confirm('Bạn có chắc chắn muốn xoá câu hỏi này không? Thao tác này không thể hoàn tác.')">
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
-                                <i class="bi bi-trash"></i> Xoá
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            @await Html.PartialAsync("_UserSidebarPartial", (object)ViewBag.CurrentUser)
         </div>
-    }
+        
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                <h3 class="fw-bold text-primary m-0">
+                    <i class="bi bi-chat-dots-fill me-2"></i>Các thảo luận của bạn
+                </h3>
+                <a asp-area="User" asp-controller="Question" asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                    <i class="bi bi-pencil-square me-1"></i> Đặt câu hỏi mới
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 bg-light rounded-4 border border-dashed">
+                    <i class="bi bi-chat-square-text text-muted display-1 opacity-50"></i>
+                    <p class="text-muted mt-3 fs-5">Bạn chưa tạo chủ đề thảo luận nào.</p>
+                    <a asp-area="User" asp-controller="Question" asp-action="Create" class="btn btn-primary rounded-pill px-4 mt-2 shadow-sm fw-bold">
+                        Bắt đầu thảo luận ngay
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach(var q in Model) {
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden transition-hover">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-start">
+                                        
+                                        <div class="text-center me-4 bg-info-subtle text-info p-3 rounded-4 d-flex flex-column justify-content-center shadow-sm" style="min-width: 80px; height: 80px;">
+                                            <h3 class="mb-0 fw-bold">@q.AnswerCount</h3>
+                                            <small class="fw-semibold" style="font-size: 0.75rem;">Trả lời</small>
+                                        </div>
+                                        
+                                        <div class="flex-grow-1">
+                                            <h5 class="fw-bold text-dark mb-2 lh-base text-break">
+                                                @(q.Content.Length > 200 ? q.Content.Substring(0, 200) + "..." : q.Content)
+                                            </h5>
+                                            <div class="text-muted small d-flex align-items-center mt-2">
+                                                <i class="bi bi-clock me-1"></i> @q.CreatedAt.ToString("HH:mm - dd/MM/yyyy")
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-light border-top-0 p-3 d-flex justify-content-end gap-2 align-items-center">
+                                    <a href="/User/Question/Details/@q.Id" class="btn btn-info btn-sm rounded-pill text-white fw-bold px-4 shadow-sm">
+                                        <i class="bi bi-eye me-1"></i> Xem chi tiết
+                                    </a>
+                                    
+                                    <form asp-area="User" asp-controller="User" asp-action="DeleteQuestion" asp-route-id="@q.Id" method="post" class="m-0"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xoá câu hỏi này không? Toàn bộ câu trả lời bên trong cũng sẽ biến mất.');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-sm d-inline-flex justify-content-center align-items-center" style="width: 35px; height: 35px; padding: 0;" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+<style>
+    .transition-hover:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.3s ease;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+</style>

@@ -10796,3 +10796,61 @@ header.masthead .post-heading .meta a {
     font-size: 2.25rem;
   }
 }
+/* ========================================== */
+/* CUSTOM CSS - STYLE GIAO DIỆN STUDYSHARE    */
+/* ========================================== */
+
+:root {
+    --ss-primary: #5e5ce6; /* Màu xanh tím StudyShare */
+    --ss-bg: #f8f9fa;
+    --ss-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    /* Ép gộp chung họa tiết CHẤM BI và nền GRADIENT vào 1 lệnh duy nhất */
+    background-image: radial-gradient(#d3d3d3 1px, transparent 1px), linear-gradient(135deg, #d4f1f4 0%, #ffdde1 50%, #fff8e1 100%) !important;
+    background-size: 20px 20px, 100% 100% !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+/* Thẻ Card mặc định nổi bật hơn */
+.card {
+    border: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Bo tròn cực đại cho các thành phần */
+.rounded-ss { border-radius: 1.25rem !important; } /* 20px */
+.rounded-pill-ss { border-radius: 50rem !important; }
+
+/* Thẻ Card phong cách StudyShare */
+.card-ss {
+    border: none !important;
+    border-radius: 1.25rem !important;
+    box-shadow: var(--ss-card-shadow) !important;
+    transition: transform 0.2s ease;
+}
+.card-ss:hover { transform: translateY(-5px); }
+
+/* Sidebar phong cách List */
+.sidebar-link {
+    border: none !important;
+    border-radius: 0.75rem !important;
+    margin-bottom: 5px;
+    padding: 12px 20px !important;
+    font-weight: 500;
+}
+.sidebar-link.active {
+    background-color: #2c3e50 !important; /* Màu tối như trong ảnh */
+    color: white !important;
+}
+
+/* Thanh tìm kiếm Pill */
+.search-pill {
+    background: white;
+    border-radius: 50rem;
+    padding: 5px 10px 5px 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}

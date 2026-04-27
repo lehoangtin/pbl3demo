@@ -1,31 +1,46 @@
-@model StudyShare.Models.Category
+@model StudyShare.ViewModels.CategoryViewModel
 @{
     ViewData["Title"] = "Xóa danh mục";
 }
 
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 mt-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="m-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa danh mục</h5>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-3">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-md-9">
+            <div class="mb-3">
+                <a asp-action="Index" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white p-4">
+                    <h4 class="m-0 fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Cảnh báo: Xác nhận xóa</h4>
                 </div>
-                <div class="card-body p-4">
-                    <p class="text-center mb-4">Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác và có thể ảnh hưởng đến các tài liệu liên quan.</p>
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <div class="text-center mb-4">
+                        <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-trash3-fill display-5"></i>
+                        </div>
+                        <h5 class="fw-bold">Bạn có chắc chắn muốn xóa danh mục này?</h5>
+                        <p class="text-muted">Hành động này không thể hoàn tác và có thể ảnh hưởng đến các tài liệu đang thuộc danh mục này.</p>
+                    </div>
                     
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="mb-2"><strong>Tên danh mục:</strong> @Model.Name</div>
-                        <div><strong>Mô tả:</strong> @(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)</div>
+                    <div class="bg-light p-4 rounded-4 mb-5 border">
+                        <div class="mb-3"><span class="text-muted">Tên danh mục:</span> <strong class="fs-5 ms-2 text-dark">@Model.Name</strong></div>
+                        <div><span class="text-muted">Mô tả:</span> <span class="ms-2">@(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)</span></div>
                     </div>
 
-                    @* Form gửi yêu cầu xóa về Controller *@
                     <form asp-action="Delete" method="post">
                         <input type="hidden" asp-for="Id" />
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">
-                                <i class="bi bi-trash me-1"></i> Xóa vĩnh viễn
+                        <div class="d-flex justify-content-center gap-3">
+                            <a asp-action="Index" class="btn btn-light btn-lg px-5 rounded-pill shadow-sm border">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm">
+                                <i class="bi bi-trash me-2"></i> Đồng ý xóa
                             </button>
-                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">Hủy bỏ</a>
                         </div>
                     </form>
                 </div>

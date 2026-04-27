@@ -4,9 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>StudyShare</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
@@ -22,10 +25,22 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
     <PackageReference Include="Azure.Identity" Version="1.14.2" />
     
-    <PackageReference Include="MailKit" Version="4.15.1" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
     <PackageReference Include="MySql.Data.EntityFramework" Version="9.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DTOs/**/*.cs" />
+    <Compile Include="Models/**/*.cs" />
+    <Compile Include="Controllers/**/*.cs" />
+    <Compile Include="Services/**/*.cs" />
+    <Compile Include="Mappings/**/*.cs" />
+    <Compile Include="Areas/**/*.cs" />
+    <Compile Include="ViewModels/**/*.cs" />
+    <Compile Include="Repositories/**/*.cs" />
+    <Compile Include="Program.cs" />
   </ItemGroup>
 
 </Project>
