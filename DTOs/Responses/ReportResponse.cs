@@ -21,5 +21,11 @@ namespace StudyShare.DTOs.Responses
         public Document? Document { get; set; }
         public Question? Question { get; set; }
         public Answer? Answer { get; set; }
+        public string? TargetUserId { get; set; }
+        public string TargetType { get; set; } = string.Empty; 
+        public int? DocumentId { get; set; }
+        public int? QuestionId { get; set; }
+        public int? AnswerId { get; set; }
+        public string? TargetContent { get; set; }
     }
 }

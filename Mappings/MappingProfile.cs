@@ -13,85 +13,107 @@ namespace StudyShare.Mappings
         public MappingProfile()
         {
             // ==========================================
-            // THÊM MỚI: ENTITY -> VIEWMODEL (Sửa lỗi 500 cho MyQuestions, MyDocuments)
+            // 1. APP USER MAPPINGS (Đã gộp trùng lặp & fix lỗi)
             // ==========================================
-            // Thêm đoạn này để sửa lỗi trang Bảng xếp hạng (Ranking)
-            CreateMap<AppUser, UserViewModel>();
-            CreateMap<Document, DocumentViewModel>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName));
             CreateMap<AppUser, UserResponse>()
-                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points));
-            CreateMap<Document, DocumentViewModel>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
-            CreateMap<UserEditViewModel, ProfileUpdateRequest>().ReverseMap();
-            CreateMap<AppUser, UserEditViewModel>();
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+                .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount))
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned));
+
             CreateMap<AppUser, UserViewModel>()
                 .ForMember(dest => dest.DocumentCount, opt => opt.MapFrom(src => src.Documents != null ? src.Documents.Count : 0))
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions != null ? src.Questions.Count : 0))
-                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points));
-            // Fix lỗi Question -> QuestionViewModel
-            CreateMap<Question, QuestionViewModel>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
-                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned))
+                .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount));
 
-            // Fix lỗi Answer -> AnswerViewModel (Lỗi bạn vừa gặp)
-            CreateMap<Answer, AnswerViewModel>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"));
+            CreateMap<UserResponse, UserViewModel>()
+                .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned))
+                .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount));
 
+            CreateMap<AppUser, UserEditViewModel>();
+            CreateMap<UserEditViewModel, ProfileUpdateRequest>().ReverseMap();
 
             // ==========================================
-            // PHẦN CODE CŨ CỦA BẠN (GIỮ NGUYÊN)
+            // 2. DOCUMENT MAPPINGS
             // ==========================================
-            
-            // --- DOCUMENT MAPPINGS ---
             CreateMap<DocumentCreateRequest, Document>();
-            CreateMap<Document, DocumentResponse>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
-            CreateMap<DocumentResponse, DocumentViewModel>();
-            // --- THÊM VÀO MAPPING PROFILE CHO DOCUMENT ---
             CreateMap<DocumentCreateViewModel, DocumentCreateRequest>();
-
-            // ReverseMap cho phép tự động map 2 chiều (từ ViewModel -> Request và Request -> ViewModel)
             CreateMap<DocumentEditViewModel, DocumentUpdateRequest>().ReverseMap();
 
-            // --- QUESTION MAPPINGS ---
+            CreateMap<Document, DocumentResponse>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
+            
+            CreateMap<DocumentResponse, DocumentViewModel>();
+
+            CreateMap<Document, DocumentViewModel>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"));
+
+            // ==========================================
+            // 3. QUESTION MAPPINGS
+            // ==========================================
             CreateMap<QuestionCreateRequest, Question>();
-            CreateMap<Question, QuestionResponse>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"))
-                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
-            CreateMap<QuestionResponse, QuestionViewModel>();
             CreateMap<QuestionCreateViewModel, QuestionCreateRequest>();
             CreateMap<QuestionEditViewModel, QuestionUpdateRequest>().ReverseMap();
-            // --- ANSWER MAPPINGS ---
+
+            CreateMap<Question, QuestionResponse>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+            
+            CreateMap<QuestionResponse, QuestionViewModel>();
+
+            CreateMap<Question, QuestionViewModel>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));
+
+            // ==========================================
+            // 4. ANSWER MAPPINGS
+            // ==========================================
             CreateMap<AnswerCreateRequest, Answer>();
-            CreateMap<Answer, AnswerResponse>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : "Ẩn danh"));
-            CreateMap<AnswerResponse, AnswerViewModel>();
             CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
-            // --- CATEGORY MAPPINGS ---
+
+            CreateMap<Answer, AnswerResponse>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
+            
+            CreateMap<AnswerResponse, AnswerViewModel>();
+
+            CreateMap<Answer, AnswerViewModel>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
+
+            // ==========================================
+            // 5. CATEGORY MAPPINGS
+            // ==========================================
             CreateMap<CategoryCreateRequest, Category>();
-            CreateMap<Category, CategoryResponse>();
-            CreateMap<CategoryResponse, CategoryViewModel>();
-            // --- THÊM VÀO MAPPING PROFILE CỦA CATEGORY ---
             CreateMap<CategoryCreateViewModel, CategoryCreateRequest>();
             CreateMap<CategoryEditViewModel, CategoryUpdateRequest>();
-            CreateMap<CategoryUpdateRequest, CategoryEditViewModel>(); // Dùng để map lúc lấy dữ liệu lên form Edit
-            CreateMap<Category, CategoryViewModel>(); // Dùng để map Entity ra ViewModel ở form Delete
+            CreateMap<CategoryUpdateRequest, CategoryEditViewModel>(); 
+            
+            CreateMap<Category, CategoryResponse>();
+            CreateMap<CategoryResponse, CategoryViewModel>();
+            CreateMap<Category, CategoryViewModel>(); 
 
-            //REPORT 
-            CreateMap<ReportResponse, ReportViewModel>();
-           CreateMap<Report, ReportResponse>()
+            // ==========================================
+            // 6. REPORT MAPPINGS
+            // ==========================================
+            CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => 
                     src.Reporter != null ? src.Reporter.FullName : "Hệ thống (AI)"))
                 .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => 
-                    src.Target != null ? src.Target.FullName : "N/A"));
-            CreateMap<UserResponse, UserViewModel>();   
+                    src.Target != null ? src.Target.FullName : "N/A"))
+                .ForMember(dest => dest.TargetUserId, opt => opt.MapFrom(src => 
+                    src.Target != null ? src.Target.Id : null))
+                .ForMember(dest => dest.TargetContent, opt => opt.MapFrom(src => 
+                    src.Answer != null ? src.Answer.Content : 
+                    src.Question != null ? src.Question.Content : 
+                    src.Document != null ? src.Document.Title : null));
+
+            CreateMap<ReportResponse, ReportViewModel>();
+
             CreateMap<Report, ReportViewModel>()
-                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter.UserName))
-                // Cấu hình ánh xạ duy nhất cho tên người bị báo cáo
-                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target.UserName));
+                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : "Hệ thống (AI)"))
+                .ForMember(dest => dest.TargetUserName, opt => opt.MapFrom(src => src.Target != null ? src.Target.FullName : "N/A"));
         }
     }
 }

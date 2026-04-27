@@ -27,5 +27,6 @@ namespace StudyShare.ViewModels
         public bool IsResolved { get; set; }
         public string? ActionTaken { get; set; }
         public string TargetUserName { get; set; } = string.Empty;
+        public string? TargetContent { get; set; }
     }
 }

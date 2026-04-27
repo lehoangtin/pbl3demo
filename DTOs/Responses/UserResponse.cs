@@ -7,9 +7,11 @@ namespace StudyShare.DTOs.Responses
         public string Email { get; set; } = string.Empty;
         public string? Avatar { get; set; }
         public int Points { get; set; }
-        public int WarningCount { get; set; }
+        // public int WarningCount { get; set; }
         public bool LockoutEnabled { get; set; }
         public DateTimeOffset? LockoutEnd { get; set; }
-        public bool IsBanned => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.Now;
+        // public bool IsBanned => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.Now;
+        public bool IsBanned { get; set; }
+        public int WarningCount { get; set; }
     }
 }

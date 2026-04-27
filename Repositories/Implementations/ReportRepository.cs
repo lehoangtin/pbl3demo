@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudyShare.Models;
 using StudyShare.Repositories.Interfaces;
-using StudyShare.Models; // Đảm bảo đúng namespace chứa AppDbContext của bạn
 
 namespace StudyShare.Repositories.Implementations
 {
@@ -20,6 +19,11 @@ namespace StudyShare.Repositories.Implementations
             return await _context.Reports
                 .Where(r => r.TargetUserId == userId)
                 .Include(r => r.Reporter) // Lấy thông tin người gửi báo cáo
+                .Include(r => r.Target)   // Lấy thông tin người bị báo cáo
+                // THÊM 3 DÒNG DƯỚI ĐÂY ĐỂ LẤY NỘI DUNG VI PHẠM THỰC TẾ
+                .Include(r => r.Document) 
+                .Include(r => r.Question)
+                .Include(r => r.Answer)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
@@ -34,26 +38,42 @@ namespace StudyShare.Repositories.Implementations
         // Thêm hàm GetByIdAsync nếu Interface của bạn có yêu cầu
         public async Task<Report?> GetByIdAsync(int id)
         {
-            return await _context.Reports.FindAsync(id);
+            return await _context.Reports
+                .Include(r => r.Reporter)
+                .Include(r => r.Target)
+                .Include(r => r.Document)
+                .Include(r => r.Question)
+                .Include(r => r.Answer)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
+
         public async Task<IEnumerable<Report>> GetAllPendingReportsAsync()
         {
             return await _context.Reports
                 .Where(r => !r.IsResolved)
                 .Include(r => r.Reporter)
                 .Include(r => r.Target)
+                // THÊM 3 DÒNG NÀY ĐỂ TRANG DANH SÁCH CŨNG LẤY ĐƯỢC LINK
+                .Include(r => r.Document)
+                .Include(r => r.Question)
+                .Include(r => r.Answer)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
+
         public async Task<IEnumerable<Report>> GetAllResolvedReportsAsync()
         {
             return await _context.Reports
                 .Where(r => r.IsResolved) // Lọc các báo cáo ĐÃ xử lý
                 .Include(r => r.Reporter)
                 .Include(r => r.Target)
+                .Include(r => r.Document)
+                .Include(r => r.Question)
+                .Include(r => r.Answer)
                 .OrderByDescending(r => r.CreatedAt) 
                 .ToListAsync();
         }
+
         public async Task<Report> CreateAsync(Report report)
         {
             await _context.Reports.AddAsync(report);

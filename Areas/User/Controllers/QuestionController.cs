@@ -43,22 +43,28 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         public async Task<IActionResult> Index(string searchString)
-        {
-            ViewData["CurrentFilter"] = searchString; 
+{
+    // Lưu lại từ khóa tìm kiếm để hiển thị lại trên ô input sau khi tải trang
+    ViewData["CurrentFilter"] = searchString;
 
-            var data = await _questionService.GetAllAsync();
-            var viewModel = _mapper.Map<IEnumerable<QuestionViewModel>>(data);
-            if(!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower(); 
-                viewModel = viewModel.Where(q => 
-                    (!string.IsNullOrEmpty(q.Title) && q.Title.ToLower().Contains(searchString)) ||
-                    (!string.IsNullOrEmpty(q.Content) && q.Content.ToLower().Contains(searchString)) ||
-                    (!string.IsNullOrEmpty(q.AuthorName) && q.AuthorName.ToLower().Contains(searchString))
-                );
-            }
-            return View(viewModel);
-        }
+    var questionsDto = await _questionService.GetAllAsync();
+    var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(questionsDto);
+
+    // Thực hiện lọc nếu có từ khóa
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        searchString = searchString.ToLower();
+        viewModels = viewModels.Where(q => 
+            (q.Title != null && q.Title.ToLower().Contains(searchString)) || 
+            (q.Content != null && q.Content.ToLower().Contains(searchString))
+        );
+    }
+
+    // Sắp xếp câu hỏi mới nhất lên đầu
+    viewModels = viewModels.OrderByDescending(q => q.CreatedAt);
+
+    return View(viewModels);
+}
 
         public async Task<IActionResult> Details(int id)
         {
@@ -232,6 +238,29 @@ namespace StudyShare.Areas.User.Controllers
             
             return RedirectToAction(nameof(Details), new { id = request.QuestionId });
         }
+        [HttpPost]
+[ValidateAntiForgeryToken]
+// Cần truyền vào 2 tham số: ID của câu trả lời muốn xóa, và ID của câu hỏi để quay về
+public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
+{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    bool isAdmin = User.IsInRole("Admin");
+
+    // Tận dụng hàm DeleteAsync trong AnswerService (nó đã tự check quyền chủ sở hữu hoặc Admin)
+    var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
+    
+    if (success)
+    {
+        TempData["Success"] = "Đã xóa câu trả lời thành công.";
+    }
+    else
+    {
+        TempData["Error"] = "Bạn không có quyền xóa câu trả lời này hoặc có lỗi xảy ra.";
+    }
+
+    // Xóa xong thì chuyển hướng người dùng về lại đúng trang chi tiết của Câu hỏi đó
+    return RedirectToAction(nameof(Details), new { id = questionId });
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

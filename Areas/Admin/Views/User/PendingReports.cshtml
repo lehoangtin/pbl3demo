@@ -95,11 +95,8 @@
                                                             </button>
                                                         </form>
 
-                                                        <a asp-area="Admin" asp-controller="User" asp-action="ViewReports" asp-route-id="@item.TargetUserId" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm fw-bold">
-                                                            <i class="bi bi-eye"></i> Chi tiết
-                                                        </a>
-
-                                                    </td>
+                                               <a asp-action="ViewReports" asp-route-id="@item.TargetUserId" class="btn btn-sm btn-link">Chi tiết</a>                                                               
+                                                </td>
                                                 </tr>
                                             }
                                         }

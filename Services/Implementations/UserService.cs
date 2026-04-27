@@ -5,6 +5,8 @@ using StudyShare.DTOs.Requests;
 using StudyShare.DTOs.Responses;
 using StudyShare.Services.Interfaces;
 using StudyShare.Repositories.Interfaces; // Add Repository
+using Microsoft.AspNetCore.Identity; // Add Identity for UserManager
+using Microsoft.EntityFrameworkCore; // Add EF Core for ToListAsync
 using StudyShare.ViewModels;
 using StudyShare.Repositories.Implementations; // Add Repository
 
@@ -13,19 +15,22 @@ namespace StudyShare.Services.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository; // Inject Repository thay vì DBContext
+        private readonly UserManager<AppUser> _userManager; // Add UserManager for Identity operations
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, IWebHostEnvironment env, IMapper mapper)
+        public UserService(IUserRepository userRepository, UserManager<AppUser> userManager, IWebHostEnvironment env, IMapper mapper)
         {
             _userRepository = userRepository;
+            _userManager = userManager;
             _env = env;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
         {
-            var users = await _userRepository.GetAllUsersAsync();
+            var users = await _userManager.Users.ToListAsync();
+            // Bắt buộc dùng _mapper để nó ăn cấu hình của MappingProfile
             return _mapper.Map<IEnumerable<UserResponse>>(users);
         }
 
@@ -175,18 +180,28 @@ namespace StudyShare.Services.Implementations
             return _mapper.Map<IEnumerable<UserResponse>>(reportedUsers);
         }
         // Trong file Services/Implementations/UserService.cs
-        public async Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) return false;
+        public async Task<bool> PenalizeUserAsync(string userId, int points, int warningIncrement = 1)
+{
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null) return false;
 
-            // Bỏ Math.Max để cho phép điểm trừ thẳng xuống số âm
-            user.Points -= pointsToDeduct;
-            
-            // Tăng số lần cảnh báo
-            user.WarningCount += warningIncrement;
+    // 1. Trừ điểm người dùng
+    user.Points -= points;
+    
+    // 2. TĂNG SỐ LẦN VI PHẠM (Đây là lý do Database của bạn có thể vẫn đang là 0)
+    user.WarningCount += warningIncrement;
 
-            return await _userRepository.UpdateUserAsync(user);
+    // 3. Tự động khóa tài khoản nếu vi phạm từ 3 lần trở lên
+    if (user.WarningCount >= 3)
+    {
+        user.IsBanned = true;
+        // Dùng Identity để khóa cứng tài khoản không cho đăng nhập (khóa tới năm 2999)
+        await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+    }
+
+    // 4. Lưu tất cả thay đổi xuống Database
+    var result = await _userManager.UpdateAsync(user);
+    return result.Succeeded;
 }
         public async Task<bool> AddPointsAsync(string userId, int points)
         {

@@ -6,7 +6,7 @@ namespace StudyShare.ViewModels
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-        
+        public string CategoryName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public string? AuthorAvatar { get; set; }

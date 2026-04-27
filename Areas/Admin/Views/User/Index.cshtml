@@ -50,6 +50,9 @@
                             <tbody>
                                 @if (Model != null && Model.Any()) {
                                     foreach (var user in Model) {
+                                        // THÊM BIẾN NÀY ĐỂ ÉP KHÓA KHI VI PHẠM >= 3
+                                        bool isEffectivelyBanned = user.IsBanned || user.WarningCount >= 3;
+
                                     <tr>
                                         <td class="ps-4 py-3">
                                             <div class="d-flex align-items-center">
@@ -62,21 +65,23 @@
                                             </div>
                                         </td>
                                         <td>
-                                            @if (user.IsBanned) {
+                                            @if (isEffectivelyBanned) {
                                                 <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1"><i class="bi bi-lock-fill me-1"></i> Bị khóa</span>
                                             } else {
                                                 <span class="badge bg-success-subtle text-success border border-success px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> Hoạt động</span>
                                             }
                                         </td>
                                         <td>
-                                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> @user.WarningCount lần</span>
+                                            <span class="badge @(user.WarningCount >= 3 ? "bg-danger text-white" : "bg-warning text-dark") px-2 py-1">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> @user.WarningCount lần
+                                            </span>
                                             <small class="d-block text-muted mt-1"><i class="bi bi-coin me-1"></i>@user.Points đ</small>
                                         </td>
                                         <td class="text-end pe-4">
                                             <div class="btn-group">
                                                 <form asp-area="Admin" asp-controller="User" asp-action="ToggleBan" asp-route-id="@user.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
-                                                    <button type="submit" class="btn btn-sm @(user.IsBanned ? "btn-success" : "btn-outline-danger") rounded-pill px-3 shadow-sm me-1" title="Khóa/Mở khóa">
-                                                        <i class="bi @(user.IsBanned ? "bi-unlock-fill" : "bi-lock-fill")"></i>
+                                                    <button type="submit" class="btn btn-sm @(isEffectivelyBanned ? "btn-success" : "btn-outline-danger") rounded-pill px-3 shadow-sm me-1" title="Khóa/Mở khóa">
+                                                        <i class="bi @(isEffectivelyBanned ? "bi-unlock-fill" : "bi-lock-fill")"></i>
                                                     </button>
                                                 </form>
                                                 <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm fw-bold" title="Chi tiết">

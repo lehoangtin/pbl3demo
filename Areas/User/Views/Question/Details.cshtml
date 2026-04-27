@@ -79,10 +79,11 @@
 
                                             @if (User.Identity?.IsAuthenticated == true && answer.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
                                             {
-                                                <form asp-area="User" asp-controller="Question" asp-action="DeleteAnswer" asp-route-id="@answer.Id" method="post" onsubmit="return confirm('Xoá câu trả lời này?');">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 30px; height: 30px; padding: 0;" title="Xóa">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
+                                               <form asp-controller="Question" asp-action="DeleteAnswer" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa câu trả lời này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="answerId" value="@answer.Id" />
+                                                    <input type="hidden" name="questionId" value="@Model.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                                 </form>
                                             }
                                         </div>

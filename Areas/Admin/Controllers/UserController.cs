@@ -73,22 +73,19 @@ namespace StudyShare.Areas.Admin.Controllers
         // Đã chuẩn tham số ID để load chi tiết hồ sơ
         public async Task<IActionResult> ViewReports(string id)
         {
-            if (string.IsNullOrEmpty(id)) return RedirectToAction("PendingReports");
+            if (string.IsNullOrEmpty(id)) return NotFound("Không tìm thấy ID người dùng.");
 
-            // Lấy lịch sử vi phạm
             var reportsDto = await _reportService.GetReportsForUserAsync(id);
             var viewModels = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
-
-            // Lấy thông tin User để hiện tên
-            var user = await _userService.GetUserProfileAsync(id);
             
-            // Đặt tên ViewBag khớp với View
-            ViewBag.TargetUser = user?.FullName ?? "Người dùng";
             ViewBag.TargetUserId = id; 
             
+            // Lấy thông tin user để hiển thị tên trên View
+            var user = await _userService.GetUserProfileAsync(id);
+            ViewBag.TargetUser = user?.FullName ?? "Người dùng ẩn danh";
+
             return View(viewModels);
         }
-
         // Hỗ trợ giao diện 2 Tab (Dashboard)
         public async Task<IActionResult> PendingReports()
         {
@@ -105,31 +102,28 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         // Dùng hàm PenalizeUserAsync (Trừ 10 điểm, +1 gậy)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Penalize(string userId, int reportId)
-        {
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["Error"] = "Không tìm thấy ID người dùng để xử phạt.";
-                return RedirectToAction("PendingReports");
-            }
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
+{
+    if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID người dùng.");
 
-            // Gọi hàm trừ 10 điểm, +1 gậy
-            var success = await _userService.PenalizeUserAsync(userId, 10, 1);
-            
-            if (success)
-            {
-                await _reportService.ResolveWithActionAsync(reportId, "Admin đã xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo).");
-                TempData["Success"] = "Đã xử phạt tài khoản thành công (-10 điểm, +1 gậy).";
-            }
-            else
-            {
-                TempData["Error"] = "Tài khoản không tồn tại hoặc đã bị khóa trước đó.";
-            }
-            
-            return RedirectToAction("PendingReports");
-        }
+    // GỌI ĐÚNG HÀM PHẠT: Sẽ tự động trừ điểm và TĂNG WarningCount lên 1
+    // Nếu WarningCount >= 3, hàm này cũng sẽ tự động khóa tài khoản luôn (như bạn đã viết ở UserService)
+    var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
+    
+    if (success)
+    {
+        await _reportService.ResolveWithActionAsync(reportId, $"Admin đã xử phạt (Trừ {pointsDeducted} điểm).");
+        TempData["Success"] = "Đã xử phạt và ghi nhận 1 lần vi phạm thành công.";
+    }
+    else
+    {
+        TempData["Error"] = "Có lỗi xảy ra khi xử phạt.";
+    }
+    
+    return RedirectToAction(nameof(PendingReports));
+}
 
         // Bỏ qua báo cáo
         [HttpPost]
