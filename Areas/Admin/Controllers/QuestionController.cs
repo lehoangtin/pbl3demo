@@ -21,11 +21,40 @@ namespace StudyShare.Areas.Admin.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+public async Task<IActionResult> Index(string searchString)
+{
+    ViewData["CurrentFilter"] = searchString;
+
+    var questions = await _questionService.GetAllAsync();
+    var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(questions);
+
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        searchString = searchString.ToLower();
+        viewModels = viewModels.Where(q => 
+            (q.AuthorEmail != null && q.AuthorEmail.ToLower().Contains(searchString)) ||
+            (q.AuthorName != null && q.AuthorName.ToLower().Contains(searchString)) ||
+            (q.Content != null && q.Content.ToLower().Contains(searchString))
+        ).ToList();
+    }
+
+    return View(viewModels);
+}
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            var dtoList = await _questionService.GetAllAsync();
-            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
-            return View(viewModels);
+            // Lấy thông tin chi tiết câu hỏi (dùng hàm phù hợp trong IQuestionService)
+            var questionResponse = await _questionService.GetByIdAsync(id); 
+            
+            if (questionResponse == null)
+            {
+                return NotFound(); // Trả về trang 404 nếu không tìm thấy ID câu hỏi
+            }
+
+            // Map dữ liệu sang ViewModel để truyền cho View
+            var viewModel = _mapper.Map<QuestionViewModel>(questionResponse);
+            
+            return View(viewModel);
         }
 
         [HttpPost]

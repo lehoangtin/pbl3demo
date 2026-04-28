@@ -29,15 +29,15 @@ namespace StudyShare.Models
             }
 
             // 2. Khởi tạo Users mẫu
-            // Chú ý: Super Admin sẽ có cả quyền Admin
             var usersToSeed = new List<(string Email, string Name, int Points, int Warnings, bool IsBanned, string[] Roles)>
             {
                 ("superadmin@studyshare.com", "Trùm Cuối", 9999, 0, false, new[] { "SuperAdmin", "Admin" }),
                 ("admin@gmail.com", "Quản trị viên 1", 1000, 0, false, new[] { "Admin" }),
-                ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, 0, false, new[] { "Admin" }), // Bạn làm Admin luôn cho xịn
+                ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, 0, false, new[] { "Admin" }),
                 ("sinhvien1@gmail.com", "Sinh Viên Chăm Chỉ", 200, 0, false, new[] { "User" }),
-                ("vipham@gmail.com", "User Bị 3 Gậy", 0, 3, false, new[] { "User" }), // TEST MODAL KHÓA KHI RELOAD
-                ("banned@gmail.com", "User Bị Khóa", -50, 5, true, new[] { "User" })   // TEST TRẠNG THÁI BANNED
+                ("sinhvien2@gmail.com", "Sinh Viên Chăm Chỉ", 200, 0, false, new[] { "User" }),
+                ("vipham@gmail.com", "User Bị 3 Gậy", 0, 3, false, new[] { "User" }), 
+                ("banned@gmail.com", "User Bị Khóa", -50, 5, true, new[] { "User" })   
             };
 
             foreach (var u in usersToSeed)
@@ -52,8 +52,8 @@ namespace StudyShare.Models
                         FullName = u.Name,
                         EmailConfirmed = true,
                         Points = u.Points,
-                        WarningCount = u.Warnings, // Gán số lần vi phạm
-                        IsBanned = u.IsBanned      // Gán trạng thái khóa
+                        WarningCount = u.Warnings, 
+                        IsBanned = u.IsBanned      
                     };
                     
                     var result = await userManager.CreateAsync(user, "User@123");
@@ -70,28 +70,16 @@ namespace StudyShare.Models
             // Lấy IDs để làm data liên kết
             var tinUser = await userManager.FindByEmailAsync("lehoangtin@gmail.com");
             var sv1User = await userManager.FindByEmailAsync("sinhvien1@gmail.com");
-            var adminUser = await userManager.FindByEmailAsync("admin@gmail.com");
 
-            // 3. Khởi tạo Categories
-            if (!context.Categories.Any())
-            {
-                context.Categories.AddRange(new List<Category>
-                {
-                    new Category { Name = "Công nghệ phần mềm", Description = "C#, ASP.NET Core, Java Swing..." },
-                    new Category { Name = "Mạng máy tính", Description = "Cisco Packet Tracer, Network Design..." },
-                    new Category { Name = "Toán chuyên ngành", Description = "SVD, Cholesky, Discrete Math..." },
-                    new Category { Name = "Ngoại ngữ", Description = "Tài liệu JLPT N5-N2, English for IT..." },
-                    new Category { Name = "Khác", Description = "Các tài liệu kỹ năng mềm và chủ đề khác" }
-                });
-                await context.SaveChangesAsync();
-            }
+            // 3. Khởi tạo Categories 
+            // ---> ĐÃ XÓA để bạn tự thêm từ Database/Admin <---
 
-            var catSoftware = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Công nghệ phần mềm");
-            var catNetwork = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Mạng máy tính");
-            var catMath = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Toán chuyên ngành");
+            // Lấy 1 category bất kỳ đã có trong DB (do bạn tự thêm) để làm dữ liệu mẫu cho Document
+            var defaultCategory = await context.Categories.FirstOrDefaultAsync();
 
-            // 4. Khởi tạo Documents (Chỉ Seed nếu chưa có)
-            if (!context.Documents.Any() && tinUser != null)
+            // 4. Khởi tạo Documents 
+            // Chỉ Seed nếu chưa có document nào, có user, và bạn ĐÃ thêm ít nhất 1 Category vào DB
+            if (!context.Documents.Any() && tinUser != null && sv1User != null && defaultCategory != null)
             {
                 context.Documents.AddRange(new List<Document>
                 {
@@ -103,7 +91,7 @@ namespace StudyShare.Models
                         FileType = "application/pdf", 
                         FileSize = 1500000, 
                         UserId = tinUser.Id, 
-                        CategoryId = catSoftware.Id, 
+                        CategoryId = defaultCategory.Id, // Dùng category ngẫu nhiên bạn đã tạo
                         IsApproved = true, 
                         UploadDate = DateTime.Now.AddDays(-7) 
                     },
@@ -115,7 +103,7 @@ namespace StudyShare.Models
                         FileType = "application/pdf", 
                         FileSize = 850000, 
                         UserId = sv1User.Id, 
-                        CategoryId = catNetwork.Id, 
+                        CategoryId = defaultCategory.Id, // Dùng category ngẫu nhiên bạn đã tạo
                         IsApproved = true, 
                         UploadDate = DateTime.Now.AddDays(-3) 
                     }
@@ -124,7 +112,7 @@ namespace StudyShare.Models
             }
 
             // 5. Khởi tạo Questions & Answers
-            if (!context.Questions.Any())
+            if (!context.Questions.Any() && sv1User != null && tinUser != null)
             {
                 var q1 = new Question { 
                     Content = "Làm sao để map Role trong AutoMapper khi dùng Identity?", 

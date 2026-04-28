@@ -23,7 +23,7 @@
         <a asp-area="Admin" asp-controller="Document" asp-action="Index"
            class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
            @(currentController == "Document" ? "active rounded-3 mb-1 shadow-sm" : "")">
-            <i class="bi bi-file-earmark-check me-3 text-success fs-5"></i> Duyệt tài liệu
+            <i class="bi bi-file-earmark-check me-3 text-success fs-5"></i> Quản lý tài liệu
         </a>
 
         <a asp-area="Admin" asp-controller="User" asp-action="Index"
@@ -49,15 +49,16 @@
            @(currentController == "Category" ? "active rounded-3 mb-1 shadow-sm" : "")">
             <i class="bi bi-tags me-3 text-warning fs-5"></i> Danh mục hệ thống
         </a>
+        
         @if (User.IsInRole("SuperAdmin"))
         {
-            <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageRoles" ? "active bg-primary text-white" : "text-dark")" 
-                asp-area="Admin" asp-controller="User" asp-action="ManageRoles">
-                    <i class="bi bi-shield-check me-2"></i> Phân quyền hệ thống
-                </a>
-            </li>
+            <a asp-area="Admin" asp-controller="User" asp-action="ManageRoles"
+               class="list-group-item list-group-item-action border-0 px-4 py-3 fw-medium
+               @(currentAction == "ManageRoles" ? "active bg-primary text-white rounded-3 mb-1 shadow-sm" : "text-dark")">
+                <i class="bi bi-shield-check me-3 fs-5 @(currentAction == "ManageRoles" ? "" : "text-primary")"></i> Phân quyền hệ thống
+            </a>
         }
+        
         <hr class="mx-4 my-2 text-muted opacity-25">
 
         <a asp-area="" asp-controller="Home" asp-action="Index"

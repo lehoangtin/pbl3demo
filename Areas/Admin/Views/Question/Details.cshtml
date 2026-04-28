@@ -3,22 +3,24 @@
     ViewData["Title"] = "Chi tiết thảo luận";
 }
 
-<div class="container mt-4 mb-5">
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            @await Html.PartialAsync("_AdminSidebarPartial")
+<div class="container-fluid py-4" style="background-color: #f8f9fc; min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-2 col-lg-3">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_AdminSidebarPartial")
+            </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="mb-3">
-                <a asp-action="Index" class="text-decoration-none text-muted">
+        <div class="col-xl-10 col-lg-9">
+            <div class="mb-3 px-2">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium shadow-sm">
                     <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
                 </a>
             </div>
 
             @if (TempData["Success"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm">
+                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 px-4">
                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -31,34 +33,36 @@
                         <h5 class="m-0 fw-bold"><i class="bi bi-person-circle me-2"></i>@Model.AuthorName</h5>
                     </div>
                     <div class="text-end">
-                        <small class="opacity-75 d-block mb-1">Thời gian</small>
-                        <span class="fw-medium"><i class="bi bi-clock me-1"></i>@Model.CreatedAt.ToString("HH:mm dd/MM/yyyy")</span>
+                        <small class="opacity-75 d-block mb-1">Thời gian đăng</small>
+                        <span class="fw-medium">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
                 </div>
-                <div class="card-body p-4 p-md-5 bg-white">
-                    <h4 class="fw-bold text-dark mb-0" style="line-height: 1.6;">@Model.Content</h4>
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-3 py-2 me-2">@Model.CategoryName</span>
+                    </div>
+                    <h4 class="text-dark fw-normal mb-4 pb-4 border-bottom" style="line-height: 1.6;">@Model.Content</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold m-0"><i class="bi bi-chat-dots text-info me-2"></i>Bình luận (@Model.AnswerCount)</h5>
+                        
+                        <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa hoàn toàn câu hỏi và mọi bình luận bên trong?');">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-trash me-2"></i> Xóa toàn bộ Topic
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-footer bg-light p-3 text-end border-top-0">
-                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn câu hỏi này cùng toàn bộ các câu trả lời bên trong?');">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 shadow-sm fw-bold">
-                            <i class="bi bi-trash-fill me-2"></i> Xóa toàn bộ thảo luận này
-                        </button>
-                    </form>
-                </div>
-            </div>
 
-            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-chat-dots text-info me-2"></i>Các câu trả lời (@(Model.Answers != null ? Model.Answers.Count() : 0))</h5>
-            
-            @if (Model.Answers != null && Model.Answers.Any())
-            {
-                <div class="row g-3">
-                    @foreach (var ans in Model.Answers.OrderByDescending(x => x.CreatedAt))
-                    {
-                        <div class="col-12">
-                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 d-flex justify-content-between align-items-start gap-3">
-                                    <div>
+                @if (Model.Answers != null && Model.Answers.Any())
+                {
+                    <div class="list-group list-group-flush border-top">
+                        @foreach (var ans in Model.Answers)
+                        {
+                            <div class="list-group-item p-4 bg-light border-bottom border-white" style="border-width: 4px !important;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex flex-column">
                                         <h6 class="fw-bold text-primary mb-2">@ans.AuthorName <span class="text-muted fw-normal small ms-2"><i class="bi bi-clock me-1"></i>@ans.CreatedAt.ToString("HH:mm dd/MM/yyyy")</span></h6>
                                         <p class="text-dark mb-0" style="font-size: 1.05rem;">@ans.Content</p>
                                     </div>
@@ -72,17 +76,17 @@
                                     </form>
                                 </div>
                             </div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5 bg-light rounded-4 border border-dashed text-muted">
-                    <i class="bi bi-chat-square text-secondary opacity-50 display-4 d-block mb-3"></i>
-                    Chưa có câu trả lời nào cho thảo luận này.
-                </div>
-            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-light rounded-bottom-4 border-top border-dashed text-muted">
+                        <i class="bi bi-chat-square text-secondary opacity-50 display-4 d-block mb-3"></i>
+                        Chưa có câu trả lời nào cho thảo luận này.
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

@@ -11,6 +11,7 @@ namespace StudyShare.ViewModels
         public string AuthorName { get; set; } = string.Empty;
         public string? AuthorAvatar { get; set; }
         public int AnswerCount { get; set; }
+        public string AuthorEmail { get; set; } = string.Empty; // THÊM DÒNG NÀY
         
         // Danh sách câu trả lời cũng nên chuyển sang ViewModel
         public IEnumerable<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();

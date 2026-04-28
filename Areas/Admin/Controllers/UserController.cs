@@ -49,16 +49,22 @@ namespace StudyShare.Areas.Admin.Controllers
 
     return View(viewModels);
 }
+public async Task<IActionResult> Details(string id)
+{
+    var user = await _userService.GetUserProfileAsync(id);
+    if (user == null) return NotFound();
 
-        public async Task<IActionResult> Details(string id)
-        {
-            var user = await _userService.GetUserProfileAsync(id);
-            if (user == null) return NotFound();
+    var viewModel = _mapper.Map<UserViewModel>(user);
 
-            var viewModel = _mapper.Map<UserViewModel>(user);
-            return View(viewModel);
-        }
+    // 1. Lấy lịch sử vi phạm (Bắt buộc phải có đoạn này thì bảng lịch sử mới hiện)
+    var reportsDto = await _reportService.GetReportsForUserAsync(id);
+    var violations = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto)
+                            .Where(r => !string.IsNullOrEmpty(r.ActionTaken))
+                            .OrderByDescending(r => r.CreatedAt);
+    ViewBag.Violations = violations;
 
+    return View(viewModel);
+}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleBan(string id)

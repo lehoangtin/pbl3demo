@@ -5,91 +5,100 @@
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold text-dark"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Phân quyền hệ thống</h3>
-            <p class="text-muted">Chỉ Super Admin mới có quyền nâng cấp hoặc hạ bậc nhân sự.</p>
+<div class="container-fluid py-4" style="background-color: #f8f9fc; min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-2 col-lg-3">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_AdminSidebarPartial")
+            </div>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
-        </a>
-    </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">Thành viên</th>
-                            <th>Quyền hiện tại</th>
-                            <th class="text-center">Thiết lập quyền mới</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model)
-                        {
-                            bool isMe = user.Id == currentUserId;
-                            bool isSuperAdmin = user.Role == "SuperAdmin";
-                            
-                            <tr class="@(isMe ? "table-info" : "")">
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm me-3">
-                                            <img src="@(string.IsNullOrEmpty(user.Avatar) ? "/images/default-avatar.png" : user.Avatar)" 
-                                                 class="rounded-circle border" width="40" height="40">
-                                        </div>
-                                        <div>
-                                            <span class="fw-bold d-block">@user.FullName</span>
-                                            <small class="text-muted">@user.Email</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if (isSuperAdmin) {
-                                        <span class="badge bg-dark rounded-pill px-3"><i class="bi bi-star-fill text-warning me-1"></i> Super Admin</span>
-                                    } else if (user.Role == "Admin") {
-                                        <span class="badge bg-primary rounded-pill px-3">Quản trị viên</span>
-                                    } else {
-                                        <span class="badge bg-secondary rounded-pill px-3">Người dùng</span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    @if (!isSuperAdmin && !isMe)
-                                    {
-                                        <div class="d-flex justify-content-center gap-2">
-                                            @if (user.Role != "Admin")
-                                            {
-                                                <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="Admin" method="post">
-                                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 shadow-sm">
-                                                        <i class="bi bi-chevron-double-up me-1"></i> Lên Admin
-                                                    </button>
-                                                </form>
+        <div class="col-xl-10 col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Phân quyền hệ thống</h3>
+                    <p class="text-muted">Chỉ Super Admin mới có quyền nâng cấp hoặc hạ bậc nhân sự.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Thành viên</th>
+                                    <th>Quyền hiện tại</th>
+                                    <th class="text-center">Thiết lập quyền mới</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    bool isMe = user.Id == currentUserId;
+                                    bool isSuperAdmin = user.Role == "SuperAdmin";
+                                    
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border" style="width: 45px; height: 45px;">
+                                                    <i class="bi bi-person-fill fs-4 text-secondary"></i>
+                                                </div>
+                                                <div class="ms-3">
+                                                    <h6 class="mb-0 fw-bold">@user.FullName</h6>
+                                                    <small class="text-muted">@user.Email</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (user.Role == "SuperAdmin") {
+                                                <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-star-fill me-1"></i> Super Admin</span>
+                                            } else if (user.Role == "Admin") {
+                                                <span class="badge bg-primary rounded-pill px-3 py-2"><i class="bi bi-shield-fill me-1"></i> Admin</span>
+                                            } else {
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2"><i class="bi bi-person me-1"></i> User</span>
                                             }
-                                            @if (user.Role != "User")
+                                        </td>
+                                        <td class="text-center">
+                                            @if (!isMe && !isSuperAdmin)
                                             {
-                                                <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="User" method="post">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-4 shadow-sm">
-                                                        <i class="bi bi-chevron-double-down me-1"></i> Hạ xuống User
-                                                    </button>
-                                                </form>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    @if (user.Role != "Admin")
+                                                    {
+                                                        <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="Admin" method="post">
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-4 shadow-sm">
+                                                                <i class="bi bi-chevron-double-up me-1"></i> Nâng cấp lên Admin
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    @if (user.Role != "User")
+                                                    {
+                                                        <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="User" method="post">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-4 shadow-sm">
+                                                                <i class="bi bi-chevron-double-down me-1"></i> Hạ xuống User
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                </div>
                                             }
-                                        </div>
-                                    }
-                                    else if(isMe)
-                                    {
-                                        <small class="text-muted italic">Tài khoản của bạn</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted"><i class="bi bi-slash-circle"></i> Không thể can thiệp</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                            else if(isMe)
+                                            {
+                                                <small class="text-muted italic">Tài khoản của bạn</small>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted"><i class="bi bi-slash-circle"></i> Không thể can thiệp</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

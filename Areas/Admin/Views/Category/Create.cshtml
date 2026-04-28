@@ -3,15 +3,17 @@
     ViewData["Title"] = "Thêm danh mục mới";
 }
 
-<div class="container mt-4 mb-5">
-    <div class="row">
-        <div class="col-md-3">
-            @await Html.PartialAsync("_AdminSidebarPartial")
+<div class="container-fluid py-4" style="background-color: #f8f9fc; min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-2 col-lg-3">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_AdminSidebarPartial")
+            </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="mb-3">
-                <a asp-action="Index" class="text-decoration-none text-muted">
+        <div class="col-xl-10 col-lg-9">
+            <div class="mb-3 px-2">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium shadow-sm">
                     <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
                 </a>
             </div>
