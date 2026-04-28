@@ -7,11 +7,13 @@ using StudyShare.ViewModels;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, SuperAdmin")]
+    
     public class UserController : Controller
     {
         private readonly IUserService _userService;
@@ -26,23 +28,27 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         public async Task<IActionResult> Index(string searchString)
-        {
-            ViewData["CurrentFilter"] = searchString;
+{
+    ViewData["CurrentFilter"] = searchString;
 
-            var users = await _userService.GetAllUsersAsync();
-            var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
+    // 1. Lấy dữ liệu từ lớp Service (Trả về IEnumerable<UserResponse>)
+    var users = await _userService.GetAllUsersAsync();
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
-                viewModels = viewModels.Where(u => 
-                    (!string.IsNullOrEmpty(u.FullName) && u.FullName.ToLower().Contains(searchString)) ||
-                    (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower().Contains(searchString))
-                );
-            }
+    // 2. Map sang ViewModel để hiển thị ra View
+    var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
 
-            return View(viewModels);
-        }
+    // 3. Thực hiện lọc dữ liệu
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        searchString = searchString.ToLower();
+        viewModels = viewModels.Where(u => 
+            (!string.IsNullOrEmpty(u.FullName) && u.FullName.ToLower().Contains(searchString)) ||
+            (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower().Contains(searchString))
+        ).ToList(); // Ép kiểu về List để tránh lỗi truy vấn khi truyền vào View
+    }
+
+    return View(viewModels);
+}
 
         public async Task<IActionResult> Details(string id)
         {
@@ -134,5 +140,34 @@ public async Task<IActionResult> Penalize(string userId, int reportId, int point
             TempData["Success"] = "Đã bỏ qua báo cáo.";
             return RedirectToAction("PendingReports");
         }
+        [HttpPost]
+    public async Task<IActionResult> ChangeRole(string userId, string role)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var success = await _userService.UpdateUserRoleAsync(userId, role, currentUserId);
+
+        if (success) TempData["Success"] = "Cập nhật quyền hạn thành công!";
+        else TempData["Error"] = "Bạn không có đủ thẩm quyền thực hiện thao tác này!";
+
+        return RedirectToAction("Index");
+    }
+    [HttpGet]
+[Authorize(Roles = "SuperAdmin")] // Chỉ Super Admin mới được vào trang này
+public async Task<IActionResult> ManageRoles(string searchString)
+{
+    var users = await _userService.GetAllUsersAsync();
+    var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
+
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        searchString = searchString.ToLower();
+        viewModels = viewModels.Where(u => 
+            u.FullName.ToLower().Contains(searchString) || 
+            u.Email.ToLower().Contains(searchString)
+        ).ToList();
+    }
+
+    return View(viewModels);
+}
     }
 }

@@ -12,11 +12,13 @@ namespace StudyShare.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IEmailSender _emailSender;
+        private readonly SignInManager<AppUser> _signInManager; // Thêm SignInManager để xử lý đăng xuất
 
-        public AccountController(IAuthService authService, IEmailSender emailSender)
+        public AccountController(IAuthService authService, IEmailSender emailSender, SignInManager<AppUser> signInManager)
         {
             _authService = authService;
             _emailSender = emailSender;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
@@ -103,8 +105,9 @@ namespace StudyShare.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _authService.LogoutAsync();
-            return RedirectToAction("Index", "Home");
+            await _signInManager.SignOutAsync();
+            // Đăng xuất xong thì đuổi về trang chủ
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
 
         [HttpGet]

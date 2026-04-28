@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;

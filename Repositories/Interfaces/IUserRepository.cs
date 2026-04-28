@@ -18,5 +18,6 @@ namespace StudyShare.Repositories.Interfaces
         Task<IEnumerable<SavedDocument>> GetSavedDocumentsListAsync(string userId);
         Task<IEnumerable<AppUser>> GetAllAsync();
         Task <IEnumerable<AppUser>> GetReportedUsersAsync();   
+        
     }
 }

@@ -50,7 +50,17 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(Question question)
         {
+            // 1. Tìm và xóa tất cả báo cáo liên quan đến câu hỏi này trước
+            var relatedReports = _context.Reports.Where(r => r.QuestionId == question.Id);
+            _context.Reports.RemoveRange(relatedReports);
+
+            // 2. (Tùy chọn) Nếu câu hỏi có câu trả lời, bạn cũng nên xóa chúng để tránh lỗi tương tự
+            var relatedAnswers = _context.Answers.Where(a => a.QuestionId == question.Id);
+            _context.Answers.RemoveRange(relatedAnswers);
+
+            // 3. Sau đó mới xóa câu hỏi
             _context.Questions.Remove(question);
+            
             return await _context.SaveChangesAsync() > 0;
         }
 

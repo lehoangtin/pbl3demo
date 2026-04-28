@@ -9,7 +9,7 @@ using StudyShare.Services.Implementations;
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public class HomeController : Controller
     {
         private readonly IDashboardService   _dashboardService;

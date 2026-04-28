@@ -8,55 +8,75 @@ namespace StudyShare.Models
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-      protected override void OnModelCreating(ModelBuilder builder)
-{
-    base.OnModelCreating(builder);
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
 
-    // 1. Cấu hình Question: Khi xóa User, KHÔNG tự động xóa Question (Tránh vòng lặp)
-    builder.Entity<Question>(entity => {
-        entity.HasOne(q => q.User)
-            .WithMany(u => u.Questions)
-            .HasForeignKey(q => q.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // 🔥 Đổi sang NoAction
-    });
+            // 1. Cấu hình QUESTION
+            builder.Entity<Question>(entity => {
+                // Khi xóa User -> KHÔNG xóa Question (Tránh lỗi đa đường truyền - Multiple Cascade Paths)
+                entity.HasOne(q => q.User)
+                    .WithMany(u => u.Questions)
+                    .HasForeignKey(q => q.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
-    // 2. Cấu hình Answer
-    builder.Entity<Answer>(entity => {
-        // Khi xóa Question -> Xóa sạch Answer liên quan (Được phép)
-        entity.HasOne(a => a.Question)
-            .WithMany(q => q.Answers)
-            .HasForeignKey(a => a.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            // 2. Cấu hình ANSWER
+            builder.Entity<Answer>(entity => {
+                // Khi xóa Question -> Xóa sạch Answer (Hợp lý)
+                entity.HasOne(a => a.Question)
+                    .WithMany(q => q.Answers)
+                    .HasForeignKey(a => a.QuestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-        // Khi xóa User -> KHÔNG tự động xóa Answer (Tránh vòng lặp)
-        entity.HasOne(a => a.User)
-            .WithMany() 
-            .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // 🔥 Đổi sang NoAction
-    });
+                // Khi xóa User -> KHÔNG xóa Answer
+                entity.HasOne(a => a.User)
+                    .WithMany() 
+                    .HasForeignKey(a => a.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
-    // 3. Cấu hình SavedDocument
-    builder.Entity<SavedDocument>(entity => {
-        entity.HasOne(d => d.Document)
-            .WithMany()
-            .HasForeignKey(d => d.DocumentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            // 3. Cấu hình SAVED DOCUMENT (Lưu tài liệu)
+            builder.Entity<SavedDocument>(entity => {
+                // Xóa tài liệu gốc -> Xóa luôn bản lưu của User
+                entity.HasOne(d => d.Document)
+                    .WithMany()
+                    .HasForeignKey(d => d.DocumentId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-        entity.HasOne(d => d.User)
-            .WithMany(u => u.SavedDocuments)
-            .HasForeignKey(d => d.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
-    });
+                entity.HasOne(d => d.User)
+                    .WithMany(u => u.SavedDocuments)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
-    // 4. Cấu hình Report (Bắt buộc tất cả NoAction)
-    builder.Entity<Report>(entity => {
-        entity.HasOne(r => r.Reporter).WithMany().HasForeignKey(r => r.ReporterUserId).OnDelete(DeleteBehavior.NoAction);
-        entity.HasOne(r => r.Target).WithMany().HasForeignKey(r => r.TargetUserId).OnDelete(DeleteBehavior.NoAction);
-        entity.HasOne(r => r.Document).WithMany().HasForeignKey(r => r.DocumentId).OnDelete(DeleteBehavior.NoAction);
-        entity.HasOne(r => r.Question).WithMany().HasForeignKey(r => r.QuestionId).OnDelete(DeleteBehavior.NoAction);
-        entity.HasOne(r => r.Answer).WithMany().HasForeignKey(r => r.AnswerId).OnDelete(DeleteBehavior.NoAction);
-    });
-}
+            // 4. Cấu hình REPORT (Khắc phục lỗi bạn vừa gặp)
+            builder.Entity<Report>(entity => {
+                // Đối với Người dùng liên quan: Để NoAction để tránh vòng lặp xóa
+                entity.HasOne(r => r.Reporter).WithMany().HasForeignKey(r => r.ReporterUserId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(r => r.Target).WithMany().HasForeignKey(r => r.TargetUserId).OnDelete(DeleteBehavior.NoAction);
+
+                // ĐỐI VỚI NỘI DUNG: Chuyển sang CASCADE để khi xóa nội dung thì Report tự biến mất
+                // Đây chính là chìa khóa để fix lỗi crash lúc nãy!
+                
+                entity.HasOne(r => r.Document)
+                    .WithMany() // Nếu Document.cs có ICollection<Report> thì thay bằng .WithMany(d => d.Reports)
+                    .HasForeignKey(r => r.DocumentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.Question)
+                    .WithMany() // Nếu Question.cs có ICollection<Report> thì thay bằng .WithMany(q => q.Reports)
+                    .HasForeignKey(r => r.QuestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.Answer)
+                    .WithMany() // Nếu Answer.cs có ICollection<Report> thì thay bằng .WithMany(a => a.Reports)
+                    .HasForeignKey(r => r.AnswerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+        }
+
+        // Đăng ký các bảng dữ liệu
         public DbSet<Document> Documents { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }  

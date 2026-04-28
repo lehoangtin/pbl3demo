@@ -13,5 +13,6 @@ namespace StudyShare.DTOs.Responses
         // public bool IsBanned => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.Now;
         public bool IsBanned { get; set; }
         public int WarningCount { get; set; }
+        public string Role { get; set; } // Phải có dòng này!
     }
 }

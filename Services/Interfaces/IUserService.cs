@@ -25,6 +25,6 @@ namespace StudyShare.Services.Interfaces
         // Thêm vào file Services/Interfaces/IUserService.cs
         Task<bool> PenalizeUserAsync(string userId, int pointsToDeduct, int warningIncrement);
         Task<bool> AddPointsAsync(string userId, int points);
-
+        Task<bool> UpdateUserRoleAsync(string userId, string targetRole, string currentUserId);
     }
 }

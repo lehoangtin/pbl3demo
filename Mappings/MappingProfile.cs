@@ -25,7 +25,8 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions != null ? src.Questions.Count : 0))
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
                 .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned))
-                .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount));
+                .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount))
+                .ForMember(dest => dest.Role, opt => opt.Ignore()); // Bảo AutoMapper bỏ qua Role, mình sẽ tự gán sau
 
             CreateMap<UserResponse, UserViewModel>()
                 .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned))
@@ -33,7 +34,7 @@ namespace StudyShare.Mappings
 
             CreateMap<AppUser, UserEditViewModel>();
             CreateMap<UserEditViewModel, ProfileUpdateRequest>().ReverseMap();
-
+            // Map từ Entity (AppUser) sang ViewModel để hiển thị
             // ==========================================
             // 2. DOCUMENT MAPPINGS
             // ==========================================
@@ -57,7 +58,7 @@ namespace StudyShare.Mappings
             CreateMap<QuestionCreateRequest, Question>();
             CreateMap<QuestionCreateViewModel, QuestionCreateRequest>();
             CreateMap<QuestionEditViewModel, QuestionUpdateRequest>().ReverseMap();
-
+            CreateMap<QuestionUpdateRequest, Question>();
             CreateMap<Question, QuestionResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0));

@@ -27,12 +27,24 @@ namespace StudyShare.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
-        {
-            var users = await _userManager.Users.ToListAsync();
-            // Bắt buộc dùng _mapper để nó ăn cấu hình của MappingProfile
-            return _mapper.Map<IEnumerable<UserResponse>>(users);
-        }
+public async Task<IEnumerable<UserResponse>> GetAllUsersAsync() 
+{
+    var users = await _userManager.Users.ToListAsync();
+    
+    // Map từ AppUser sang UserResponse
+    var userResponses = _mapper.Map<IEnumerable<UserResponse>>(users);
+
+    foreach (var response in userResponses)
+    {
+        var userEntity = users.First(u => u.Id == response.Id);
+        var roles = await _userManager.GetRolesAsync(userEntity);
+        
+        // Đảm bảo trong class UserResponse của bạn có thuộc tính Role
+        response.Role = roles.FirstOrDefault() ?? "User";
+    }
+
+    return userResponses;
+}
 
         public async Task<IEnumerable<UserResponse>> GetTopRankingAsync(int topCount)
         {
@@ -211,5 +223,27 @@ namespace StudyShare.Services.Implementations
             user.Points += points;
             return await _userRepository.UpdateUserAsync(user);
         }
+        public async Task<bool> UpdateUserRoleAsync(string userId, string targetRole, string currentUserId)
+{
+    var targetUser = await _userManager.FindByIdAsync(userId);
+    var currentUser = await _userManager.FindByIdAsync(currentUserId);
+
+    if (targetUser == null || currentUser == null) return false;
+
+    // 1. Chốt chặn: Không ai được quyền hạ bệ SuperAdmin (Trùm cuối)
+    if (await _userManager.IsInRoleAsync(targetUser, "SuperAdmin")) return false;
+
+    // 2. Chốt chặn: Chỉ SuperAdmin mới có quyền nâng người khác lên Admin hoặc hạ bậc Admin
+    bool isSuperAdmin = await _userManager.IsInRoleAsync(currentUser, "SuperAdmin");
+    if (!isSuperAdmin) return false; 
+
+    // 3. Xử lý thay đổi Role
+    var currentRoles = await _userManager.GetRolesAsync(targetUser);
+    await _userManager.RemoveFromRolesAsync(targetUser, currentRoles); // Xóa hết role cũ
+    
+    var result = await _userManager.AddToRoleAsync(targetUser, targetRole); // Thêm role mới
+    return result.Succeeded;
+}
+
     }
 }

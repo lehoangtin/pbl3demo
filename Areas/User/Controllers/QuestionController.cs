@@ -143,43 +143,44 @@ namespace StudyShare.Areas.User.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
-        {
-            if (!ModelState.IsValid) return View(viewModel);
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
+{
+    if (!ModelState.IsValid) return View(viewModel);
 
-            var request = _mapper.Map<QuestionUpdateRequest>(viewModel);
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    bool isAdmin = User.IsInRole("Admin");
 
-            var aiCheck = await _aiService.CheckContentAsync(request.Content);
-            if (aiCheck.isFlagged)
-            {
-                await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+    // --- 1. CHÈN KIỂM DUYỆT AI VÀO ĐÂY ---
+    // Kiểm tra cả Tiêu đề và Nội dung mới xem có vi phạm không
+    var aiCheckContent = await _aiService.CheckContentAsync(viewModel.Content);
 
-                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
-                var autoReport = new Report
-                {
-                    ReporterUserId = currentUserId,
-                    TargetUserId = currentUserId,
-                    QuestionId = request.Id,
-                    Reason = $"[HỆ THỐNG AI CHẶN SỬA] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
-                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
-                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
-                };
-                _context.Reports.Add(autoReport);
-                await _context.SaveChangesAsync();
+    if (aiCheckContent.isFlagged)
+    {
+        string reason = aiCheckContent.reason;
+        
+        // Phạt người dùng vì cố tình sửa nội dung vi phạm
+        await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+        
+        TempData["Error"] = $"Nội dung chỉnh sửa vi phạm: {reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
+        
+        // Trả về View Edit để họ sửa lại cho đúng
+        return View(viewModel);
+    }
+    // -------------------------------------
 
-                TempData["Error"] = $"Vi phạm khi sửa: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
-                return View(viewModel);
-            }
+    var request = _mapper.Map<QuestionUpdateRequest>(viewModel);
+    var success = await _questionService.UpdateAsync(request, currentUserId, isAdmin);
 
-            bool isAdmin = User.IsInRole("Admin");
-            var success = await _questionService.UpdateAsync(request, currentUserId, isAdmin);
-            if (!success) return Unauthorized();
+    if (success)
+    {
+        TempData["Success"] = "Cập nhật câu hỏi thành công!";
+        return RedirectToAction(nameof(Details), new { id = viewModel.Id });
+    }
 
-            TempData["Success"] = "Cập nhật thành công!";
-            return RedirectToAction(nameof(Details), new { id = request.Id });
-        }
+    TempData["Error"] = "Bạn không có quyền chỉnh sửa hoặc có lỗi xảy ra.";
+    return RedirectToAction(nameof(Index));
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

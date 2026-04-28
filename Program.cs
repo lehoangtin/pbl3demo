@@ -93,7 +93,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
+// app.MapRazorPages();
 // Areas route
 app.MapControllerRoute(
     name: "areas",

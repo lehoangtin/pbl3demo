@@ -11,5 +11,6 @@ namespace StudyShare.ViewModels
         public int WarningCount { get; set; }
         public int DocumentCount { get; set; }
         public int QuestionCount { get; set; }
+        public string Role { get; set; }
     }
 }
