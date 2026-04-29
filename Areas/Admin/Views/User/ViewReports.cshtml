@@ -1,125 +1,123 @@
 @model IEnumerable<StudyShare.ViewModels.ReportViewModel>
 @{
-    ViewData["Title"] = "Hồ sơ vi phạm cá nhân";
-    // Lấy tên người dùng từ báo cáo hoặc từ ViewBag để tránh bị trống
+    ViewData["Title"] = "Hồ sơ báo cáo";
     var targetUserName = Model.FirstOrDefault()?.TargetUserName ?? ViewBag.TargetUser ?? "Người dùng";
 }
 
 <div class="container-fluid mt-4 mb-5 px-4">
     <div class="row">
-        <div class="col-md-3 col-lg-2 mb-4">
+        <div class="col-xl-3 col-lg-4 mb-4 d-none d-lg-block">
             @await Html.PartialAsync("_AdminSidebarPartial")
         </div>
 
-        <div class="col-md-9 col-lg-10">
-            <div class="mb-3">
-                <a asp-action="PendingReports" class="btn btn-light border rounded-pill shadow-sm fw-bold text-muted">
-                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
-                </a>
-            </div>
-
-            <div class="card shadow-sm border-0 rounded-4 mb-4 border-danger border-start border-4">
-                <div class="card-body p-4">
-                    <h4 class="m-0 text-dark">Hồ sơ báo cáo đối với: <span class="text-danger fw-bold">@targetUserName</span></h4>
+        <div class="col-xl-9 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center bg-white p-3 rounded-4 shadow-sm border-start border-4 border-danger">
+                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 50px; height: 50px;">
+                        <i class="bi bi-file-earmark-x-fill fs-4"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h5 class="m-0 text-dark fw-bold">Hồ sơ báo cáo</h5>
+                        <small class="text-muted">Đối tượng: <span class="text-danger fw-bold fs-6">@targetUserName</span></small>
+                    </div>
                 </div>
+                
+                <a asp-action="PendingReports" class="btn btn-white border rounded-pill shadow-sm fw-medium px-4 hover-lift">
+                    <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
+                </a>
             </div>
 
             @if (Model != null && Model.Any()) {
                 <div class="row g-4">
                     @foreach (var r in Model.OrderByDescending(x => x.CreatedAt)) {
                         <div class="col-12">
-                            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                                <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center border-bottom">
-                                    <h5 class="mb-0 fw-bold text-danger">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Lý do: @r.Reason
-                                    </h5>
-                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-2">
+                                <div class="card-header bg-white p-4 d-flex justify-content-between align-items-center border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle-fill text-warning fs-3 me-3"></i>
+                                        <div>
+                                            <h5 class="mb-1 fw-bold text-dark">@r.Reason</h5>
+                                            <span class="text-muted small"><i class="bi bi-clock me-1"></i>Đã báo cáo vào: @r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        @if (r.Reason.Contains("[HỆ THỐNG AI]")) {
+                                            <span class="badge bg-info px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-robot me-1"></i> Phát hiện bởi AI</span>
+                                        } else {
+                                            <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-person-fill me-1"></i> @r.ReporterName báo cáo</span>
+                                        }
+                                    </div>
                                 </div>
                                 
                                 <div class="card-body p-4 bg-light">
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <small class="text-muted d-block fw-bold mb-2">Nguồn báo cáo:</small>
-                                            @if (r.Reason.Contains("[HỆ THỐNG AI]")) {
-                                                <span class="badge bg-info-subtle text-info border border-info px-3 py-2 rounded-pill fs-6">
-                                                    <i class="bi bi-robot me-1"></i> Hệ thống kiểm duyệt AI
-                                                </span>
-                                            } else {
-                                                <span class="badge bg-secondary px-3 py-2 rounded-pill fs-6">
-                                                    <i class="bi bi-person-fill me-1"></i> @r.ReporterName
-                                                </span>
-                                            }
-                                        </div>
+                                    <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                        <small class="text-muted d-block mb-2 fw-bold text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Bằng chứng / Nội dung liên quan</small>
                                         
-                                        <div class="col-md-12">
-                                            <div class="mb-3 p-3 border rounded bg-white shadow-sm">
-                                                <small class="text-muted d-block mb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Nội dung bị báo cáo:</small>
-                                                
-                                                <div class="p-3 bg-light rounded border-start border-4 border-warning mb-3 text-dark shadow-sm" style="font-style: italic;">
-                                                    @if (!string.IsNullOrEmpty(r.TargetContent)) {
-                                                        <i class="bi bi-quote fs-4 text-muted"></i>
-                                                        <span>@r.TargetContent</span>
-                                                    } else {
-                                                        <span class="text-muted">Không có bản xem trước nội dung văn bản (Có thể là file tài liệu).</span>
-                                                    }
-                                                </div>
-
-                                                <div class="d-flex gap-2 align-items-center">
-                                                    @if (r.DocumentId.HasValue) { 
-                                                        <a asp-area="User" asp-controller="Document" asp-action="Details" asp-route-id="@r.DocumentId" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
-                                                            <i class="bi bi-eye-fill me-1"></i> Xem Tài liệu
-                                                        </a> 
-                                                    }
-                                                    else if (r.QuestionId.HasValue) { 
-                                                        <a asp-area="User" asp-controller="Question" asp-action="Details" asp-route-id="@r.QuestionId" target="_blank" class="btn btn-sm btn-info text-white rounded-pill px-3 fw-bold">
-                                                            <i class="bi bi-eye-fill me-1"></i> Xem Câu hỏi
-                                                        </a> 
-                                                    }
-                                                    else if (r.AnswerId.HasValue) {
-                                                        <span class="badge bg-dark px-3 py-2 rounded-pill">Bình luận #@r.AnswerId</span>
-                                                    }
-                                                </div>
-
-                                                @if (!string.IsNullOrEmpty(r.Description)) {
-                                                    <div class="mt-3 p-2 bg-warning-subtle rounded border-start border-3 border-warning small text-dark">
-                                                        <strong>Ghi chú từ người báo cáo:</strong> @r.Description
-                                                    </div>
+                                        <div class="position-relative p-4 bg-light rounded-4 border-start border-4 border-warning text-dark">
+                                            <i class="bi bi-quote position-absolute top-0 start-0 text-muted opacity-25" style="font-size: 4rem; transform: translate(-10px, -20px);"></i>
+                                            <div class="position-relative z-1" style="font-style: italic; font-size: 1.05rem;">
+                                                @if (!string.IsNullOrEmpty(r.TargetContent)) {
+                                                    @r.TargetContent
+                                                } else {
+                                                    <span class="text-muted">Nội dung là File tài liệu đính kèm, vui lòng bấm xem chi tiết.</span>
                                                 }
                                             </div>
                                         </div>
+
+                                        <div class="mt-3">
+                                            @if (r.DocumentId.HasValue) { 
+                                                <a asp-area="User" asp-controller="Document" asp-action="Details" asp-route-id="@r.DocumentId" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold shadow-sm">
+                                                    <i class="bi bi-box-arrow-up-right me-2"></i> Trực tiếp đến Tài liệu
+                                                </a> 
+                                            }
+                                            else if (r.QuestionId.HasValue) { 
+                                                <a asp-area="User" asp-controller="Question" asp-action="Details" asp-route-id="@r.QuestionId" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-4 fw-bold shadow-sm">
+                                                    <i class="bi bi-box-arrow-up-right me-2"></i> Trực tiếp đến Câu hỏi
+                                                </a> 
+                                            }
+                                            else if (r.AnswerId.HasValue) {
+                                                <span class="badge bg-dark border px-3 py-2 rounded-pill">ID Bình luận: #@r.AnswerId</span>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrEmpty(r.Description)) {
+                                            <div class="mt-4 p-3 bg-warning-subtle rounded-3 border border-warning border-opacity-50 text-dark small">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i><strong>Ghi chú bổ sung từ người báo cáo:</strong> @r.Description
+                                            </div>
+                                        }
                                     </div>
 
                                     @if (!r.IsResolved) {
-                                        <div class="d-flex justify-content-end pt-3 border-top mt-2">
-                                            <form asp-area="Admin" asp-controller="User" asp-action="Penalize" method="post" class="me-2">
+                                        <div class="d-flex justify-content-end align-items-center p-3 bg-white border rounded-pill shadow-sm">
+                                            <span class="fw-bold text-dark me-auto ps-3">Hành động của Quản trị viên:</span>
+                                            
+                                            <form asp-area="Admin" asp-controller="User" asp-action="DismissReport" method="post" class="me-3 mb-0">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="reportId" value="@r.Id" />
+                                                <button type="submit" class="btn btn-light rounded-pill px-4 fw-bold text-secondary hover-bg-light">Bỏ qua</button>
+                                            </form>
+
+                                            <form asp-area="Admin" asp-controller="User" asp-action="Penalize" method="post" class="d-flex mb-0 align-items-center">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@ViewBag.TargetUserId" />
                                                 <input type="hidden" name="reportId" value="@r.Id" />
                                                 
-                                                <div class="d-flex align-items-center">
-                                                    <div class="input-group input-group-sm me-2" style="width: 140px;">
-                                                        <span class="input-group-text bg-white">Phạt</span>
-                                                        <input type="number" name="pointsDeducted" value="10" class="form-control" />
-                                                    </div>
-                                                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onclick="return confirm('Xác nhận XỬ PHẠT người dùng này?');">
-                                                        <i class="bi bi-hammer me-1"></i> Phạt
-                                                    </button>
+                                                <div class="input-group input-group-sm me-2 shadow-sm rounded-pill overflow-hidden" style="width: 140px;">
+                                                    <span class="input-group-text bg-white border-0 fw-bold text-danger">- Điểm</span>
+                                                    <input type="number" name="pointsDeducted" value="10" class="form-control border-0 bg-light text-center fw-bold text-danger" />
                                                 </div>
-                                            </form>
-
-                                            <form asp-area="Admin" asp-controller="User" asp-action="DismissReport" method="post">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="reportId" value="@r.Id" />
-                                                <button type="submit" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">Bỏ qua</button>
+                                                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow" onclick="return confirm('Xác nhận XỬ PHẠT người dùng này?');">
+                                                    <i class="bi bi-hammer me-1"></i> Phạt
+                                                </button>
                                             </form>
                                         </div>
                                     } 
                                     else {
-                                        <div class="alert alert-info mb-0 mt-3 py-3 border-0 shadow-sm rounded-3 d-flex align-items-center">
-                                            <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
+                                        <div class="alert alert-success mb-0 py-3 border-0 shadow-sm rounded-4 d-flex align-items-center">
+                                            <i class="bi bi-check-circle-fill fs-3 me-3 text-success"></i>
                                             <div>
-                                                <strong class="d-block mb-1 text-dark">Trạng thái: Đã xử lý</strong>
-                                                <span class="text-muted small">Kết quả: @(r.ActionTaken ?? "Quản trị viên đã giải quyết")</span>
+                                                <strong class="d-block text-success mb-1">Đã xử lý xong</strong>
+                                                <span class="text-dark small fw-medium">Kết quả: @(r.ActionTaken ?? "Quản trị viên đã giải quyết")</span>
                                             </div>
                                         </div>
                                     }
@@ -129,10 +127,10 @@
                     }
                 </div>
             } else {
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0 border-dashed border-2">
-                    <i class="bi bi-shield-check display-1 text-success opacity-50 d-block mb-3"></i>
-                    <h4 class="text-dark fw-bold">Hồ sơ trong sạch</h4>
-                    <p class="text-muted mb-0">Hiện không có báo cáo nào đối với người dùng này.</p>
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0 d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
+                    <i class="bi bi-shield-check display-1 text-success opacity-50 mb-4"></i>
+                    <h3 class="text-dark fw-bold">Hồ sơ vô cùng sạch sẽ</h3>
+                    <p class="text-muted fs-6">Hiện không có bất kỳ báo cáo nào nhắm tới người dùng này trong hệ thống.</p>
                 </div>
             }
         </div>

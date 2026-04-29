@@ -13,9 +13,6 @@ namespace StudyShare.Repositories.Interfaces
         Task<IEnumerable<Question>> GetAllForAdminAsync();
         Task<Question?> GetDetailsForAdminAsync(int id);
         Task<IEnumerable<Report>> GetReportsForQuestionAsync(int questionId);
-        Task<bool> DeleteQuestionByAdminAsync(Question question);
-        Task<bool> DeleteAnswerByAdminAsync(Answer answer);
         Task<IEnumerable<Question>> GetUserQuestionsAsync(string userId);
-        Task<bool> DeleteByUserAsync(Question question);
     }
 }

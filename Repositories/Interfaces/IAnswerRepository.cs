@@ -10,7 +10,6 @@ namespace StudyShare.Repositories.Interfaces
         Task<Answer?> GetByIdAndUserAsync(int id, string userId);
         Task<bool> CreateAsync(Answer answer);
         Task<bool> DeleteAsync(Answer answer);
-        Task<bool> DeleteByUserAsync(Answer answer);
         Task<IEnumerable<Answer>> GetAllAsync();
         Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId);    
     }

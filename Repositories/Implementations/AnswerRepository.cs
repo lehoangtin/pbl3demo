@@ -33,16 +33,16 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(Answer answer)
         {
+            var relatedReports = _context.Reports.Where(r => r.AnswerId == answer.Id);
+            if (relatedReports.Any())
+            {
+                _context.Reports.RemoveRange(relatedReports);
+            }
+
             _context.Answers.Remove(answer);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> DeleteByUserAsync(Answer answer)
-        {
-            _context.Reports.RemoveRange(_context.Reports.Where(r => r.AnswerId == answer.Id));
-            _context.Answers.Remove(answer);
-            return await _context.SaveChangesAsync() > 0;
-        }
         public async Task<IEnumerable<Answer>> GetAllAsync()
         {
             return await _context.Answers.ToListAsync();

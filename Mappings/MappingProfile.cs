@@ -89,7 +89,7 @@ namespace StudyShare.Mappings
             CreateMap<CategoryCreateViewModel, CategoryCreateRequest>();
             CreateMap<CategoryEditViewModel, CategoryUpdateRequest>();
             CreateMap<CategoryUpdateRequest, CategoryEditViewModel>(); 
-            
+            CreateMap<Category, CategoryUpdateRequest>().ReverseMap();
             CreateMap<Category, CategoryResponse>();
             CreateMap<CategoryResponse, CategoryViewModel>();
             CreateMap<Category, CategoryViewModel>(); 

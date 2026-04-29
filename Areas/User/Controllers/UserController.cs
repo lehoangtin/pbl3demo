@@ -148,14 +148,16 @@ namespace StudyShare.Areas.User.Controllers
             return View(viewModels);
         }
 
-        [HttpPost]
+       [HttpPost]
         [Authorize]
         public async Task<IActionResult> DeleteQuestion(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var success = await _questionService.DeleteByUserAsync(id, userId);
+            // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
+            var success = await _questionService.DeleteAsync(id, userId, false);
+            
             if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
             else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
             
@@ -246,7 +248,8 @@ namespace StudyShare.Areas.User.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
             
-            var success = await _answerService.DeleteByUserAsync(id, userId);
+            // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
+            var success = await _answerService.DeleteAsync(id, userId, false);
 
             if (!success) TempData["Error"] = "Bạn không có quyền xoá hoặc nội dung không tồn tại.";
             else TempData["Success"] = "Đã xoá câu trả lời.";

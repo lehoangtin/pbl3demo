@@ -42,6 +42,15 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(Category category)
         {
+            bool isUsedByDocuments = await _context.Documents.AnyAsync(d => d.CategoryId == category.Id);
+
+            if (isUsedByDocuments)
+            {
+                // Trả về false để Controller biết mà hiện thông báo lỗi: 
+                // "Không thể xóa danh mục đang có dữ liệu!"
+                return false; 
+            }
+
             _context.Categories.Remove(category);
             return await _context.SaveChangesAsync() > 0;
         }

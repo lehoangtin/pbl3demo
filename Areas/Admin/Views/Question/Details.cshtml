@@ -5,72 +5,76 @@
 
 <div class="container-fluid py-4" style="background-color: #f8f9fc; min-height: 100vh;">
     <div class="row g-4">
-        <div class="col-xl-2 col-lg-3">
+        <div class="col-xl-3 col-lg-4 d-none d-lg-block">
             <div class="sticky-top" style="top: 20px;">
                 @await Html.PartialAsync("_AdminSidebarPartial")
             </div>
         </div>
 
-        <div class="col-xl-10 col-lg-9">
-            <div class="mb-3 px-2">
-                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        <div class="col-xl-9 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <a asp-action="Index" class="btn btn-white border rounded-pill px-4 fw-medium shadow-sm hover-lift">
+                    <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
                 </a>
+                <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa hoàn toàn câu hỏi và mọi bình luận bên trong?');">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm fw-bold">
+                        <i class="bi bi-trash3-fill me-2"></i> Xóa toàn bộ Topic
+                    </button>
+                </form>
             </div>
 
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 px-4">
+            @if (TempData["Success"] != null) {
+                <div class="alert alert-success border-0 shadow-sm rounded-4 px-4 py-3 mb-4 animate__animated animate__fadeIn">
                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            <div class="card shadow-sm border-0 rounded-4 mb-5 overflow-hidden">
-                <div class="card-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-primary p-4 text-white d-flex align-items-center" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                    <div class="bg-white rounded-circle p-2 me-3 shadow-sm" style="width: 55px; height: 55px;">
+                        <img src="/images/default-avatar.png" class="w-100" alt="avatar">
+                    </div>
                     <div>
-                        <small class="opacity-75 d-block mb-1">Câu hỏi từ</small>
-                        <h5 class="m-0 fw-bold"><i class="bi bi-person-circle me-2"></i>@Model.AuthorName</h5>
+                        <h5 class="m-0 fw-bold">@Model.AuthorName</h5>
+                        <small class="opacity-75"><i class="bi bi-clock me-1"></i>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                     </div>
-                    <div class="text-end">
-                        <small class="opacity-75 d-block mb-1">Thời gian đăng</small>
-                        <span class="fw-medium">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
-                    </div>
+                    <span class="ms-auto badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">@Model.CategoryName</span>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-3 py-2 me-2">@Model.CategoryName</span>
-                    </div>
-                    <h4 class="text-dark fw-normal mb-4 pb-4 border-bottom" style="line-height: 1.6;">@Model.Content</h4>
-                    
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold m-0"><i class="bi bi-chat-dots text-info me-2"></i>Bình luận (@Model.AnswerCount)</h5>
-                        
-                        <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa hoàn toàn câu hỏi và mọi bình luận bên trong?');">
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 shadow-sm">
-                                <i class="bi bi-trash me-2"></i> Xóa toàn bộ Topic
-                            </button>
-                        </form>
+                    <div class="bg-light p-4 rounded-4 border-start border-4 border-primary mb-2">
+                        <h4 class="text-dark m-0" style="line-height: 1.6; font-weight: 500;">@Model.Content</h4>
                     </div>
                 </div>
+            </div>
 
-                @if (Model.Answers != null && Model.Answers.Any())
-                {
-                    <div class="list-group list-group-flush border-top">
-                        @foreach (var ans in Model.Answers)
-                        {
-                            <div class="list-group-item p-4 bg-light border-bottom border-white" style="border-width: 4px !important;">
+            <div class="card shadow-sm border-0 rounded-4 mb-5 border-top border-info border-4">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold m-0 text-dark"><i class="bi bi-chat-dots-fill text-info me-2"></i>Tất cả bình luận (@Model.AnswerCount)</h5>
+                </div>
+
+                @if (Model.Answers != null && Model.Answers.Any()) {
+                    <div class="list-group list-group-flush">
+                        @foreach (var ans in Model.Answers) {
+                            <div class="list-group-item p-4 border-bottom border-light hover-bg">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex flex-column">
-                                        <h6 class="fw-bold text-primary mb-2">@ans.AuthorName <span class="text-muted fw-normal small ms-2"><i class="bi bi-clock me-1"></i>@ans.CreatedAt.ToString("HH:mm dd/MM/yyyy")</span></h6>
-                                        <p class="text-dark mb-0" style="font-size: 1.05rem;">@ans.Content</p>
+                                    <div class="d-flex align-items-start w-100">
+                                        <div class="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                            <i class="bi bi-chat-text"></i>
+                                        </div>
+                                        <div class="w-100 pe-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <h6 class="fw-bold text-dark m-0">@ans.AuthorName</h6>
+                                                <small class="text-muted">@ans.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
+                                            </div>
+                                            <p class="text-secondary mb-0 fs-6">@ans.Content</p>
+                                        </div>
                                     </div>
                                     
-                                    <form asp-action="DeleteAnswer" method="post">
-                                        <input type="hidden" name="id" value="@ans.Id" />
+                                    <form asp-action="DeleteAnswer" method="post" onsubmit="return confirm('Xóa bình luận này?');">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 35px; height: 35px; padding: 0;" title="Xóa bình luận vi phạm" onclick="return confirm('Xóa câu trả lời này khỏi hệ thống?')">
+                                        <input type="hidden" name="id" value="@ans.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 border-0 shadow-sm" title="Xóa vi phạm">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -78,15 +82,21 @@
                             </div>
                         }
                     </div>
-                }
-                else
-                {
-                    <div class="text-center py-5 bg-light rounded-bottom-4 border-top border-dashed text-muted">
-                        <i class="bi bi-chat-square text-secondary opacity-50 display-4 d-block mb-3"></i>
-                        Chưa có câu trả lời nào cho thảo luận này.
+                } else {
+                    <div class="text-center py-5 text-muted bg-light rounded-bottom-4">
+                        <i class="bi bi-chat-left-dots display-4 d-block mb-3 opacity-25"></i>
+                        <p class="mb-0">Chưa có bình luận nào cho thảo luận này.</p>
                     </div>
                 }
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .hover-bg:hover { background-color: #fcfcfc; }
+    .btn-white { background: white; color: #495057; }
+    .btn-white:hover { background: #f8f9fa; }
+    .hover-lift:hover { transform: translateY(-2px); }
+    .hover-lift { transition: all 0.2s; }
+</style>

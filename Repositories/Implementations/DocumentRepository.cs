@@ -48,6 +48,21 @@ namespace StudyShare.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(Document document)
         {
+            // 1. Xóa tất cả các báo cáo liên quan đến tài liệu này
+            var relatedReports = _context.Reports.Where(r => r.DocumentId == document.Id);
+            if (relatedReports.Any())
+            {
+                _context.Reports.RemoveRange(relatedReports);
+            }
+
+            // 2. Xóa tất cả các lượt "Lưu tài liệu" của người dùng khác
+            var relatedSavedDocs = _context.SavedDocuments.Where(s => s.DocumentId == document.Id);
+            if (relatedSavedDocs.Any())
+            {
+                _context.SavedDocuments.RemoveRange(relatedSavedDocs);
+            }
+
+            // 3. Sau khi dọn sạch, tiến hành xóa tài liệu
             _context.Documents.Remove(document);
             return await _context.SaveChangesAsync() > 0;
         }

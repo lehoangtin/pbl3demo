@@ -36,13 +36,6 @@ namespace StudyShare.Services.Implementations
 
             return await _answerRepository.DeleteAsync(answer);
         }
-        public async Task<bool> DeleteByUserAsync(int id, string userId)
-        {
-            var answer = await _answerRepository.GetByIdAndUserAsync(id, userId);
-            if (answer == null) return false;
-
-            return await _answerRepository.DeleteByUserAsync(answer);
-        }
         public async Task<IEnumerable<AnswerResponse>> GetByQuestionIdAsync(int questionId)
         {
             var answers = await _answerRepository.GetByQuestionIdAsync(questionId);

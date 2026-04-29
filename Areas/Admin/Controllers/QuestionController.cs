@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
+using  System.Security.Claims;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,11 +14,13 @@ namespace StudyShare.Areas.Admin.Controllers
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
+        private readonly IAnswerService _answerService; // Bổ sung AnswerService
         private readonly IMapper _mapper;
 
-        public QuestionController(IQuestionService questionService, IMapper mapper)
+        public QuestionController(IQuestionService questionService, IMapper mapper, IAnswerService answerService) // Bổ sung AnswerService vào constructor
         {
             _questionService = questionService;
+            _answerService = answerService; // Gán AnswerService1234
             _mapper = mapper;
         }
 
@@ -60,18 +63,28 @@ public async Task<IActionResult> Index(string searchString)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _questionService.DeleteByAdminAsync(id);
-            if (success) TempData["Success"] = "Đã xóa câu hỏi vi phạm.";
+           // Lấy ID của Admin đang đăng nhập
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            
+            // Truyền đủ 3 tham số: id cần xóa, id người xóa, và cờ isAdmin = true
+            var success = await _questionService.DeleteAsync(id, currentUserId, true);
+            
+            if (success) TempData["Success"] = "Đã xóa toàn bộ câu hỏi.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteAnswer(int id)
         {
-            // Lưu ý: ID ở đây là ID của Answer
-            var success = await _questionService.DeleteByAdminAsync(id); 
-            if (success) TempData["Success"] = "Đã xóa câu trả lời vi phạm.";
-            return Redirect(Request.Headers["Referer"].ToString());
+            // Lấy ID của Admin đang đăng nhập
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            
+            // Truyền đủ 3 tham số: id cần xóa, id người xóa, và cờ isAdmin = true
+            var success = await _answerService.DeleteAsync(id, currentUserId, true); 
+            
+            if (success) TempData["Success"] = "Đã xóa câu trả lời vi phạm khỏi hệ thống.";
+            
+            return Redirect(Request.Headers["Referer"].ToString()); // Quay lại trang chi tiết câu hỏi sau khi xóa
         }
     }
 }
